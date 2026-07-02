@@ -1,0 +1,98 @@
+// خادم نظام إدارة المغسلة الذكي - Main Server File
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const path = require('path');
+const db = require('./src/config/database');
+
+const app = express();
+const PORT = process.env.PORT || 5000;
+
+// تفعيل CORS للسماح بالطلبات من واجهة الـ React (Vite)
+app.use((req, res, next) => {
+  const allowedOrigins = [
+    'http://localhost:3001',
+    'http://localhost:3000',
+    'http://localhost:5173',
+    'http://127.0.0.1:3001',
+    process.env.FRONTEND_URL, // سيتم تعيينه في production
+  ].filter(Boolean);
+
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin) || process.env.NODE_ENV === 'production') {
+    res.header('Access-Control-Allow-Origin', origin || '*');
+  }
+  
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  
+  // Handle preflight
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  
+  next();
+});
+
+// إضافة CORS middleware
+app.use(cors({
+  origin: function(origin, callback) {
+    const allowedOrigins = [
+      'http://localhost:3001',
+      'http://localhost:3000',
+      'http://localhost:5173',
+      'http://127.0.0.1:3001',
+      process.env.FRONTEND_URL,
+    ].filter(Boolean);
+    
+    if (!origin || allowedOrigins.includes(origin) || process.env.NODE_ENV === 'production') {
+      callback(null, true);
+    } else {
+      callback(null, true); // Allow all for now
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+// معالجة بيانات الـ JSON والـ Form URL Encoded
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// مجلد لتخزين ملفات الـ QR أو الصور إذا لزم الأمر
+app.use('/public', express.static(path.join(__dirname, 'public')));
+
+// استيراد مسارات الـ API
+const authRouter = require('./src/routes/auth');
+const customersRouter = require('./src/routes/customers');
+const servicesRouter = require('./src/routes/services');
+const ordersRouter = require('./src/routes/orders');
+const itemsRouter = require('./src/routes/items');
+const paymentsRouter = require('./src/routes/payments');
+const dashboardRouter = require('./src/routes/dashboard');
+const usersRouter = require('./src/routes/users');
+
+// ربط المسارات
+app.use('/api/auth', authRouter);
+app.use('/api/customers', customersRouter);
+app.use('/api/services', servicesRouter);
+app.use('/api/orders', ordersRouter);
+app.use('/api/items', itemsRouter);
+app.use('/api/payments', paymentsRouter);
+app.use('/api/dashboard', dashboardRouter);
+app.use('/api/users', usersRouter);
+
+// اختبار الاتصال بالخادم
+app.get('/api/health', (req, res) => {
+  console.log('🔍 Health check request received from:', req.ip, req.headers.origin);
+  res.json({ success: true, message: 'الخادم يعمل بنجاح وقاعدة البيانات متصلة' });
+});
+
+// بدء تشغيل الخادم
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server is running on port ${PORT}`);
+  console.log(`API URL: http://localhost:${PORT}/api`);
+  console.log(`Network: http://0.0.0.0:${PORT}/api`);
+});

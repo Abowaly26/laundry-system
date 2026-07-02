@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار الاتصال</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 600px;
+            width: 100%;
+        }
+        h1 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+        button {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+        .btn-test {
+            background: #16a085;
+            color: white;
+        }
+        .btn-test:hover {
+            background: #138f77;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(22, 160, 133, 0.4);
+        }
+        .btn-clear {
+            background: #e74c3c;
+            color: white;
+        }
+        .btn-clear:hover {
+            background: #c0392b;
+        }
+        .btn-login {
+            background: #3498db;
+            color: white;
+        }
+        .btn-login:hover {
+            background: #2980b9;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            display: none;
+        }
+        .result.show {
+            display: block;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 2px solid #bee5eb;
+        }
+        .status {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .status-item {
+            text-align: center;
+        }
+        .status-label {
+            font-size: 12px;
+            color: #6c757d;
+            margin-bottom: 5px;
+        }
+        .status-value {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .online { color: #28a745; }
+        .offline { color: #dc3545; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 تشخيص الاتصال</h1>
+        
+        <div class="status">
+            <div class="status-item">
+                <div class="status-label">Backend</div>
+                <div class="status-value" id="backend-status">⏳</div>
+            </div>
+            <div class="status-item">
+                <div class="status-label">Frontend</div>
+                <div class="status-value online">✅ متصل</div>
+            </div>
+        </div>
+        
+        <button class="btn-test" onclick="testBackend()">🔍 اختبار Backend</button>
+        <button class="btn-test" onclick="testLogin()">🔐 اختبار تسجيل الدخول</button>
+        <button class="btn-login" onclick="goToLogin()">🚀 الذهاب لصفحة تسجيل الدخول</button>
+        <button class="btn-clear" onclick="clearResult()">🗑️ مسح النتائج</button>
+        
+        <div id="result" class="result"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:5000/api';
+        
+        function showResult(message, type = 'success') {
+            const resultDiv = document.getElementById('result');
+            resultDiv.className = `result ${type} show`;
+            resultDiv.textContent = message;
+        }
+        
+        function clearResult() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.className = 'result';
+            resultDiv.textContent = '';
+        }
+        
+        function updateBackendStatus(isOnline) {
+            const statusDiv = document.getElementById('backend-status');
+            if (isOnline) {
+                statusDiv.textContent = '✅ متصل';
+                statusDiv.className = 'status-value online';
+            } else {
+                statusDiv.textContent = '❌ غير متصل';
+                statusDiv.className = 'status-value offline';
+            }
+        }
+        
+        async function testBackend() {
+            showResult('⏳ جاري الاتصال بـ Backend...', 'info');
+            
+            try {
+                const response = await fetch(`${API_BASE}/health`, {
+                    method: 'GET',
+                    mode: 'cors',
+                    cache: 'no-cache'
+                });
+                const data = await response.json();
+                
+                updateBackendStatus(true);
+                showResult(
+                    '✅ Backend متصل بنجاح!\n\n' +
+                    'الاستجابة:\n' +
+                    JSON.stringify(data, null, 2) +
+                    '\n\n🎉 يمكنك الآن تسجيل الدخول',
+                    'success'
+                );
+            } catch (error) {
+                updateBackendStatus(false);
+                showResult(
+                    '❌ فشل الاتصال بـ Backend!\n\n' +
+                    'الخطأ: ' + error.message + '\n\n' +
+                    '🔧 تأكد من:\n' +
+                    '1. Backend يعمل على المنفذ 5000\n' +
+                    '2. لا يوجد Firewall يمنع الاتصال\n' +
+                    '3. شغل الأمر: npm run dev في مجلد server',
+                    'error'
+                );
+            }
+        }
+        
+        async function testLogin() {
+            showResult('⏳ جاري اختبار تسجيل الدخول...', 'info');
+            
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: 'admin@laundry.com',
+                        password: 'admin123'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    updateBackendStatus(true);
+                    
+                    // فك التغليف كما يفعل الكود
+                    const unwrapped = data?.data || data;
+                    
+                    showResult(
+                        '✅ تسجيل الدخول نجح!\n\n' +
+                        'المستخدم: ' + unwrapped.user.name + '\n' +
+                        'الدور: ' + unwrapped.user.role + '\n' +
+                        'البريد: ' + unwrapped.user.email + '\n\n' +
+                        '🎉 النظام يعمل بشكل صحيح!\n' +
+                        'اضغط "الذهاب لصفحة تسجيل الدخول" للبدء',
+                        'success'
+                    );
+                } else {
+                    showResult(
+                        '❌ فشل تسجيل الدخول!\n\n' +
+                        JSON.stringify(data, null, 2),
+                        'error'
+                    );
+                }
+            } catch (error) {
+                updateBackendStatus(false);
+                showResult(
+                    '❌ خطأ في الاتصال!\n\n' +
+                    'الخطأ: ' + error.message,
+                    'error'
+                );
+            }
+        }
+        
+        function goToLogin() {
+            window.location.href = '/';
+        }
+        
+        // اختبار تلقائي عند فتح الصفحة
+        window.addEventListener('load', () => {
+            setTimeout(testBackend, 500);
+        });
+    </script>
+</body>
+</html>

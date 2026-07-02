@@ -1,0 +1,108 @@
+import { NavLink, useLocation } from 'react-router-dom';
+import {
+  LayoutDashboard,
+  PlusCircle,
+  ClipboardList,
+  ScanLine,
+  Users,
+  Sparkles,
+  Wallet,
+  UserCog,
+  LogOut,
+  WashingMachine,
+} from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
+import './Sidebar.css';
+
+const navItems = [
+  { path: '/', label: 'لوحة التحكم', icon: LayoutDashboard },
+  { path: '/orders/new', label: 'طلب جديد', icon: PlusCircle },
+  { path: '/orders', label: 'الطلبات', icon: ClipboardList },
+  { path: '/tracking', label: 'تتبع القطع', icon: ScanLine },
+  { path: '/customers', label: 'العملاء', icon: Users },
+  { path: '/services', label: 'الخدمات', icon: Sparkles },
+  { path: '/finance', label: 'المالية', icon: Wallet },
+  { path: '/users', label: 'المستخدمين', icon: UserCog, adminOnly: true },
+];
+
+const roleLabels = {
+  admin: 'مدير النظام',
+  manager: 'مدير',
+  employee: 'موظف',
+  worker: 'عامل',
+};
+
+export default function Sidebar({ isOpen, onClose }) {
+  const { user, logout, isAdmin } = useAuth();
+  const location = useLocation();
+
+  const filteredItems = navItems.filter(
+    (item) => !item.adminOnly || isAdmin
+  );
+
+  const getInitials = (name) => {
+    if (!name) return '؟';
+    return name.split(' ').map((n) => n[0]).join('').slice(0, 2);
+  };
+
+  return (
+    <>
+      <div
+        className={`sidebar-overlay ${isOpen ? 'visible' : ''}`}
+        onClick={onClose}
+      />
+      <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
+        <div className="sidebar-brand">
+          <div className="brand-icon">
+            <WashingMachine size={22} />
+          </div>
+          <div className="brand-text">
+            <span className="brand-name">المغسلة الذكية</span>
+            <span className="brand-subtitle">نظام إدارة المغاسل</span>
+          </div>
+        </div>
+
+        <nav className="sidebar-nav">
+          {filteredItems.map((item) => {
+            const Icon = item.icon;
+            const isActive =
+              item.path === '/'
+                ? location.pathname === '/'
+                : location.pathname.startsWith(item.path);
+
+            return (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                className={`sidebar-nav-item ${isActive ? 'active' : ''}`}
+                onClick={onClose}
+                end={item.path === '/'}
+              >
+                <Icon size={20} className="nav-icon" />
+                <span>{item.label}</span>
+              </NavLink>
+            );
+          })}
+        </nav>
+
+        <div className="sidebar-footer">
+          <div className="sidebar-user">
+            <div className="sidebar-user-avatar">
+              {getInitials(user?.name)}
+            </div>
+            <div className="sidebar-user-info">
+              <div className="sidebar-user-name">{user?.name || 'المستخدم'}</div>
+              <div className="sidebar-user-role">
+                {roleLabels[user?.role] || user?.role}
+              </div>
+            </div>
+          </div>
+          <button className="sidebar-logout-btn" onClick={logout}>
+            <LogOut size={18} />
+            <span>تسجيل الخروج</span>
+          </button>
+        </div>
+      </aside>
+    </>
+  );
+}

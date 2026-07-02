@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>اختبار بسيط</title>
+    <style>
+        body {
+            font-family: Arial;
+            padding: 50px;
+            background: #f0f0f0;
+        }
+        .box {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        button {
+            padding: 15px 30px;
+            font-size: 16px;
+            margin: 10px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            color: white;
+        }
+        .btn1 { background: #3498db; }
+        .btn2 { background: #2ecc71; }
+        .btn3 { background: #e74c3c; }
+        pre {
+            background: #f8f8f8;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        .success { color: green; font-weight: bold; }
+        .error { color: red; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h1>🧪 اختبار الاتصال المباشر</h1>
+        
+        <button class="btn1" onclick="test1()">اختبار 1: localhost:5000</button>
+        <button class="btn2" onclick="test2()">اختبار 2: 127.0.0.1:5000</button>
+        <button class="btn3" onclick="test3()">اختبار 3: proxy /api</button>
+        
+        <h3>النتيجة:</h3>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        async function test1() {
+            showResult('⏳ جاري الاختبار 1...');
+            try {
+                const response = await fetch('http://localhost:5000/api/health', {
+                    method: 'GET',
+                    mode: 'cors'
+                });
+                const data = await response.json();
+                showResult('✅ نجح!\n' + JSON.stringify(data, null, 2), 'success');
+            } catch (error) {
+                showResult('❌ فشل!\n' + error.message, 'error');
+            }
+        }
+
+        async function test2() {
+            showResult('⏳ جاري الاختبار 2...');
+            try {
+                const response = await fetch('http://127.0.0.1:5000/api/health', {
+                    method: 'GET',
+                    mode: 'cors'
+                });
+                const data = await response.json();
+                showResult('✅ نجح!\n' + JSON.stringify(data, null, 2), 'success');
+            } catch (error) {
+                showResult('❌ فشل!\n' + error.message, 'error');
+            }
+        }
+
+        async function test3() {
+            showResult('⏳ جاري الاختبار 3...');
+            try {
+                const response = await fetch('/api/health', {
+                    method: 'GET'
+                });
+                const data = await response.json();
+                showResult('✅ نجح!\n' + JSON.stringify(data, null, 2), 'success');
+            } catch (error) {
+                showResult('❌ فشل!\n' + error.message, 'error');
+            }
+        }
+
+        function showResult(message, type = '') {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `<pre class="${type}">${message}</pre>`;
+        }
+
+        // اختبار تلقائي عند فتح الصفحة
+        window.onload = () => {
+            console.log('الصفحة جاهزة');
+            showResult('اضغط على أي زر للاختبار');
+        };
+    </script>
+</body>
+</html>

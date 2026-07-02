@@ -1,0 +1,207 @@
+.tracking-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-lg);
+  align-items: start;
+}
+
+.scanner-card {
+  text-align: center;
+}
+
+.scan-mode-toggle {
+  display: flex;
+  background: var(--bg-hover);
+  padding: 4px;
+  border-radius: var(--radius);
+  justify-content: center;
+  border: 1px solid var(--border);
+}
+
+.toggle-btn {
+  flex: 1;
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition);
+}
+
+.toggle-btn.active {
+  background: var(--bg-card);
+  color: var(--primary-dark);
+  box-shadow: var(--shadow);
+}
+
+.camera-scanner-wrapper {
+  margin: var(--space-md) 0;
+}
+
+.scanner-instruction {
+  font-size: 0.85rem;
+}
+
+.manual-input-row {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.manual-input-row .form-input {
+  text-transform: uppercase;
+}
+
+/* Item Meta Info */
+.item-meta-info {
+  background: var(--bg);
+  padding: var(--space-md);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  margin-bottom: var(--space-lg);
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.info-row:last-child {
+  border-bottom: none;
+}
+
+.note-row {
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Stepper Workflow */
+.stepper-workflow {
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+  margin: var(--space-xl) 0;
+  direction: rtl;
+}
+
+.stepper-workflow::before {
+  content: '';
+  position: absolute;
+  top: 18px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--border);
+  z-index: 1;
+}
+
+.step-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+  flex: 1;
+}
+
+.step-circle {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 3px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  transition: all var(--transition);
+}
+
+.step-label {
+  font-size: 0.75rem;
+  margin-top: 6px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  white-space: nowrap;
+  text-align: center;
+}
+
+/* Stepper Completed State */
+.step-item.completed .step-circle {
+  background: var(--success-light);
+  border-color: var(--success);
+  color: var(--success);
+}
+
+.step-item.completed .step-label {
+  color: var(--success);
+}
+
+/* Stepper Active State */
+.step-item.active .step-circle {
+  background: var(--primary-light);
+  border-color: var(--primary);
+  color: var(--primary);
+  transform: scale(1.1);
+  box-shadow: 0 0 0 4px rgba(13, 148, 136, 0.15);
+}
+
+.step-item.active .step-label {
+  color: var(--primary-dark);
+  font-weight: 700;
+}
+
+.btn-advance-status {
+  padding: 14px;
+}
+
+.completion-message {
+  padding: var(--space-lg);
+  border-radius: var(--radius);
+  background: var(--success-light);
+  border: 1px solid rgba(22, 163, 74, 0.2);
+}
+
+.empty-scan-state h3 {
+  font-size: 1.25rem;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+
+@media (max-width: 900px) {
+  .tracking-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .stepper-workflow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-md);
+    margin-right: 15px;
+  }
+
+  .stepper-workflow::before {
+    top: 0;
+    bottom: 0;
+    right: 18px;
+    left: auto;
+    width: 3px;
+    height: auto;
+  }
+
+  .step-item {
+    flex-direction: row;
+    gap: var(--space-md);
+    width: 100%;
+  }
+
+  .step-label {
+    margin-top: 0;
+  }
+}
