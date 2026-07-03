@@ -9,33 +9,6 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // تفعيل CORS للسماح بالطلبات من واجهة الـ React (Vite)
-app.use((req, res, next) => {
-  const allowedOrigins = [
-    'http://localhost:3001',
-    'http://localhost:3000',
-    'http://localhost:5173',
-    'http://127.0.0.1:3001',
-    process.env.FRONTEND_URL, // سيتم تعيينه في production
-  ].filter(Boolean);
-
-  const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin) || process.env.NODE_ENV === 'production') {
-    res.header('Access-Control-Allow-Origin', origin || '*');
-  }
-  
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  
-  // Handle preflight
-  if (req.method === 'OPTIONS') {
-    return res.sendStatus(200);
-  }
-  
-  next();
-});
-
-// إضافة CORS middleware
 app.use(cors({
   origin: function(origin, callback) {
     const allowedOrigins = [
@@ -46,15 +19,20 @@ app.use(cors({
       process.env.FRONTEND_URL,
     ].filter(Boolean);
     
-    if (!origin || allowedOrigins.includes(origin) || process.env.NODE_ENV === 'production') {
+    // السماح لكل طلب من Vercel أو Railway أو localhost
+    if (!origin || 
+        allowedOrigins.includes(origin) || 
+        origin.includes('vercel.app') ||
+        origin.includes('railway.app') ||
+        origin.includes('localhost')) {
       callback(null, true);
     } else {
-      callback(null, true); // Allow all for now
+      callback(null, true); // Allow all for production
     }
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'X-Requested-With', 'Accept']
 }));
 
 // معالجة بيانات الـ JSON والـ Form URL Encoded
