@@ -1,7 +1,7 @@
-// مسارات الطلبات - Order Routes
+// مسارات الطلبات - Order Routes (PostgreSQL)
 const express = require('express');
 const QRCode = require('qrcode');
-const db = require('../config/database');
+const { query, transaction } = require('../config/database');
 const authMiddleware = require('../middleware/auth');
 
 const router = express.Router();
@@ -42,17 +42,18 @@ function getItemPrefix(itemType) {
 /**
  * توليد رمز QR فريد
  */
-function generateQRCode(itemType) {
+async function generateQRCode(itemType) {
   const prefix = getItemPrefix(itemType);
   
   // الحصول على آخر رقم مستخدم لهذا النوع
-  const lastItem = db.prepare(
-    "SELECT qr_code FROM order_items WHERE qr_code LIKE ? ORDER BY id DESC LIMIT 1"
-  ).get(`${prefix}-%`);
+  const result = await query(
+    "SELECT qr_code FROM order_items WHERE qr_code LIKE $1 ORDER BY id DESC LIMIT 1",
+    [`${prefix}-%`]
+  );
 
   let nextNum = 1;
-  if (lastItem && lastItem.qr_code) {
-    const parts = lastItem.qr_code.split('-');
+  if (result.rows.length > 0 && result.rows[0].qr_code) {
+    const parts = result.rows[0].qr_code.split('-');
     nextNum = parseInt(parts[1]) + 1;
   }
 
@@ -63,56 +64,59 @@ function generateQRCode(itemType) {
  * GET /api/orders/track/:orderIdOrPhone
  * تتبع الطلب بواسطة رقم الطلب أو رقم الهاتف (نقطة عامة)
  */
-router.get('/track/:orderIdOrPhone', (req, res) => {
+router.get('/track/:orderIdOrPhone', async (req, res) => {
   try {
     const { orderIdOrPhone } = req.params;
     let orders;
 
     // محاولة البحث كرقم طلب أولاً
     if (/^\d+$/.test(orderIdOrPhone)) {
-      const order = db.prepare(`
+      const orderResult = await query(`
         SELECT o.*, c.name as customer_name, c.phone as customer_phone
         FROM orders o
         JOIN customers c ON o.customer_id = c.id
-        WHERE o.id = ?
-      `).get(orderIdOrPhone);
+        WHERE o.id = $1
+      `, [orderIdOrPhone]);
 
-      if (order) {
-        const items = db.prepare(`
+      if (orderResult.rows.length > 0) {
+        const order = orderResult.rows[0];
+        const itemsResult = await query(`
           SELECT oi.*, s.name_ar as service_name
           FROM order_items oi
           JOIN services s ON oi.service_id = s.id
-          WHERE oi.order_id = ?
-        `).all(order.id);
-        orders = [{ ...order, items }];
+          WHERE oi.order_id = $1
+        `, [order.id]);
+        orders = [{ ...order, items: itemsResult.rows }];
       }
     }
 
     // البحث برقم الهاتف إذا لم يُعثر عليه
     if (!orders || orders.length === 0) {
-      const customer = db.prepare(
-        'SELECT id FROM customers WHERE phone = ?'
-      ).get(orderIdOrPhone);
+      const customerResult = await query(
+        'SELECT id FROM customers WHERE phone = $1',
+        [orderIdOrPhone]
+      );
 
-      if (customer) {
-        const customerOrders = db.prepare(`
+      if (customerResult.rows.length > 0) {
+        const customer = customerResult.rows[0];
+        const customerOrdersResult = await query(`
           SELECT o.*, c.name as customer_name, c.phone as customer_phone
           FROM orders o
           JOIN customers c ON o.customer_id = c.id
-          WHERE o.customer_id = ? AND o.status NOT IN ('cancelled')
+          WHERE o.customer_id = $1 AND o.status NOT IN ('cancelled')
           ORDER BY o.created_at DESC
           LIMIT 5
-        `).all(customer.id);
+        `, [customer.id]);
 
-        orders = customerOrders.map(order => {
-          const items = db.prepare(`
+        orders = await Promise.all(customerOrdersResult.rows.map(async order => {
+          const itemsResult = await query(`
             SELECT oi.*, s.name_ar as service_name
             FROM order_items oi
             JOIN services s ON oi.service_id = s.id
-            WHERE oi.order_id = ?
-          `).all(order.id);
-          return { ...order, items };
-        });
+            WHERE oi.order_id = $1
+          `, [order.id]);
+          return { ...order, items: itemsResult.rows };
+        }));
       }
     }
 
@@ -134,50 +138,53 @@ router.get('/track/:orderIdOrPhone', (req, res) => {
  * GET /api/orders
  * عرض جميع الطلبات مع فلاتر
  */
-router.get('/', authMiddleware, (req, res) => {
+router.get('/', authMiddleware, async (req, res) => {
   try {
     const { status, customer_id, date_from, date_to, page = 1, limit = 50 } = req.query;
     const offset = (parseInt(page) - 1) * parseInt(limit);
 
     let conditions = [];
     let params = [];
+    let paramCount = 1;
 
     if (status) {
-      conditions.push('o.status = ?');
+      conditions.push(`o.status = $${paramCount++}`);
       params.push(status);
     }
     if (customer_id) {
-      conditions.push('o.customer_id = ?');
+      conditions.push(`o.customer_id = $${paramCount++}`);
       params.push(customer_id);
     }
     if (date_from) {
-      conditions.push('o.created_at >= ?');
+      conditions.push(`o.created_at >= $${paramCount++}`);
       params.push(date_from);
     }
     if (date_to) {
-      conditions.push('o.created_at <= ?');
+      conditions.push(`o.created_at <= $${paramCount++}`);
       params.push(date_to + ' 23:59:59');
     }
 
     const whereClause = conditions.length > 0 ? 'WHERE ' + conditions.join(' AND ') : '';
 
-    const total = db.prepare(
-      `SELECT COUNT(*) as total FROM orders o ${whereClause}`
-    ).get(...params).total;
+    const totalResult = await query(
+      `SELECT COUNT(*) as total FROM orders o ${whereClause}`,
+      params
+    );
+    const total = parseInt(totalResult.rows[0].total);
 
-    const orders = db.prepare(`
+    const ordersResult = await query(`
       SELECT o.*, c.name as customer_name, c.phone as customer_phone,
         (SELECT COUNT(*) FROM order_items WHERE order_id = o.id) as items_count
       FROM orders o
       JOIN customers c ON o.customer_id = c.id
       ${whereClause}
       ORDER BY o.created_at DESC
-      LIMIT ? OFFSET ?
-    `).all(...params, parseInt(limit), offset);
+      LIMIT $${paramCount++} OFFSET $${paramCount}
+    `, [...params, parseInt(limit), offset]);
 
     res.json({
       success: true,
-      data: orders,
+      data: ordersResult.rows,
       pagination: {
         total,
         page: parseInt(page),
@@ -195,40 +202,41 @@ router.get('/', authMiddleware, (req, res) => {
  * GET /api/orders/:id
  * عرض تفاصيل طلب واحد مع القطع والمدفوعات
  */
-router.get('/:id', authMiddleware, (req, res) => {
+router.get('/:id', authMiddleware, async (req, res) => {
   try {
-    const order = db.prepare(`
+    const orderResult = await query(`
       SELECT o.*, c.name as customer_name, c.phone as customer_phone, c.address as customer_address
       FROM orders o
       JOIN customers c ON o.customer_id = c.id
-      WHERE o.id = ?
-    `).get(req.params.id);
+      WHERE o.id = $1
+    `, [req.params.id]);
 
-    if (!order) {
+    if (orderResult.rows.length === 0) {
       return res.status(404).json({ success: false, message: 'الطلب غير موجود' });
     }
+    const order = orderResult.rows[0];
 
     // جلب القطع
-    const items = db.prepare(`
+    const itemsResult = await query(`
       SELECT oi.*, s.name_ar as service_name, s.name as service_name_en
       FROM order_items oi
       JOIN services s ON oi.service_id = s.id
-      WHERE oi.order_id = ?
+      WHERE oi.order_id = $1
       ORDER BY oi.id ASC
-    `).all(order.id);
+    `, [order.id]);
 
     // جلب المدفوعات
-    const payments = db.prepare(`
+    const paymentsResult = await query(`
       SELECT p.*, u.name as created_by_name
       FROM payments p
       LEFT JOIN users u ON p.created_by = u.id
-      WHERE p.order_id = ?
+      WHERE p.order_id = $1
       ORDER BY p.created_at DESC
-    `).all(order.id);
+    `, [order.id]);
 
     res.json({
       success: true,
-      data: { ...order, items, payments }
+      data: { ...order, items: itemsResult.rows, payments: paymentsResult.rows }
     });
   } catch (error) {
     console.error('Get order error:', error);
@@ -240,7 +248,7 @@ router.get('/:id', authMiddleware, (req, res) => {
  * POST /api/orders
  * إنشاء طلب جديد مع القطع وتوليد QR codes
  */
-router.post('/', authMiddleware, (req, res) => {
+router.post('/', authMiddleware, async (req, res) => {
   try {
     const { customer_id, items, notes, paid_amount, payment_method } = req.body;
 
@@ -252,8 +260,8 @@ router.post('/', authMiddleware, (req, res) => {
     }
 
     // التحقق من وجود العميل
-    const customer = db.prepare('SELECT id FROM customers WHERE id = ?').get(customer_id);
-    if (!customer) {
+    const customerResult = await query('SELECT id FROM customers WHERE id = $1', [customer_id]);
+    if (customerResult.rows.length === 0) {
       return res.status(404).json({ success: false, message: 'العميل غير موجود' });
     }
 
@@ -261,11 +269,12 @@ router.post('/', authMiddleware, (req, res) => {
     let totalAmount = 0;
     let maxEstimatedHours = 0;
 
-    const itemsWithPrices = items.map(item => {
-      const service = db.prepare('SELECT * FROM services WHERE id = ? AND is_active = 1').get(item.service_id);
-      if (!service) {
+    const itemsWithPrices = await Promise.all(items.map(async item => {
+      const serviceResult = await query('SELECT * FROM services WHERE id = $1 AND is_active = true', [item.service_id]);
+      if (serviceResult.rows.length === 0) {
         throw new Error(`الخدمة رقم ${item.service_id} غير موجودة أو معطلة`);
       }
+      const service = serviceResult.rows[0];
       const quantity = item.quantity || 1;
       const itemPrice = service.price * quantity;
       totalAmount += itemPrice;
@@ -273,7 +282,7 @@ router.post('/', authMiddleware, (req, res) => {
         maxEstimatedHours = service.estimated_hours;
       }
       return { ...item, service, price: service.price, quantity };
-    });
+    }));
 
     const paidAmount = parseFloat(paid_amount) || 0;
     const remainingAmount = totalAmount - paidAmount;
@@ -281,46 +290,49 @@ router.post('/', authMiddleware, (req, res) => {
     // تاريخ التسليم المتوقع
     const expectedDelivery = new Date();
     expectedDelivery.setHours(expectedDelivery.getHours() + maxEstimatedHours);
-    const expectedDeliveryStr = expectedDelivery.toISOString().replace('T', ' ').substring(0, 19);
+    const expectedDeliveryStr = expectedDelivery.toISOString();
 
     // إنشاء الطلب والقطع داخل معاملة واحدة
-    const createOrder = db.transaction(() => {
+    const result = await transaction(async (client) => {
       // إنشاء الطلب
-      const orderResult = db.prepare(`
+      const orderResult = await client.query(`
         INSERT INTO orders (customer_id, status, total_amount, paid_amount, remaining_amount, expected_delivery_at, notes)
-        VALUES (?, 'pending', ?, ?, ?, ?, ?)
-      `).run(customer_id, totalAmount, paidAmount, remainingAmount, expectedDeliveryStr, notes || '');
+        VALUES ($1, 'pending', $2, $3, $4, $5, $6)
+        RETURNING id
+      `, [customer_id, totalAmount, paidAmount, remainingAmount, expectedDeliveryStr, notes || '']);
 
-      const orderId = orderResult.lastInsertRowid;
+      const orderId = orderResult.rows[0].id;
       const createdItems = [];
 
       // إنشاء القطع وتوليد QR codes
       for (const item of itemsWithPrices) {
         const quantity = item.quantity || 1;
         for (let i = 0; i < quantity; i++) {
-          const qrCode = generateQRCode(item.item_type || item.service.name);
+          const qrCode = await generateQRCode(item.item_type || item.service.name);
           
-          const itemResult = db.prepare(`
+          const itemResult = await client.query(`
             INSERT INTO order_items (order_id, service_id, item_type, qr_code, status, notes, price)
-            VALUES (?, ?, ?, ?, 'received', ?, ?)
-          `).run(orderId, item.service_id, item.item_type || item.service.name, qrCode, item.notes || '', item.price);
+            VALUES ($1, $2, $3, $4, 'received', $5, $6)
+            RETURNING id
+          `, [orderId, item.service_id, item.item_type || item.service.name, qrCode, item.notes || '', item.price]);
+
+          const itemId = itemResult.rows[0].id;
 
           // تسجيل الحالة الأولية
-          db.prepare(`
+          await client.query(`
             INSERT INTO item_status_log (item_id, old_status, new_status, updated_by)
-            VALUES (?, NULL, 'received', ?)
-          `).run(itemResult.lastInsertRowid, req.user.id);
+            VALUES ($1, NULL, 'received', $2)
+          `, [itemId, req.user.id]);
 
           createdItems.push({
-            id: itemResult.lastInsertRowid,
+            id: itemId,
             qr_code: qrCode,
             item_type: item.item_type || item.service.name,
             service_name: item.service.name_ar,
             status: 'received',
             price: item.price,
-            // بيانات QR code
             qr_data: JSON.stringify({
-              itemId: itemResult.lastInsertRowid,
+              itemId: itemId,
               orderId: orderId,
               qrCode: qrCode,
               service: item.service.name_ar
@@ -332,30 +344,28 @@ router.post('/', authMiddleware, (req, res) => {
       // تسجيل الدفعة إذا وجدت
       if (paidAmount > 0) {
         const paymentType = paidAmount >= totalAmount ? 'full' : 'deposit';
-        db.prepare(`
+        await client.query(`
           INSERT INTO payments (order_id, amount, method, type, created_by)
-          VALUES (?, ?, ?, ?, ?)
-        `).run(orderId, paidAmount, payment_method || 'cash', paymentType, req.user.id);
+          VALUES ($1, $2, $3, $4, $5)
+        `, [orderId, paidAmount, payment_method || 'cash', paymentType, req.user.id]);
       }
 
       return { orderId, createdItems };
     });
 
-    const result = createOrder();
-
     // جلب الطلب الكامل
-    const order = db.prepare(`
+    const orderResult = await query(`
       SELECT o.*, c.name as customer_name, c.phone as customer_phone
       FROM orders o
       JOIN customers c ON o.customer_id = c.id
-      WHERE o.id = ?
-    `).get(result.orderId);
+      WHERE o.id = $1
+    `, [result.orderId]);
 
     res.status(201).json({
       success: true,
       message: 'تم إنشاء الطلب بنجاح',
       data: {
-        ...order,
+        ...orderResult.rows[0],
         items: result.createdItems
       }
     });
@@ -372,32 +382,33 @@ router.post('/', authMiddleware, (req, res) => {
  * PUT /api/orders/:id
  * تحديث الطلب
  */
-router.put('/:id', authMiddleware, (req, res) => {
+router.put('/:id', authMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
     const { status, notes, expected_delivery_at } = req.body;
 
-    const existing = db.prepare('SELECT * FROM orders WHERE id = ?').get(id);
-    if (!existing) {
+    const existingResult = await query('SELECT * FROM orders WHERE id = $1', [id]);
+    if (existingResult.rows.length === 0) {
       return res.status(404).json({ success: false, message: 'الطلب غير موجود' });
     }
 
     const updateFields = [];
     const updateParams = [];
+    let paramCount = 1;
 
     if (status) {
-      updateFields.push('status = ?');
+      updateFields.push(`status = $${paramCount++}`);
       updateParams.push(status);
       if (status === 'delivered') {
-        updateFields.push("delivered_at = datetime('now', 'localtime')");
+        updateFields.push(`delivered_at = CURRENT_TIMESTAMP`);
       }
     }
     if (notes !== undefined) {
-      updateFields.push('notes = ?');
+      updateFields.push(`notes = $${paramCount++}`);
       updateParams.push(notes);
     }
     if (expected_delivery_at) {
-      updateFields.push('expected_delivery_at = ?');
+      updateFields.push(`expected_delivery_at = $${paramCount++}`);
       updateParams.push(expected_delivery_at);
     }
 
@@ -406,19 +417,19 @@ router.put('/:id', authMiddleware, (req, res) => {
     }
 
     updateParams.push(id);
-    db.prepare(`UPDATE orders SET ${updateFields.join(', ')} WHERE id = ?`).run(...updateParams);
+    await query(`UPDATE orders SET ${updateFields.join(', ')} WHERE id = $${paramCount}`, updateParams);
 
-    const order = db.prepare(`
+    const orderResult = await query(`
       SELECT o.*, c.name as customer_name, c.phone as customer_phone
       FROM orders o
       JOIN customers c ON o.customer_id = c.id
-      WHERE o.id = ?
-    `).get(id);
+      WHERE o.id = $1
+    `, [id]);
 
     res.json({
       success: true,
       message: 'تم تحديث الطلب بنجاح',
-      data: order
+      data: orderResult.rows[0]
     });
   } catch (error) {
     console.error('Update order error:', error);
@@ -430,14 +441,15 @@ router.put('/:id', authMiddleware, (req, res) => {
  * DELETE /api/orders/:id
  * إلغاء الطلب
  */
-router.delete('/:id', authMiddleware, (req, res) => {
+router.delete('/:id', authMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
 
-    const existing = db.prepare('SELECT * FROM orders WHERE id = ?').get(id);
-    if (!existing) {
+    const existingResult = await query('SELECT * FROM orders WHERE id = $1', [id]);
+    if (existingResult.rows.length === 0) {
       return res.status(404).json({ success: false, message: 'الطلب غير موجود' });
     }
+    const existing = existingResult.rows[0];
 
     if (existing.status === 'delivered') {
       return res.status(400).json({
@@ -446,7 +458,7 @@ router.delete('/:id', authMiddleware, (req, res) => {
       });
     }
 
-    db.prepare("UPDATE orders SET status = 'cancelled' WHERE id = ?").run(id);
+    await query("UPDATE orders SET status = 'cancelled' WHERE id = $1", [id]);
 
     res.json({
       success: true,

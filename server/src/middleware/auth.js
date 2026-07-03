@@ -1,13 +1,13 @@
-// التحقق من المصادقة - JWT Authentication Middleware
+// التحقق من المصادقة - JWT Authentication Middleware (PostgreSQL)
 const jwt = require('jsonwebtoken');
-const db = require('../config/database');
+const { query } = require('../config/database');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'laundry_smart_secret_key_2024';
 
 /**
  * التحقق من توكن JWT وإرفاق بيانات المستخدم بالطلب
  */
-function authMiddleware(req, res, next) {
+async function authMiddleware(req, res, next) {
   try {
     const authHeader = req.headers.authorization;
 
@@ -24,9 +24,12 @@ function authMiddleware(req, res, next) {
     const decoded = jwt.verify(token, JWT_SECRET);
 
     // التحقق من وجود المستخدم وأنه نشط
-    const user = db.prepare(
-      'SELECT id, name, email, role, is_active FROM users WHERE id = ?'
-    ).get(decoded.userId);
+    const result = await query(
+      'SELECT id, name, email, role, is_active FROM users WHERE id = $1',
+      [decoded.userId]
+    );
+
+    const user = result.rows[0];
 
     if (!user) {
       return res.status(401).json({

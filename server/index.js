@@ -1,9 +1,11 @@
-// خادم نظام إدارة المغسلة الذكي - Main Server File
+// خادم نظام إدارة المغسلة الذكي - Main Server File (PostgreSQL)
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const db = require('./src/config/database');
+const { testConnection, query } = require('./src/config/database');
+const { runPendingMigrations } = require('./src/migrations');
+const seedDatabase = require('./src/seed');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -42,24 +44,6 @@ app.use(express.urlencoded({ extended: true }));
 // مجلد لتخزين ملفات الـ QR أو الصور إذا لزم الأمر
 app.use('/public', express.static(path.join(__dirname, 'public')));
 
-// تشغيل seed تلقائي عند أول طلب (حل لمشكلة Railway ephemeral filesystem)
-let seeded = false;
-const seedDatabase = require('./src/seed');
-
-app.use((req, res, next) => {
-  if (!seeded) {
-    try {
-      console.log('🔄 Auto-seeding database on first request...');
-      seedDatabase();
-      seeded = true;
-      console.log('✅ Database seeding completed');
-    } catch (error) {
-      console.error('⚠️ Database seeding error:', error);
-    }
-  }
-  next();
-});
-
 // استيراد مسارات الـ API
 const authRouter = require('./src/routes/auth');
 const customersRouter = require('./src/routes/customers');
@@ -81,39 +65,44 @@ app.use('/api/dashboard', dashboardRouter);
 app.use('/api/users', usersRouter);
 
 // اختبار الاتصال بالخادم
-app.get('/api/health', (req, res) => {
+app.get('/api/health', async (req, res) => {
   console.log('🔍 Health check request received from:', req.ip, req.headers.origin);
   
-  // التحقق من وجود بيانات في قاعدة البيانات
-  const usersCount = db.prepare('SELECT COUNT(*) as count FROM users').get();
-  
-  res.json({ 
-    success: true, 
-    message: 'الخادم يعمل بنجاح وقاعدة البيانات متصلة',
-    usersCount: usersCount.count,
-    seeded: usersCount.count > 0
-  });
+  try {
+    // التحقق من وجود بيانات في قاعدة البيانات
+    const usersCount = await query('SELECT COUNT(*) as count FROM users');
+    
+    res.json({ 
+      success: true, 
+      message: 'الخادم يعمل بنجاح وقاعدة البيانات متصلة',
+      database: 'PostgreSQL',
+      usersCount: parseInt(usersCount.rows[0].count),
+      seeded: parseInt(usersCount.rows[0].count) > 0
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'الخادم يعمل لكن قاعدة البيانات غير متصلة',
+      error: error.message
+    });
+  }
 });
 
 // Endpoint لإعادة seed يدوياً (للطوارئ)
-app.post('/api/seed', (req, res) => {
+app.post('/api/seed', async (req, res) => {
   try {
     console.log('🔄 Manual seed requested');
     
-    // إعادة تعيين flag
-    seeded = false;
+    await seedDatabase();
     
-    seedDatabase();
-    seeded = true;
-    
-    const usersCount = db.prepare('SELECT COUNT(*) as count FROM users').get();
-    const users = db.prepare('SELECT id, name, email, role FROM users').all();
+    const usersCount = await query('SELECT COUNT(*) as count FROM users');
+    const users = await query('SELECT id, name, email, role FROM users');
     
     res.json({ 
       success: true, 
       message: 'تم تهيئة قاعدة البيانات بنجاح',
-      usersCount: usersCount.count,
-      users: users
+      usersCount: parseInt(usersCount.rows[0].count),
+      users: users.rows
     });
   } catch (error) {
     console.error('Seed error:', error);
@@ -126,13 +115,13 @@ app.post('/api/seed', (req, res) => {
 });
 
 // Endpoint للتحقق من المستخدمين الموجودين
-app.get('/api/debug/users', (req, res) => {
+app.get('/api/debug/users', async (req, res) => {
   try {
-    const users = db.prepare('SELECT id, name, email, role, is_active, created_at FROM users').all();
+    const users = await query('SELECT id, name, email, role, is_active, created_at FROM users');
     res.json({ 
       success: true, 
-      count: users.length,
-      users: users
+      count: users.rows.length,
+      users: users.rows
     });
   } catch (error) {
     res.status(500).json({ 
@@ -142,13 +131,91 @@ app.get('/api/debug/users', (req, res) => {
   }
 });
 
+// دالة تهيئة قاعدة البيانات
+async function initializeDatabase() {
+  console.log('\n🚀 Starting database initialization...\n');
+  
+  try {
+    // 1. اختبار الاتصال
+    console.log('1️⃣ Testing database connection...');
+    const connected = await testConnection();
+    if (!connected) {
+      throw new Error('Failed to connect to database');
+    }
+    
+    // 2. تشغيل migrations
+    console.log('\n2️⃣ Running database migrations...');
+    await runPendingMigrations();
+    
+    // 3. Seed البيانات الافتراضية
+    console.log('\n3️⃣ Seeding default data...');
+    await seedDatabase();
+    
+    console.log('\n✅ Database initialization completed successfully!\n');
+    return true;
+  } catch (error) {
+    console.error('\n❌ Database initialization failed:', error);
+    console.error('Stack:', error.stack);
+    
+    // في production، لا نوقف السيرفر حتى لو فشل الـ seed
+    if (process.env.NODE_ENV === 'production') {
+      console.log('⚠️  Continuing despite database initialization errors (production mode)');
+      return false;
+    }
+    
+    throw error;
+  }
+}
+
 // بدء تشغيل الخادم
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`✅ Server is running on port ${PORT}`);
-  console.log(`📡 API URL: http://localhost:${PORT}/api`);
-  console.log(`🌐 Network: http://0.0.0.0:${PORT}/api`);
-  console.log(`🔐 Default accounts:`);
-  console.log(`   Admin: admin@laundry.com / admin123`);
-  console.log(`   Cashier: cashier@laundry.com / cashier123`);
-  console.log(`   Worker: worker@laundry.com / worker123`);
+async function startServer() {
+  try {
+    // تهيئة قاعدة البيانات أولاً
+    await initializeDatabase();
+    
+    // ثم بدء الخادم
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log('╔═══════════════════════════════════════════════════════════╗');
+      console.log('║                                                           ║');
+      console.log('║       ✨ Smart Laundry Management System ✨              ║');
+      console.log('║                                                           ║');
+      console.log('╠═══════════════════════════════════════════════════════════╣');
+      console.log('║                                                           ║');
+      console.log(`║  ✅ Server Status: RUNNING                                ║`);
+      console.log(`║  🌐 Port: ${PORT.toString().padEnd(47)}║`);
+      console.log(`║  📡 Local: http://localhost:${PORT}/api`.padEnd(60) + '║');
+      console.log(`║  🗄️  Database: PostgreSQL                                 ║`);
+      console.log('║                                                           ║');
+      console.log('╠═══════════════════════════════════════════════════════════╣');
+      console.log('║                                                           ║');
+      console.log('║  🔐 Default Accounts:                                     ║');
+      console.log('║     👨‍💼 Admin: admin@laundry.com / admin123              ║');
+      console.log('║     👤 Cashier: cashier@laundry.com / cashier123         ║');
+      console.log('║     🔧 Worker: worker@laundry.com / worker123            ║');
+      console.log('║                                                           ║');
+      console.log('╚═══════════════════════════════════════════════════════════╝');
+      console.log('');
+    });
+  } catch (error) {
+    console.error('❌ Failed to start server:', error);
+    process.exit(1);
+  }
+}
+
+// معالجة إيقاف التشغيل بشكل آمن
+process.on('SIGTERM', async () => {
+  console.log('⚠️  SIGTERM signal received: closing server gracefully');
+  const { closePool } = require('./src/config/database');
+  await closePool();
+  process.exit(0);
 });
+
+process.on('SIGINT', async () => {
+  console.log('\n⚠️  SIGINT signal received: closing server gracefully');
+  const { closePool } = require('./src/config/database');
+  await closePool();
+  process.exit(0);
+});
+
+// بدء التشغيل
+startServer();

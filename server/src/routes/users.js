@@ -1,7 +1,7 @@
-// مسارات إدارة المستخدمين - User Management Routes (Admin Only)
+// مسارات إدارة المستخدمين - User Management Routes (PostgreSQL)
 const express = require('express');
 const bcrypt = require('bcryptjs');
-const db = require('../config/database');
+const { query } = require('../config/database');
 const authMiddleware = require('../middleware/auth');
 const authorizeRoles = require('../middleware/roles');
 
@@ -15,13 +15,13 @@ router.use(authorizeRoles('admin'));
  * GET /api/users
  * عرض جميع المستخدمين
  */
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   try {
-    const users = db.prepare(
+    const result = await query(
       'SELECT id, name, email, role, is_active, created_at FROM users ORDER BY created_at DESC'
-    ).all();
+    );
 
-    res.json({ success: true, data: users });
+    res.json({ success: true, data: result.rows });
   } catch (error) {
     console.error('List users error:', error);
     res.status(500).json({ success: false, message: 'خطأ في جلب المستخدمين' });
@@ -32,7 +32,7 @@ router.get('/', (req, res) => {
  * POST /api/users
  * إنشاء مستخدم جديد
  */
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
 
@@ -52,8 +52,8 @@ router.post('/', (req, res) => {
     }
 
     // التحقق من عدم وجود البريد مسبقاً
-    const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(email);
-    if (existing) {
+    const existingResult = await query('SELECT id FROM users WHERE email = $1', [email]);
+    if (existingResult.rows.length > 0) {
       return res.status(400).json({
         success: false,
         message: 'البريد الإلكتروني مسجل بالفعل'
@@ -61,20 +61,17 @@ router.post('/', (req, res) => {
     }
 
     // تشفير كلمة المرور
-    const password_hash = bcrypt.hashSync(password, 10);
+    const password_hash = await bcrypt.hash(password, 10);
 
-    const result = db.prepare(
-      'INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)'
-    ).run(name, email, password_hash, role);
-
-    const user = db.prepare(
-      'SELECT id, name, email, role, is_active, created_at FROM users WHERE id = ?'
-    ).get(result.lastInsertRowid);
+    const result = await query(
+      'INSERT INTO users (name, email, password_hash, role) VALUES ($1, $2, $3, $4) RETURNING id, name, email, role, is_active, created_at',
+      [name, email, password_hash, role]
+    );
 
     res.status(201).json({
       success: true,
       message: 'تم إنشاء المستخدم بنجاح',
-      data: user
+      data: result.rows[0]
     });
   } catch (error) {
     console.error('Create user error:', error);
@@ -86,23 +83,25 @@ router.post('/', (req, res) => {
  * PUT /api/users/:id
  * تحديث بيانات المستخدم
  */
-router.put('/:id', (req, res) => {
+router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const { name, email, password, role, is_active } = req.body;
 
-    const existing = db.prepare(
-      'SELECT * FROM users WHERE id = ?'
-    ).get(id);
-
-    if (!existing) {
+    const existingResult = await query('SELECT * FROM users WHERE id = $1', [id]);
+    if (existingResult.rows.length === 0) {
       return res.status(404).json({ success: false, message: 'المستخدم غير موجود' });
     }
 
+    const existing = existingResult.rows[0];
+
     // التحقق من عدم تكرار البريد
     if (email && email !== existing.email) {
-      const emailExists = db.prepare('SELECT id FROM users WHERE email = ? AND id != ?').get(email, id);
-      if (emailExists) {
+      const emailExistsResult = await query(
+        'SELECT id FROM users WHERE email = $1 AND id != $2',
+        [email, id]
+      );
+      if (emailExistsResult.rows.length > 0) {
         return res.status(400).json({
           success: false,
           message: 'البريد الإلكتروني مسجل بالفعل'
@@ -110,17 +109,31 @@ router.put('/:id', (req, res) => {
       }
     }
 
-    // بناء استعلام التحديث
+    // بناء استعلام التحديث الديناميكي
     const updateFields = [];
     const updateParams = [];
+    let paramCount = 1;
 
-    if (name) { updateFields.push('name = ?'); updateParams.push(name); }
-    if (email) { updateFields.push('email = ?'); updateParams.push(email); }
-    if (role) { updateFields.push('role = ?'); updateParams.push(role); }
-    if (is_active !== undefined) { updateFields.push('is_active = ?'); updateParams.push(is_active ? 1 : 0); }
+    if (name) {
+      updateFields.push(`name = $${paramCount++}`);
+      updateParams.push(name);
+    }
+    if (email) {
+      updateFields.push(`email = $${paramCount++}`);
+      updateParams.push(email);
+    }
+    if (role) {
+      updateFields.push(`role = $${paramCount++}`);
+      updateParams.push(role);
+    }
+    if (is_active !== undefined) {
+      updateFields.push(`is_active = $${paramCount++}`);
+      updateParams.push(is_active);
+    }
     if (password) {
-      updateFields.push('password_hash = ?');
-      updateParams.push(bcrypt.hashSync(password, 10));
+      updateFields.push(`password_hash = $${paramCount++}`);
+      const password_hash = await bcrypt.hash(password, 10);
+      updateParams.push(password_hash);
     }
 
     if (updateFields.length === 0) {
@@ -128,16 +141,19 @@ router.put('/:id', (req, res) => {
     }
 
     updateParams.push(id);
-    db.prepare(`UPDATE users SET ${updateFields.join(', ')} WHERE id = ?`).run(...updateParams);
+    const updateQuery = `
+      UPDATE users 
+      SET ${updateFields.join(', ')} 
+      WHERE id = $${paramCount}
+      RETURNING id, name, email, role, is_active, created_at
+    `;
 
-    const user = db.prepare(
-      'SELECT id, name, email, role, is_active, created_at FROM users WHERE id = ?'
-    ).get(id);
+    const result = await query(updateQuery, updateParams);
 
     res.json({
       success: true,
       message: 'تم تحديث المستخدم بنجاح',
-      data: user
+      data: result.rows[0]
     });
   } catch (error) {
     console.error('Update user error:', error);
@@ -149,7 +165,7 @@ router.put('/:id', (req, res) => {
  * DELETE /api/users/:id
  * تعطيل المستخدم (حذف ناعم)
  */
-router.delete('/:id', (req, res) => {
+router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -161,12 +177,12 @@ router.delete('/:id', (req, res) => {
       });
     }
 
-    const existing = db.prepare('SELECT * FROM users WHERE id = ?').get(id);
-    if (!existing) {
+    const existingResult = await query('SELECT * FROM users WHERE id = $1', [id]);
+    if (existingResult.rows.length === 0) {
       return res.status(404).json({ success: false, message: 'المستخدم غير موجود' });
     }
 
-    db.prepare('UPDATE users SET is_active = 0 WHERE id = ?').run(id);
+    await query('UPDATE users SET is_active = false WHERE id = $1', [id]);
 
     res.json({
       success: true,

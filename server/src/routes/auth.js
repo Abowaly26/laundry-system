@@ -1,8 +1,8 @@
-// مسارات المصادقة - Authentication Routes
+// مسارات المصادقة - Authentication Routes (PostgreSQL)
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const db = require('../config/database');
+const { query } = require('../config/database');
 const authMiddleware = require('../middleware/auth');
 
 const router = express.Router();
@@ -12,7 +12,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'laundry_smart_secret_key_2024';
  * POST /api/auth/login
  * تسجيل الدخول بالبريد وكلمة المرور
  */
-router.post('/login', (req, res) => {
+router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -25,9 +25,12 @@ router.post('/login', (req, res) => {
     }
 
     // البحث عن المستخدم
-    const user = db.prepare(
-      'SELECT * FROM users WHERE email = ?'
-    ).get(email);
+    const result = await query(
+      'SELECT * FROM users WHERE email = $1',
+      [email]
+    );
+
+    const user = result.rows[0];
 
     if (!user) {
       return res.status(401).json({
@@ -45,7 +48,7 @@ router.post('/login', (req, res) => {
     }
 
     // التحقق من كلمة المرور
-    const isValidPassword = bcrypt.compareSync(password, user.password_hash);
+    const isValidPassword = await bcrypt.compare(password, user.password_hash);
     if (!isValidPassword) {
       return res.status(401).json({
         success: false,

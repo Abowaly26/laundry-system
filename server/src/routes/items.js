@@ -1,6 +1,6 @@
-// مسارات إدارة القطع - Item Status Management Routes
+// مسارات إدارة القطع - Item Status Management Routes (PostgreSQL)
 const express = require('express');
-const db = require('../config/database');
+const { query, transaction } = require('../config/database');
 const authMiddleware = require('../middleware/auth');
 
 const router = express.Router();
@@ -21,32 +21,54 @@ function getNextStatus(currentStatus) {
 
 /**
  * تحديث حالة الطلب بناءً على حالات القطع
- * عندما تصبح جميع القطع 'ready' -> الطلب 'ready'
- * عندما تصبح جميع القطع 'delivered' -> الطلب 'delivered'
  */
-function syncOrderStatus(orderId) {
-  const items = db.prepare(
-    'SELECT status FROM order_items WHERE order_id = ?'
-  ).all(orderId);
+async function syncOrderStatus(orderId, client = null) {
+  const executor = client || query;
+  
+  const itemsResult = await (client 
+    ? client.query('SELECT status FROM order_items WHERE order_id = $1', [orderId])
+    : query('SELECT status FROM order_items WHERE order_id = $1', [orderId])
+  );
 
-  if (items.length === 0) return;
+  if (itemsResult.rows.length === 0) return;
 
+  const items = itemsResult.rows;
   const allReady = items.every(i => i.status === 'ready' || i.status === 'delivered');
   const allDelivered = items.every(i => i.status === 'delivered');
 
   if (allDelivered) {
-    db.prepare(
-      "UPDATE orders SET status = 'delivered', delivered_at = datetime('now', 'localtime') WHERE id = ? AND status != 'delivered'"
-    ).run(orderId);
+    await (client
+      ? client.query(
+          "UPDATE orders SET status = 'delivered', delivered_at = CURRENT_TIMESTAMP WHERE id = $1 AND status != 'delivered'",
+          [orderId]
+        )
+      : query(
+          "UPDATE orders SET status = 'delivered', delivered_at = CURRENT_TIMESTAMP WHERE id = $1 AND status != 'delivered'",
+          [orderId]
+        )
+    );
   } else if (allReady) {
-    db.prepare(
-      "UPDATE orders SET status = 'ready' WHERE id = ? AND status NOT IN ('ready', 'delivered')"
-    ).run(orderId);
+    await (client
+      ? client.query(
+          "UPDATE orders SET status = 'ready' WHERE id = $1 AND status NOT IN ('ready', 'delivered')",
+          [orderId]
+        )
+      : query(
+          "UPDATE orders SET status = 'ready' WHERE id = $1 AND status NOT IN ('ready', 'delivered')",
+          [orderId]
+        )
+    );
   } else {
-    // إذا كانت بعض القطع قيد المعالجة
-    db.prepare(
-      "UPDATE orders SET status = 'processing' WHERE id = ? AND status = 'pending'"
-    ).run(orderId);
+    await (client
+      ? client.query(
+          "UPDATE orders SET status = 'processing' WHERE id = $1 AND status = 'pending'",
+          [orderId]
+        )
+      : query(
+          "UPDATE orders SET status = 'processing' WHERE id = $1 AND status = 'pending'",
+          [orderId]
+        )
+    );
   }
 }
 
@@ -54,11 +76,11 @@ function syncOrderStatus(orderId) {
  * GET /api/items/scan/:qrCode
  * جلب قطعة بواسطة رمز QR
  */
-router.get('/scan/:qrCode', authMiddleware, (req, res) => {
+router.get('/scan/:qrCode', authMiddleware, async (req, res) => {
   try {
     const { qrCode } = req.params;
 
-    const item = db.prepare(`
+    const itemResult = await query(`
       SELECT oi.*, 
         s.name_ar as service_name, s.name as service_name_en,
         o.id as order_id, o.status as order_status,
@@ -67,24 +89,25 @@ router.get('/scan/:qrCode', authMiddleware, (req, res) => {
       JOIN services s ON oi.service_id = s.id
       JOIN orders o ON oi.order_id = o.id
       JOIN customers c ON o.customer_id = c.id
-      WHERE oi.qr_code = ?
-    `).get(qrCode);
+      WHERE oi.qr_code = $1
+    `, [qrCode]);
 
-    if (!item) {
+    if (itemResult.rows.length === 0) {
       return res.status(404).json({
         success: false,
         message: 'القطعة غير موجودة'
       });
     }
+    const item = itemResult.rows[0];
 
     // جلب سجل الحالات
-    const statusLog = db.prepare(`
+    const statusLogResult = await query(`
       SELECT isl.*, u.name as updated_by_name
       FROM item_status_log isl
       LEFT JOIN users u ON isl.updated_by = u.id
-      WHERE isl.item_id = ?
+      WHERE isl.item_id = $1
       ORDER BY isl.created_at DESC
-    `).all(item.id);
+    `, [item.id]);
 
     const nextStatus = getNextStatus(item.status);
 
@@ -93,7 +116,7 @@ router.get('/scan/:qrCode', authMiddleware, (req, res) => {
       data: {
         ...item,
         next_status: nextStatus,
-        status_log: statusLog
+        status_log: statusLogResult.rows
       }
     });
   } catch (error) {
@@ -106,20 +129,22 @@ router.get('/scan/:qrCode', authMiddleware, (req, res) => {
  * PUT /api/items/scan/:qrCode/advance
  * تقديم حالة القطعة للخطوة التالية عبر QR
  */
-router.put('/scan/:qrCode/advance', authMiddleware, (req, res) => {
+router.put('/scan/:qrCode/advance', authMiddleware, async (req, res) => {
   try {
     const { qrCode } = req.params;
 
-    const item = db.prepare(
-      'SELECT * FROM order_items WHERE qr_code = ?'
-    ).get(qrCode);
+    const itemResult = await query(
+      'SELECT * FROM order_items WHERE qr_code = $1',
+      [qrCode]
+    );
 
-    if (!item) {
+    if (itemResult.rows.length === 0) {
       return res.status(404).json({
         success: false,
         message: 'القطعة غير موجودة'
       });
     }
+    const item = itemResult.rows[0];
 
     const nextStatus = getNextStatus(item.status);
     if (!nextStatus) {
@@ -130,39 +155,39 @@ router.put('/scan/:qrCode/advance', authMiddleware, (req, res) => {
     }
 
     // تحديث الحالة داخل معاملة
-    const advanceItem = db.transaction(() => {
+    await transaction(async (client) => {
       // تحديث حالة القطعة
-      db.prepare(
-        "UPDATE order_items SET status = ?, updated_at = datetime('now', 'localtime') WHERE id = ?"
-      ).run(nextStatus, item.id);
+      await client.query(
+        "UPDATE order_items SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2",
+        [nextStatus, item.id]
+      );
 
       // تسجيل التغيير
-      db.prepare(
-        'INSERT INTO item_status_log (item_id, old_status, new_status, updated_by) VALUES (?, ?, ?, ?)'
-      ).run(item.id, item.status, nextStatus, req.user.id);
+      await client.query(
+        'INSERT INTO item_status_log (item_id, old_status, new_status, updated_by) VALUES ($1, $2, $3, $4)',
+        [item.id, item.status, nextStatus, req.user.id]
+      );
 
       // مزامنة حالة الطلب
-      syncOrderStatus(item.order_id);
+      await syncOrderStatus(item.order_id, client);
     });
 
-    advanceItem();
-
     // جلب البيانات المحدثة
-    const updatedItem = db.prepare(`
+    const updatedItemResult = await query(`
       SELECT oi.*, s.name_ar as service_name,
         o.status as order_status, c.name as customer_name
       FROM order_items oi
       JOIN services s ON oi.service_id = s.id
       JOIN orders o ON oi.order_id = o.id
       JOIN customers c ON o.customer_id = c.id
-      WHERE oi.id = ?
-    `).get(item.id);
+      WHERE oi.id = $1
+    `, [item.id]);
 
     res.json({
       success: true,
       message: `تم تحديث الحالة إلى: ${nextStatus}`,
       data: {
-        ...updatedItem,
+        ...updatedItemResult.rows[0],
         previous_status: item.status,
         next_status: getNextStatus(nextStatus)
       }
@@ -177,9 +202,9 @@ router.put('/scan/:qrCode/advance', authMiddleware, (req, res) => {
  * GET /api/items/:id
  * جلب تفاصيل قطعة واحدة
  */
-router.get('/:id', authMiddleware, (req, res) => {
+router.get('/:id', authMiddleware, async (req, res) => {
   try {
-    const item = db.prepare(`
+    const itemResult = await query(`
       SELECT oi.*, 
         s.name_ar as service_name, s.name as service_name_en,
         o.id as order_id, o.status as order_status,
@@ -188,24 +213,25 @@ router.get('/:id', authMiddleware, (req, res) => {
       JOIN services s ON oi.service_id = s.id
       JOIN orders o ON oi.order_id = o.id
       JOIN customers c ON o.customer_id = c.id
-      WHERE oi.id = ?
-    `).get(req.params.id);
+      WHERE oi.id = $1
+    `, [req.params.id]);
 
-    if (!item) {
+    if (itemResult.rows.length === 0) {
       return res.status(404).json({
         success: false,
         message: 'القطعة غير موجودة'
       });
     }
+    const item = itemResult.rows[0];
 
     // جلب سجل الحالات
-    const statusLog = db.prepare(`
+    const statusLogResult = await query(`
       SELECT isl.*, u.name as updated_by_name
       FROM item_status_log isl
       LEFT JOIN users u ON isl.updated_by = u.id
-      WHERE isl.item_id = ?
+      WHERE isl.item_id = $1
       ORDER BY isl.created_at DESC
-    `).all(item.id);
+    `, [item.id]);
 
     const nextStatus = getNextStatus(item.status);
 
@@ -214,7 +240,7 @@ router.get('/:id', authMiddleware, (req, res) => {
       data: {
         ...item,
         next_status: nextStatus,
-        status_log: statusLog
+        status_log: statusLogResult.rows
       }
     });
   } catch (error) {
@@ -225,25 +251,25 @@ router.get('/:id', authMiddleware, (req, res) => {
 
 /**
  * PUT /api/items/:id/status
- * تحديث حالة القطعة (الخطوة التالية في سير العمل)
+ * تحديث حالة القطعة
  */
-router.put('/:id/status', authMiddleware, (req, res) => {
+router.put('/:id/status', authMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
 
-    const item = db.prepare('SELECT * FROM order_items WHERE id = ?').get(id);
-    if (!item) {
+    const itemResult = await query('SELECT * FROM order_items WHERE id = $1', [id]);
+    if (itemResult.rows.length === 0) {
       return res.status(404).json({
         success: false,
         message: 'القطعة غير موجودة'
       });
     }
+    const item = itemResult.rows[0];
 
     // التحقق من أن الحالة الجديدة صحيحة
     let newStatus = status;
     if (!newStatus) {
-      // إذا لم يتم تحديد حالة، انتقل للخطوة التالية
       newStatus = getNextStatus(item.status);
       if (!newStatus) {
         return res.status(400).json({
@@ -261,36 +287,36 @@ router.put('/:id/status', authMiddleware, (req, res) => {
     }
 
     // تحديث الحالة داخل معاملة
-    const updateStatus = db.transaction(() => {
-      db.prepare(
-        "UPDATE order_items SET status = ?, updated_at = datetime('now', 'localtime') WHERE id = ?"
-      ).run(newStatus, id);
+    await transaction(async (client) => {
+      await client.query(
+        "UPDATE order_items SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2",
+        [newStatus, id]
+      );
 
       // تسجيل التغيير
-      db.prepare(
-        'INSERT INTO item_status_log (item_id, old_status, new_status, updated_by) VALUES (?, ?, ?, ?)'
-      ).run(id, item.status, newStatus, req.user.id);
+      await client.query(
+        'INSERT INTO item_status_log (item_id, old_status, new_status, updated_by) VALUES ($1, $2, $3, $4)',
+        [id, item.status, newStatus, req.user.id]
+      );
 
       // مزامنة حالة الطلب
-      syncOrderStatus(item.order_id);
+      await syncOrderStatus(item.order_id, client);
     });
 
-    updateStatus();
-
-    const updatedItem = db.prepare(`
+    const updatedItemResult = await query(`
       SELECT oi.*, s.name_ar as service_name,
         o.status as order_status
       FROM order_items oi
       JOIN services s ON oi.service_id = s.id
       JOIN orders o ON oi.order_id = o.id
-      WHERE oi.id = ?
-    `).get(id);
+      WHERE oi.id = $1
+    `, [id]);
 
     res.json({
       success: true,
       message: `تم تحديث الحالة من ${item.status} إلى ${newStatus}`,
       data: {
-        ...updatedItem,
+        ...updatedItemResult.rows[0],
         previous_status: item.status,
         next_status: getNextStatus(newStatus)
       }

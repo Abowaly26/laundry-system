@@ -1,6 +1,6 @@
 // مسارات الخدمات - Service Routes
 const express = require('express');
-const db = require('../config/database');
+const { query } = require('../config/database');
 const authMiddleware = require('../middleware/auth');
 const authorizeRoles = require('../middleware/roles');
 
@@ -10,19 +10,19 @@ const router = express.Router();
  * GET /api/services
  * عرض جميع الخدمات النشطة
  */
-router.get('/', authMiddleware, (req, res) => {
+router.get('/', authMiddleware, async (req, res) => {
   try {
     const { all } = req.query;
     
     // إذا طلب المدير عرض الكل بما فيها غير النشطة
-    let services;
+    let result;
     if (all === 'true' && req.user.role === 'admin') {
-      services = db.prepare('SELECT * FROM services ORDER BY created_at DESC').all();
+      result = await query('SELECT * FROM services ORDER BY created_at DESC');
     } else {
-      services = db.prepare('SELECT * FROM services WHERE is_active = 1 ORDER BY name_ar ASC').all();
+      result = await query('SELECT * FROM services WHERE is_active = true ORDER BY name_ar ASC');
     }
 
-    res.json({ success: true, data: services });
+    res.json({ success: true, data: result.rows });
   } catch (error) {
     console.error('List services error:', error);
     res.status(500).json({ success: false, message: 'خطأ في جلب الخدمات' });
@@ -33,13 +33,13 @@ router.get('/', authMiddleware, (req, res) => {
  * GET /api/services/:id
  * عرض خدمة واحدة
  */
-router.get('/:id', authMiddleware, (req, res) => {
+router.get('/:id', authMiddleware, async (req, res) => {
   try {
-    const service = db.prepare('SELECT * FROM services WHERE id = ?').get(req.params.id);
-    if (!service) {
+    const result = await query('SELECT * FROM services WHERE id = $1', [req.params.id]);
+    if (result.rows.length === 0) {
       return res.status(404).json({ success: false, message: 'الخدمة غير موجودة' });
     }
-    res.json({ success: true, data: service });
+    res.json({ success: true, data: result.rows[0] });
   } catch (error) {
     console.error('Get service error:', error);
     res.status(500).json({ success: false, message: 'خطأ في جلب الخدمة' });
@@ -50,7 +50,7 @@ router.get('/:id', authMiddleware, (req, res) => {
  * POST /api/services
  * إنشاء خدمة جديدة (المدير فقط)
  */
-router.post('/', authMiddleware, authorizeRoles('admin'), (req, res) => {
+router.post('/', authMiddleware, authorizeRoles('admin'), async (req, res) => {
   try {
     const { name, name_ar, price, unit, estimated_hours } = req.body;
 
@@ -61,11 +61,12 @@ router.post('/', authMiddleware, authorizeRoles('admin'), (req, res) => {
       });
     }
 
-    const result = db.prepare(
-      'INSERT INTO services (name, name_ar, price, unit, estimated_hours) VALUES (?, ?, ?, ?, ?)'
-    ).run(name, name_ar, price, unit || 'piece', estimated_hours || 24);
+    const result = await query(
+      'INSERT INTO services (name, name_ar, price, unit, estimated_hours) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+      [name, name_ar, price, unit || 'piece', estimated_hours || 24]
+    );
 
-    const service = db.prepare('SELECT * FROM services WHERE id = ?').get(result.lastInsertRowid);
+    const service = result.rows[0];
 
     res.status(201).json({
       success: true,
@@ -82,31 +83,33 @@ router.post('/', authMiddleware, authorizeRoles('admin'), (req, res) => {
  * PUT /api/services/:id
  * تحديث خدمة (المدير فقط)
  */
-router.put('/:id', authMiddleware, authorizeRoles('admin'), (req, res) => {
+router.put('/:id', authMiddleware, authorizeRoles('admin'), async (req, res) => {
   try {
     const { id } = req.params;
     const { name, name_ar, price, unit, estimated_hours, is_active } = req.body;
 
-    const existing = db.prepare('SELECT * FROM services WHERE id = ?').get(id);
-    if (!existing) {
+    const existingResult = await query('SELECT * FROM services WHERE id = $1', [id]);
+    if (existingResult.rows.length === 0) {
       return res.status(404).json({ success: false, message: 'الخدمة غير موجودة' });
     }
+    const existing = existingResult.rows[0];
 
-    db.prepare(`
+    await query(`
       UPDATE services 
-      SET name = ?, name_ar = ?, price = ?, unit = ?, estimated_hours = ?, is_active = ?
-      WHERE id = ?
-    `).run(
+      SET name = $1, name_ar = $2, price = $3, unit = $4, estimated_hours = $5, is_active = $6
+      WHERE id = $7
+    `, [
       name || existing.name,
       name_ar || existing.name_ar,
       price !== undefined ? price : existing.price,
       unit || existing.unit,
       estimated_hours || existing.estimated_hours,
-      is_active !== undefined ? (is_active ? 1 : 0) : existing.is_active,
+      is_active !== undefined ? is_active : existing.is_active,
       id
-    );
+    ]);
 
-    const service = db.prepare('SELECT * FROM services WHERE id = ?').get(id);
+    const serviceResult = await query('SELECT * FROM services WHERE id = $1', [id]);
+    const service = serviceResult.rows[0];
 
     res.json({
       success: true,
@@ -123,17 +126,17 @@ router.put('/:id', authMiddleware, authorizeRoles('admin'), (req, res) => {
  * DELETE /api/services/:id
  * حذف ناعم للخدمة (تعطيل) - المدير فقط
  */
-router.delete('/:id', authMiddleware, authorizeRoles('admin'), (req, res) => {
+router.delete('/:id', authMiddleware, authorizeRoles('admin'), async (req, res) => {
   try {
     const { id } = req.params;
 
-    const existing = db.prepare('SELECT * FROM services WHERE id = ?').get(id);
-    if (!existing) {
+    const existingResult = await query('SELECT * FROM services WHERE id = $1', [id]);
+    if (existingResult.rows.length === 0) {
       return res.status(404).json({ success: false, message: 'الخدمة غير موجودة' });
     }
 
     // حذف ناعم - تعطيل الخدمة فقط
-    db.prepare('UPDATE services SET is_active = 0 WHERE id = ?').run(id);
+    await query('UPDATE services SET is_active = false WHERE id = $1', [id]);
 
     res.json({
       success: true,

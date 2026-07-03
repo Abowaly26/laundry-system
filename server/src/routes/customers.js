@@ -1,6 +1,6 @@
 // مسارات العملاء - Customer Routes
 const express = require('express');
-const db = require('../config/database');
+const { query } = require('../config/database');
 const authMiddleware = require('../middleware/auth');
 
 const router = express.Router();
@@ -13,7 +13,7 @@ router.use(authMiddleware);
  * البحث التلقائي عن العملاء (autocomplete)
  * يجب أن يكون قبل /:id لتجنب التعارض
  */
-router.get('/search', (req, res) => {
+router.get('/search', async (req, res) => {
   try {
     const { q } = req.query;
     if (!q || q.trim().length === 0) {
@@ -21,15 +21,15 @@ router.get('/search', (req, res) => {
     }
 
     const searchTerm = `%${q.trim()}%`;
-    const customers = db.prepare(`
+    const result = await query(`
       SELECT id, name, phone, address
       FROM customers
-      WHERE name LIKE ? OR phone LIKE ?
+      WHERE name LIKE $1 OR phone LIKE $2
       ORDER BY name ASC
       LIMIT 10
-    `).all(searchTerm, searchTerm);
+    `, [searchTerm, searchTerm]);
 
-    res.json({ success: true, data: customers });
+    res.json({ success: true, data: result.rows });
   } catch (error) {
     console.error('Customer search error:', error);
     res.status(500).json({ success: false, message: 'خطأ في البحث عن العملاء' });
@@ -40,31 +40,35 @@ router.get('/search', (req, res) => {
  * GET /api/customers
  * عرض جميع العملاء مع إمكانية البحث
  */
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const { search, page = 1, limit = 50 } = req.query;
     const offset = (parseInt(page) - 1) * parseInt(limit);
 
-    let query = 'SELECT * FROM customers';
+    let sqlQuery = 'SELECT * FROM customers';
     let countQuery = 'SELECT COUNT(*) as total FROM customers';
     const params = [];
 
     if (search && search.trim()) {
       const searchTerm = `%${search.trim()}%`;
-      const whereClause = ' WHERE name LIKE ? OR phone LIKE ?';
-      query += whereClause;
+      const whereClause = ' WHERE name LIKE $1 OR phone LIKE $2';
+      sqlQuery += whereClause;
       countQuery += whereClause;
       params.push(searchTerm, searchTerm);
     }
 
-    query += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
+    const limitParam = params.length + 1;
+    const offsetParam = params.length + 2;
+    sqlQuery += ` ORDER BY created_at DESC LIMIT $${limitParam} OFFSET $${offsetParam}`;
 
-    const total = db.prepare(countQuery).get(...params).total;
-    const customers = db.prepare(query).all(...params, parseInt(limit), offset);
+    const countResult = await query(countQuery, params);
+    const total = parseInt(countResult.rows[0].total);
+    
+    const customersResult = await query(sqlQuery, [...params, parseInt(limit), offset]);
 
     res.json({
       success: true,
-      data: customers,
+      data: customersResult.rows,
       pagination: {
         total,
         page: parseInt(page),
@@ -82,27 +86,28 @@ router.get('/', (req, res) => {
  * GET /api/customers/:id
  * عرض عميل واحد مع سجل طلباته
  */
-router.get('/:id', (req, res) => {
+router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
 
-    const customer = db.prepare('SELECT * FROM customers WHERE id = ?').get(id);
-    if (!customer) {
+    const customerResult = await query('SELECT * FROM customers WHERE id = $1', [id]);
+    if (customerResult.rows.length === 0) {
       return res.status(404).json({ success: false, message: 'العميل غير موجود' });
     }
+    const customer = customerResult.rows[0];
 
     // جلب طلبات العميل
-    const orders = db.prepare(`
+    const ordersResult = await query(`
       SELECT o.*, 
         (SELECT COUNT(*) FROM order_items WHERE order_id = o.id) as items_count
       FROM orders o
-      WHERE o.customer_id = ?
+      WHERE o.customer_id = $1
       ORDER BY o.created_at DESC
-    `).all(id);
+    `, [id]);
 
     res.json({
       success: true,
-      data: { ...customer, orders }
+      data: { ...customer, orders: ordersResult.rows }
     });
   } catch (error) {
     console.error('Get customer error:', error);
@@ -114,7 +119,7 @@ router.get('/:id', (req, res) => {
  * POST /api/customers
  * إنشاء عميل جديد
  */
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   try {
     const { name, phone, address } = req.body;
 
@@ -125,11 +130,12 @@ router.post('/', (req, res) => {
       });
     }
 
-    const result = db.prepare(
-      'INSERT INTO customers (name, phone, address) VALUES (?, ?, ?)'
-    ).run(name, phone, address || '');
+    const result = await query(
+      'INSERT INTO customers (name, phone, address) VALUES ($1, $2, $3) RETURNING *',
+      [name, phone, address || '']
+    );
 
-    const customer = db.prepare('SELECT * FROM customers WHERE id = ?').get(result.lastInsertRowid);
+    const customer = result.rows[0];
 
     res.status(201).json({
       success: true,
@@ -146,26 +152,29 @@ router.post('/', (req, res) => {
  * PUT /api/customers/:id
  * تحديث بيانات العميل
  */
-router.put('/:id', (req, res) => {
+router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const { name, phone, address } = req.body;
 
-    const existing = db.prepare('SELECT * FROM customers WHERE id = ?').get(id);
-    if (!existing) {
+    const existingResult = await query('SELECT * FROM customers WHERE id = $1', [id]);
+    if (existingResult.rows.length === 0) {
       return res.status(404).json({ success: false, message: 'العميل غير موجود' });
     }
+    const existing = existingResult.rows[0];
 
-    db.prepare(
-      'UPDATE customers SET name = ?, phone = ?, address = ? WHERE id = ?'
-    ).run(
-      name || existing.name,
-      phone || existing.phone,
-      address !== undefined ? address : existing.address,
-      id
+    await query(
+      'UPDATE customers SET name = $1, phone = $2, address = $3 WHERE id = $4',
+      [
+        name || existing.name,
+        phone || existing.phone,
+        address !== undefined ? address : existing.address,
+        id
+      ]
     );
 
-    const customer = db.prepare('SELECT * FROM customers WHERE id = ?').get(id);
+    const customerResult = await query('SELECT * FROM customers WHERE id = $1', [id]);
+    const customer = customerResult.rows[0];
 
     res.json({
       success: true,
@@ -182,28 +191,29 @@ router.put('/:id', (req, res) => {
  * DELETE /api/customers/:id
  * حذف العميل
  */
-router.delete('/:id', (req, res) => {
+router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;
 
-    const existing = db.prepare('SELECT * FROM customers WHERE id = ?').get(id);
-    if (!existing) {
+    const existingResult = await query('SELECT * FROM customers WHERE id = $1', [id]);
+    if (existingResult.rows.length === 0) {
       return res.status(404).json({ success: false, message: 'العميل غير موجود' });
     }
 
     // التحقق من عدم وجود طلبات نشطة
-    const activeOrders = db.prepare(
-      "SELECT COUNT(*) as count FROM orders WHERE customer_id = ? AND status NOT IN ('delivered', 'cancelled')"
-    ).get(id);
+    const activeOrdersResult = await query(
+      "SELECT COUNT(*) as count FROM orders WHERE customer_id = $1 AND status NOT IN ('delivered', 'cancelled')",
+      [id]
+    );
 
-    if (activeOrders.count > 0) {
+    if (parseInt(activeOrdersResult.rows[0].count) > 0) {
       return res.status(400).json({
         success: false,
         message: 'لا يمكن حذف العميل لوجود طلبات نشطة'
       });
     }
 
-    db.prepare('DELETE FROM customers WHERE id = ?').run(id);
+    await query('DELETE FROM customers WHERE id = $1', [id]);
 
     res.json({
       success: true,

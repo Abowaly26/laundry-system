@@ -1,6 +1,6 @@
-// مسارات المدفوعات - Payment Routes
+// مسارات المدفوعات - Payment Routes (PostgreSQL)
 const express = require('express');
-const db = require('../config/database');
+const { query, transaction } = require('../config/database');
 const authMiddleware = require('../middleware/auth');
 
 const router = express.Router();
@@ -12,38 +12,41 @@ router.use(authMiddleware);
  * GET /api/payments
  * عرض جميع المدفوعات مع فلاتر
  */
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const { order_id, method, date_from, date_to, page = 1, limit = 50 } = req.query;
     const offset = (parseInt(page) - 1) * parseInt(limit);
 
     let conditions = [];
     let params = [];
+    let paramCount = 1;
 
     if (order_id) {
-      conditions.push('p.order_id = ?');
+      conditions.push(`p.order_id = $${paramCount++}`);
       params.push(order_id);
     }
     if (method) {
-      conditions.push('p.method = ?');
+      conditions.push(`p.method = $${paramCount++}`);
       params.push(method);
     }
     if (date_from) {
-      conditions.push('p.created_at >= ?');
+      conditions.push(`p.created_at >= $${paramCount++}`);
       params.push(date_from);
     }
     if (date_to) {
-      conditions.push('p.created_at <= ?');
+      conditions.push(`p.created_at <= $${paramCount++}`);
       params.push(date_to + ' 23:59:59');
     }
 
     const whereClause = conditions.length > 0 ? 'WHERE ' + conditions.join(' AND ') : '';
 
-    const total = db.prepare(
-      `SELECT COUNT(*) as total FROM payments p ${whereClause}`
-    ).get(...params).total;
+    const totalResult = await query(
+      `SELECT COUNT(*) as total FROM payments p ${whereClause}`,
+      params
+    );
+    const total = parseInt(totalResult.rows[0].total);
 
-    const payments = db.prepare(`
+    const paymentsResult = await query(`
       SELECT p.*, 
         o.total_amount as order_total,
         c.name as customer_name, c.phone as customer_phone,
@@ -54,12 +57,12 @@ router.get('/', (req, res) => {
       LEFT JOIN users u ON p.created_by = u.id
       ${whereClause}
       ORDER BY p.created_at DESC
-      LIMIT ? OFFSET ?
-    `).all(...params, parseInt(limit), offset);
+      LIMIT $${paramCount++} OFFSET $${paramCount}
+    `, [...params, parseInt(limit), offset]);
 
     res.json({
       success: true,
-      data: payments,
+      data: paymentsResult.rows,
       pagination: {
         total,
         page: parseInt(page),
@@ -77,31 +80,33 @@ router.get('/', (req, res) => {
  * GET /api/payments/order/:orderId
  * عرض مدفوعات طلب محدد
  */
-router.get('/order/:orderId', (req, res) => {
+router.get('/order/:orderId', async (req, res) => {
   try {
     const { orderId } = req.params;
 
-    const order = db.prepare(
-      'SELECT id, total_amount, paid_amount, remaining_amount FROM orders WHERE id = ?'
-    ).get(orderId);
+    const orderResult = await query(
+      'SELECT id, total_amount, paid_amount, remaining_amount FROM orders WHERE id = $1',
+      [orderId]
+    );
 
-    if (!order) {
+    if (orderResult.rows.length === 0) {
       return res.status(404).json({ success: false, message: 'الطلب غير موجود' });
     }
+    const order = orderResult.rows[0];
 
-    const payments = db.prepare(`
+    const paymentsResult = await query(`
       SELECT p.*, u.name as created_by_name
       FROM payments p
       LEFT JOIN users u ON p.created_by = u.id
-      WHERE p.order_id = ?
+      WHERE p.order_id = $1
       ORDER BY p.created_at DESC
-    `).all(orderId);
+    `, [orderId]);
 
     res.json({
       success: true,
       data: {
         order_summary: order,
-        payments
+        payments: paymentsResult.rows
       }
     });
   } catch (error) {
@@ -114,7 +119,7 @@ router.get('/order/:orderId', (req, res) => {
  * POST /api/payments
  * إنشاء دفعة جديدة لطلب
  */
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   try {
     const { order_id, amount, method, type } = req.body;
 
@@ -125,10 +130,11 @@ router.post('/', (req, res) => {
       });
     }
 
-    const order = db.prepare('SELECT * FROM orders WHERE id = ?').get(order_id);
-    if (!order) {
+    const orderResult = await query('SELECT * FROM orders WHERE id = $1', [order_id]);
+    if (orderResult.rows.length === 0) {
       return res.status(404).json({ success: false, message: 'الطلب غير موجود' });
     }
+    const order = orderResult.rows[0];
 
     if (order.status === 'cancelled') {
       return res.status(400).json({
@@ -139,7 +145,7 @@ router.post('/', (req, res) => {
 
     // التحقق من عدم تجاوز المبلغ الإجمالي
     const parsedAmount = parseFloat(amount);
-    if (parsedAmount > order.remaining_amount) {
+    if (parsedAmount > parseFloat(order.remaining_amount)) {
       return res.status(400).json({
         success: false,
         message: `المبلغ المتبقي هو ${order.remaining_amount} ر.س فقط`
@@ -148,48 +154,51 @@ router.post('/', (req, res) => {
 
     // تحديد نوع الدفعة تلقائياً
     let paymentType = type || 'balance';
-    const newPaidAmount = order.paid_amount + parsedAmount;
-    if (newPaidAmount >= order.total_amount) {
-      paymentType = order.paid_amount === 0 ? 'full' : 'balance';
-    } else if (order.paid_amount === 0) {
+    const newPaidAmount = parseFloat(order.paid_amount) + parsedAmount;
+    if (newPaidAmount >= parseFloat(order.total_amount)) {
+      paymentType = parseFloat(order.paid_amount) === 0 ? 'full' : 'balance';
+    } else if (parseFloat(order.paid_amount) === 0) {
       paymentType = 'deposit';
     }
 
     // إنشاء الدفعة وتحديث الطلب داخل معاملة
-    const createPayment = db.transaction(() => {
-      const result = db.prepare(`
+    const result = await transaction(async (client) => {
+      const paymentResult = await client.query(`
         INSERT INTO payments (order_id, amount, method, type, created_by)
-        VALUES (?, ?, ?, ?, ?)
-      `).run(order_id, parsedAmount, method || 'cash', paymentType, req.user.id);
+        VALUES ($1, $2, $3, $4, $5)
+        RETURNING id
+      `, [order_id, parsedAmount, method || 'cash', paymentType, req.user.id]);
+
+      const paymentId = paymentResult.rows[0].id;
 
       // تحديث المبالغ في الطلب
-      const newRemaining = order.total_amount - newPaidAmount;
-      db.prepare(
-        'UPDATE orders SET paid_amount = ?, remaining_amount = ? WHERE id = ?'
-      ).run(newPaidAmount, newRemaining, order_id);
+      const newRemaining = parseFloat(order.total_amount) - newPaidAmount;
+      await client.query(
+        'UPDATE orders SET paid_amount = $1, remaining_amount = $2 WHERE id = $3',
+        [newPaidAmount, newRemaining, order_id]
+      );
 
-      return result.lastInsertRowid;
+      return paymentId;
     });
 
-    const paymentId = createPayment();
-
-    const payment = db.prepare(`
+    const paymentResult = await query(`
       SELECT p.*, u.name as created_by_name
       FROM payments p
       LEFT JOIN users u ON p.created_by = u.id
-      WHERE p.id = ?
-    `).get(paymentId);
+      WHERE p.id = $1
+    `, [result]);
 
-    const updatedOrder = db.prepare(
-      'SELECT total_amount, paid_amount, remaining_amount FROM orders WHERE id = ?'
-    ).get(order_id);
+    const updatedOrderResult = await query(
+      'SELECT total_amount, paid_amount, remaining_amount FROM orders WHERE id = $1',
+      [order_id]
+    );
 
     res.status(201).json({
       success: true,
       message: 'تم تسجيل الدفعة بنجاح',
       data: {
-        payment,
-        order_summary: updatedOrder
+        payment: paymentResult.rows[0],
+        order_summary: updatedOrderResult.rows[0]
       }
     });
   } catch (error) {
