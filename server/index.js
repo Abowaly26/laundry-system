@@ -68,9 +68,24 @@ app.get('/api/health', (req, res) => {
   res.json({ success: true, message: 'الخادم يعمل بنجاح وقاعدة البيانات متصلة' });
 });
 
+// تشغيل seed في كل مرة يبدأ فيها السيرفر (للأنظمة المؤقتة مثل Railway)
+const seedDatabase = require('./src/seed');
+try {
+  console.log('🔄 Starting database initialization...');
+  seedDatabase();
+  console.log('✅ Database seeding completed');
+} catch (error) {
+  console.log('⚠️ Database seeding error:', error.message);
+  // لا تُوقف السيرفر حتى لو فشل الـ seed
+}
+
 // بدء تشغيل الخادم
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server is running on port ${PORT}`);
-  console.log(`API URL: http://localhost:${PORT}/api`);
-  console.log(`Network: http://0.0.0.0:${PORT}/api`);
+  console.log(`✅ Server is running on port ${PORT}`);
+  console.log(`📡 API URL: http://localhost:${PORT}/api`);
+  console.log(`🌐 Network: http://0.0.0.0:${PORT}/api`);
+  console.log(`🔐 Default accounts:`);
+  console.log(`   Admin: admin@laundry.com / admin123`);
+  console.log(`   Cashier: cashier@laundry.com / cashier123`);
+  console.log(`   Worker: worker@laundry.com / worker123`);
 });
