@@ -77,3 +77,49 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Hide print content in screen mode */
+.hidden-print-container {
+  display: none;
+}
+
+/* Show print content when printing */
+@media print {
+  /* Hide everything except print content */
+  body > *:not(#root),
+  #root > * {
+    display: none !important;
+  }
+
+  /* Show hidden print container */
+  .hidden-print-container {
+    display: block !important;
+  }
+
+  /* Print styles for receipt */
+  body {
+    background: white;
+    margin: 0;
+    padding: 0;
+  }
+
+  .print-receipt {
+    display: block !important;
+    page-break-after: always;
+  }
+
+  /* QR Labels print styles */
+  .qr-labels-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10mm;
+    padding: 10mm;
+  }
+
+  .qr-label-card {
+    border: 1px solid #000;
+    padding: 5mm;
+    text-align: center;
+    page-break-inside: avoid;
+  }
+}
