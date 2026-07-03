@@ -104,15 +104,16 @@ export default function NewOrder() {
     const selectedService = services.find(s => s.id === parseInt(serviceId));
     const newItems = [...items];
     newItems[index].service_id = serviceId;
-    newItems[index].price = selectedService ? selectedService.price : 0;
+    newItems[index].price = selectedService ? parseFloat(selectedService.price) || 0 : 0;
     setItems(newItems);
 
     // تحديث ساعات التسليم المتوقعة بناءً على أطول مدة خدمة مطلوبة
     let maxHours = 12;
     newItems.forEach(item => {
       const serv = services.find(s => s.id === parseInt(item.service_id));
-      if (serv && serv.estimated_hours > maxHours) {
-        maxHours = serv.estimated_hours;
+      const estimatedHours = serv ? parseInt(serv.estimated_hours) || 0 : 0;
+      if (estimatedHours > maxHours) {
+        maxHours = estimatedHours;
       }
     });
     setExpectedHours(maxHours);
@@ -147,7 +148,7 @@ export default function NewOrder() {
   };
 
   // حساب الإجماليات
-  const totalAmount = items.reduce((sum, item) => sum + (item.price || 0), 0);
+  const totalAmount = items.reduce((sum, item) => sum + (parseFloat(item.price) || 0), 0);
   const remainingAmount = totalAmount - paidAmount;
 
   // حفظ الطلب وإرساله للخادم
