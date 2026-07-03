@@ -3,24 +3,33 @@ const bcrypt = require('bcryptjs');
 const db = require('./config/database');
 
 function seedDatabase() {
-  console.log('Starting database seeding...');
+  console.log('🌱 Starting database seeding...');
 
-  // 1. إضافة المستخدمين الافتراضيين
-  const adminPasswordHash = bcrypt.hashSync('admin123', 10);
-  const cashierPasswordHash = bcrypt.hashSync('cashier123', 10);
-  const workerPasswordHash = bcrypt.hashSync('worker123', 10);
+  try {
+    // التحقق من قاعدة البيانات أولاً
+    const usersCountBefore = db.prepare('SELECT COUNT(*) as count FROM users').get().count;
+    console.log(`👥 Current users count: ${usersCountBefore}`);
 
-  // إدخال المستخدمين إذا لم يكونوا موجودين
-  const insertUser = db.prepare(`
-    INSERT OR IGNORE INTO users (name, email, password_hash, role, is_active)
-    VALUES (?, ?, ?, ?, 1)
-  `);
+    // 1. إضافة المستخدمين الافتراضيين
+    const adminPasswordHash = bcrypt.hashSync('admin123', 10);
+    const cashierPasswordHash = bcrypt.hashSync('cashier123', 10);
+    const workerPasswordHash = bcrypt.hashSync('worker123', 10);
 
-  insertUser.run('صاحب المغسلة (المدير)', 'admin@laundry.com', adminPasswordHash, 'admin');
-  insertUser.run('موظف الاستقبال', 'cashier@laundry.com', cashierPasswordHash, 'cashier');
-  insertUser.run('عامل التشغيل', 'worker@laundry.com', workerPasswordHash, 'worker');
+    // إدخال المستخدمين إذا لم يكونوا موجودين
+    const insertUser = db.prepare(`
+      INSERT OR IGNORE INTO users (name, email, password_hash, role, is_active)
+      VALUES (?, ?, ?, ?, 1)
+    `);
 
-  console.log('Users seeded successfully.');
+    const admin = insertUser.run('صاحب المغسلة (المدير)', 'admin@laundry.com', adminPasswordHash, 'admin');
+    const cashier = insertUser.run('موظف الاستقبال', 'cashier@laundry.com', cashierPasswordHash, 'cashier');
+    const worker = insertUser.run('عامل التشغيل', 'worker@laundry.com', workerPasswordHash, 'worker');
+
+    const usersCountAfter = db.prepare('SELECT COUNT(*) as count FROM users').get().count;
+    console.log(`✅ Users seeded successfully. Total users: ${usersCountAfter}`);
+    console.log(`   - Admin inserted: ${admin.changes > 0}`);
+    console.log(`   - Cashier inserted: ${cashier.changes > 0}`);
+    console.log(`   - Worker inserted: ${worker.changes > 0}`);
 
   // 2. إضافة الخدمات الافتراضية
   const insertService = db.prepare(`
@@ -55,7 +64,12 @@ function seedDatabase() {
     console.log('Customers seeded successfully.');
   }
 
-  console.log('Database seeding finished successfully!');
+  console.log('✅ Database seeding finished successfully!');
+  return true;
+  } catch (error) {
+    console.error('❌ Database seeding failed:', error);
+    throw error;
+  }
 }
 
 // تشغيل الـ seed إذا تم تشغيل الملف مباشرة

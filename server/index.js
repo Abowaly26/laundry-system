@@ -42,16 +42,23 @@ app.use(express.urlencoded({ extended: true }));
 // مجلد لتخزين ملفات الـ QR أو الصور إذا لزم الأمر
 app.use('/public', express.static(path.join(__dirname, 'public')));
 
-// تشغيل seed قبل تحميل الـ routes (للأنظمة المؤقتة مثل Railway)
+// تشغيل seed تلقائي عند أول طلب (حل لمشكلة Railway ephemeral filesystem)
+let seeded = false;
 const seedDatabase = require('./src/seed');
-try {
-  console.log('🔄 Starting database initialization...');
-  seedDatabase();
-  console.log('✅ Database seeding completed');
-} catch (error) {
-  console.error('⚠️ Database seeding error:', error);
-  // لا تُوقف السيرفر حتى لو فشل الـ seed
-}
+
+app.use((req, res, next) => {
+  if (!seeded) {
+    try {
+      console.log('🔄 Auto-seeding database on first request...');
+      seedDatabase();
+      seeded = true;
+      console.log('✅ Database seeding completed');
+    } catch (error) {
+      console.error('⚠️ Database seeding error:', error);
+    }
+  }
+  next();
+});
 
 // استيراد مسارات الـ API
 const authRouter = require('./src/routes/auth');
@@ -92,18 +99,44 @@ app.get('/api/health', (req, res) => {
 app.post('/api/seed', (req, res) => {
   try {
     console.log('🔄 Manual seed requested');
+    
+    // إعادة تعيين flag
+    seeded = false;
+    
     seedDatabase();
+    seeded = true;
+    
     const usersCount = db.prepare('SELECT COUNT(*) as count FROM users').get();
+    const users = db.prepare('SELECT id, name, email, role FROM users').all();
+    
     res.json({ 
       success: true, 
       message: 'تم تهيئة قاعدة البيانات بنجاح',
-      usersCount: usersCount.count
+      usersCount: usersCount.count,
+      users: users
     });
   } catch (error) {
     console.error('Seed error:', error);
     res.status(500).json({ 
       success: false, 
       message: 'فشل في تهيئة قاعدة البيانات',
+      error: error.message 
+    });
+  }
+});
+
+// Endpoint للتحقق من المستخدمين الموجودين
+app.get('/api/debug/users', (req, res) => {
+  try {
+    const users = db.prepare('SELECT id, name, email, role, is_active, created_at FROM users').all();
+    res.json({ 
+      success: true, 
+      count: users.length,
+      users: users
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      success: false, 
       error: error.message 
     });
   }
