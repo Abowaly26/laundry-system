@@ -42,6 +42,17 @@ app.use(express.urlencoded({ extended: true }));
 // مجلد لتخزين ملفات الـ QR أو الصور إذا لزم الأمر
 app.use('/public', express.static(path.join(__dirname, 'public')));
 
+// تشغيل seed قبل تحميل الـ routes (للأنظمة المؤقتة مثل Railway)
+const seedDatabase = require('./src/seed');
+try {
+  console.log('🔄 Starting database initialization...');
+  seedDatabase();
+  console.log('✅ Database seeding completed');
+} catch (error) {
+  console.error('⚠️ Database seeding error:', error);
+  // لا تُوقف السيرفر حتى لو فشل الـ seed
+}
+
 // استيراد مسارات الـ API
 const authRouter = require('./src/routes/auth');
 const customersRouter = require('./src/routes/customers');
@@ -65,19 +76,38 @@ app.use('/api/users', usersRouter);
 // اختبار الاتصال بالخادم
 app.get('/api/health', (req, res) => {
   console.log('🔍 Health check request received from:', req.ip, req.headers.origin);
-  res.json({ success: true, message: 'الخادم يعمل بنجاح وقاعدة البيانات متصلة' });
+  
+  // التحقق من وجود بيانات في قاعدة البيانات
+  const usersCount = db.prepare('SELECT COUNT(*) as count FROM users').get();
+  
+  res.json({ 
+    success: true, 
+    message: 'الخادم يعمل بنجاح وقاعدة البيانات متصلة',
+    usersCount: usersCount.count,
+    seeded: usersCount.count > 0
+  });
 });
 
-// تشغيل seed في كل مرة يبدأ فيها السيرفر (للأنظمة المؤقتة مثل Railway)
-const seedDatabase = require('./src/seed');
-try {
-  console.log('🔄 Starting database initialization...');
-  seedDatabase();
-  console.log('✅ Database seeding completed');
-} catch (error) {
-  console.log('⚠️ Database seeding error:', error.message);
-  // لا تُوقف السيرفر حتى لو فشل الـ seed
-}
+// Endpoint لإعادة seed يدوياً (للطوارئ)
+app.post('/api/seed', (req, res) => {
+  try {
+    console.log('🔄 Manual seed requested');
+    seedDatabase();
+    const usersCount = db.prepare('SELECT COUNT(*) as count FROM users').get();
+    res.json({ 
+      success: true, 
+      message: 'تم تهيئة قاعدة البيانات بنجاح',
+      usersCount: usersCount.count
+    });
+  } catch (error) {
+    console.error('Seed error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'فشل في تهيئة قاعدة البيانات',
+      error: error.message 
+    });
+  }
+});
 
 // بدء تشغيل الخادم
 app.listen(PORT, '0.0.0.0', () => {
