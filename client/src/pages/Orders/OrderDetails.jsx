@@ -180,10 +180,26 @@ export default function OrderDetails() {
     return mapping[type] || type;
   };
 
-  if (loading && !order) {
+  if (loading || !order) {
+    if (loading) {
+      return (
+        <div className="flex justify-center items-center" style={{ height: '300px' }}>
+          <LoadingSpinner />
+        </div>
+      );
+    }
     return (
-      <div className="flex justify-center items-center" style={{ height: '300px' }}>
-        <LoadingSpinner />
+      <div className="page order-details-page">
+        <div className="page-header">
+          <div>
+            <h1 className="page-title">الطلب غير موجود</h1>
+            <p className="page-subtitle">لم نتمكن من تحميل تفاصيل الطلب. قد يكون الطلب قد أزيل أو أن هناك خطأ في الاتصال.</p>
+          </div>
+          <Button variant="secondary" onClick={() => navigate('/orders')}>
+            <ArrowRight size={18} style={{ marginLeft: '8px' }} />
+            العودة للقائمة
+          </Button>
+        </div>
       </div>
     );
   }
