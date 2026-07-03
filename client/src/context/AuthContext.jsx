@@ -18,8 +18,7 @@ export function AuthProvider({ children }) {
 
     try {
       const response = await authAPI.getMe();
-      // البيانات قد تكون في response مباشرة أو في response.user
-      const userData = response.user || response;
+      const userData = response.data;
       setUser(userData);
       setToken(storedToken);
     } catch (error) {
@@ -40,9 +39,8 @@ export function AuthProvider({ children }) {
   const login = async (credentials) => {
     try {
       const response = await authAPI.login(credentials);
-      // البيانات الآن تأتي بعد فك التغليف من api.js
-      const tkn = response.token;
-      const usr = response.user;
+      const tkn = response.data?.token;
+      const usr = response.data?.user;
 
       if (!tkn || !usr) {
         throw new Error('استجابة غير صحيحة من الخادم');
