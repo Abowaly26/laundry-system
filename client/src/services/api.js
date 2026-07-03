@@ -61,8 +61,8 @@ async function request(endpoint, options = {}) {
     throw error;
   }
 
-  // إرجاع البيانات الفعلية (مع فك التغليف إذا كانت في data)
-  return data?.data || data;
+  // إرجاع البيانات كما هي (السيرفر بيرجع { success, data, message })
+  return data;
 }
 
 function buildQuery(params) {
