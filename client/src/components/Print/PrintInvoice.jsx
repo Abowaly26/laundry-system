@@ -30,6 +30,20 @@ export default function PrintInvoice({ order }) {
     return mapping[type] || type;
   };
 
+  const formatAmount = (amount) => (parseFloat(amount) || 0).toFixed(2);
+
+  const getServiceName = (item) => (
+    item.service_name_ar || item.service_name || (item.service && item.service.name_ar) || ''
+  );
+
+  const getPaymentMethodAr = (method) => {
+    const mapping = {
+      cash: 'نقدي (كاش)',
+      electronic: 'إلكتروني (مدى/شبكة)'
+    };
+    return mapping[method] || method || '';
+  };
+
   return (
     <div className="print-receipt print-receipt-80" style={{ direction: 'rtl', fontFamily: 'Cairo, sans-serif' }}>
       <div className="receipt-header" style={{ textAlign: 'center', marginBottom: '15px' }}>
@@ -41,6 +55,7 @@ export default function PrintInvoice({ order }) {
       <div style={{ borderBottom: '1px dashed #000', paddingBottom: '8px', marginBottom: '8px', fontSize: '12px' }}>
         <div><strong>رقم الطلب:</strong> #{order.id}</div>
         <div><strong>التاريخ:</strong> {formatDate(order.created_at || new Date())}</div>
+        {order.expected_delivery_at && <div><strong>التسليم المتوقع:</strong> {formatDate(order.expected_delivery_at)}</div>}
         <div><strong>العميل:</strong> {order.customer_name || (order.customer && order.customer.name) || 'عميل عام'}</div>
         <div><strong>الجوال:</strong> {order.customer_phone || (order.customer && order.customer.phone) || ''}</div>
       </div>
@@ -60,8 +75,8 @@ export default function PrintInvoice({ order }) {
                 {getItemTypeAr(item.item_type)}
                 {item.notes && <span style={{ fontSize: '9px', display: 'block', color: '#555' }}>({item.notes})</span>}
               </td>
-              <td style={{ padding: '4px 0' }}>{item.service_name_ar || (item.service && item.service.name_ar) || ''}</td>
-              <td style={{ padding: '4px 0', textAlign: 'left' }}>{parseFloat(item.price).toFixed(2)}</td>
+              <td style={{ padding: '4px 0' }}>{getServiceName(item)}</td>
+              <td style={{ padding: '4px 0', textAlign: 'left' }}>{formatAmount(item.price)}</td>
             </tr>
           ))}
         </tbody>
@@ -70,16 +85,23 @@ export default function PrintInvoice({ order }) {
       <div style={{ borderTop: '1px dashed #000', paddingTop: '8px', fontSize: '12px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', padding: '2px 0' }}>
           <span>الإجمالي:</span>
-          <strong>{parseFloat(order.total_amount).toFixed(2)} ر.س</strong>
+          <strong>{formatAmount(order.total_amount)} ر.س</strong>
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', padding: '2px 0' }}>
           <span>المدفوع:</span>
-          <span>{parseFloat(order.paid_amount).toFixed(2)} ر.س</span>
+          <span>{formatAmount(order.paid_amount)} ر.س</span>
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', padding: '2px 0', borderTop: '1px solid #eee', marginTop: '4px' }}>
           <span>المتبقي:</span>
-          <strong style={{ fontSize: '13px' }}>{parseFloat(order.remaining_amount).toFixed(2)} ر.س</strong>
+          <strong style={{ fontSize: '13px' }}>{formatAmount(order.remaining_amount)} ر.س</strong>
         </div>
+        {order.payment_method && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '2px 0' }}>
+            <span>طريقة الدفع:</span>
+            <span>{getPaymentMethodAr(order.payment_method)}</span>
+          </div>
+        )}
+        {order.notes && <div style={{ padding: '6px 0 0', fontSize: '11px' }}><strong>ملاحظات:</strong> {order.notes}</div>}
       </div>
 
       <div style={{ textAlign: 'center', marginTop: '20px', fontSize: '10px', borderTop: '1px dashed #000', paddingTop: '10px' }}>

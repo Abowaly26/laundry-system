@@ -198,8 +198,29 @@ export default function NewOrder() {
     }
   };
 
-  const handlePrintInvoice = () => {
+  const printOrder = (invoiceOnly = false) => {
+    const cleanup = () => {
+      document.body.classList.remove('print-invoice-only');
+      window.removeEventListener('afterprint', cleanup);
+    };
+
+    if (invoiceOnly) {
+      document.body.classList.add('print-invoice-only');
+      window.addEventListener('afterprint', cleanup);
+    } else {
+      document.body.classList.remove('print-invoice-only');
+    }
+
     window.print();
+    if (invoiceOnly) setTimeout(cleanup, 1000);
+  };
+
+  const handlePrintInvoice = () => {
+    printOrder(false);
+  };
+
+  const handleDownloadInvoicePdf = () => {
+    printOrder(true);
   };
 
   return (
@@ -523,6 +544,10 @@ export default function NewOrder() {
               <Button variant="primary" className="print-option-btn" onClick={handlePrintInvoice}>
                 <Printer size={20} style={{ marginLeft: '8px' }} />
                 طباعة الفاتورة والملصقات
+              </Button>
+              <Button variant="secondary" className="print-option-btn" onClick={handleDownloadInvoicePdf}>
+                <FileText size={20} style={{ marginLeft: '8px' }} />
+                تنزيل PDF للفاتورة
               </Button>
               <Button variant="secondary" onClick={() => {
                 setShowPrintModal(false);

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Printer, Wallet, ArrowRight, CheckCircle2, User, Calendar, CreditCard, Clock } from 'lucide-react';
+import { Printer, Wallet, ArrowRight, CheckCircle2, User, Calendar, CreditCard, Clock, FileText } from 'lucide-react';
 import { ordersAPI, paymentsAPI, itemsAPI } from '../../services/api';
 import Button from '../../components/UI/Button';
 import Card from '../../components/UI/Card';
@@ -51,8 +51,29 @@ export default function OrderDetails() {
     loadOrderDetails();
   }, [id]);
 
-  const handlePrint = () => {
+  const printOrder = (invoiceOnly = false) => {
+    const cleanup = () => {
+      document.body.classList.remove('print-invoice-only');
+      window.removeEventListener('afterprint', cleanup);
+    };
+
+    if (invoiceOnly) {
+      document.body.classList.add('print-invoice-only');
+      window.addEventListener('afterprint', cleanup);
+    } else {
+      document.body.classList.remove('print-invoice-only');
+    }
+
     window.print();
+    if (invoiceOnly) setTimeout(cleanup, 1000);
+  };
+
+  const handlePrint = () => {
+    printOrder(false);
+  };
+
+  const handleDownloadInvoicePdf = () => {
+    printOrder(true);
   };
 
   // تسجيل دفعة مالية جديدة
@@ -207,6 +228,10 @@ export default function OrderDetails() {
           <Button variant="secondary" onClick={handlePrint}>
             <Printer size={18} style={{ marginLeft: '8px' }} />
             طباعة الفاتورة والملصقات
+          </Button>
+          <Button variant="secondary" onClick={handleDownloadInvoicePdf}>
+            <FileText size={18} style={{ marginLeft: '8px' }} />
+            تنزيل PDF للفاتورة
           </Button>
         </div>
       </div>

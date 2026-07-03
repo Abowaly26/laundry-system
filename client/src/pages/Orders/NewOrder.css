@@ -278,31 +278,31 @@
 
 /* Show print content when printing */
 @media print {
-  /* Hide everything except print content */
-  body > *:not(#root),
-  #root > *:not(.hidden-print-container) {
-    display: none !important;
-  }
-
-  /* Show hidden print container */
-  .hidden-print-container {
-    display: block !important;
-  }
-
-  /* Hide modal overlay and backdrop */
-  .modal-overlay,
-  .modal-backdrop,
-  .modal-header,
-  .modal-footer,
-  .modal-content > *:not(.hidden-print-container) {
-    display: none !important;
-  }
-
-  /* Print styles for receipt */
   body {
     background: white;
     margin: 0;
     padding: 0;
+  }
+
+  body * {
+    visibility: hidden !important;
+  }
+
+  .hidden-print-container,
+  .hidden-print-container * {
+    visibility: visible !important;
+  }
+
+  .hidden-print-container {
+    display: block !important;
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 100%;
+    background: white;
+  }
+
+  body.print-invoice-only .print-labels-container {
+    display: none !important;
   }
 
   .print-receipt {
