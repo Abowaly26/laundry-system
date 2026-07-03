@@ -6,7 +6,9 @@
   "scripts": {
     "start": "node index.js",
     "dev": "node index.js",
+    "setup": "node setup-db.js",
     "seed": "node src/seed.js",
+    "init": "npm run setup && npm run seed",
     "build": "npm install --build-from-source",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
