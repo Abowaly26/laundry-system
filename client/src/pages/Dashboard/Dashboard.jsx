@@ -12,19 +12,22 @@ import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
+  PointElement,
+  LineElement,
   BarElement,
   ArcElement,
   Title,
   Tooltip,
   Legend,
+  Filler,
 } from 'chart.js';
-import { Bar, Doughnut } from 'react-chartjs-2';
+import { Bar, Line, Doughnut } from 'react-chartjs-2';
 import { dashboardAPI } from '../../services/api';
 import StatusBadge from '../../components/UI/StatusBadge';
 import LoadingSpinner from '../../components/UI/LoadingSpinner';
 import './Dashboard.css';
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend);
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Title, Tooltip, Legend, Filler);
 
 export default function Dashboard() {
   const [stats, setStats] = useState(null);
@@ -95,14 +98,30 @@ export default function Dashboard() {
   ];
 
   const revenueChartData = {
-    labels: revenue.map((r) => r.date || r._id || ''),
+    labels: revenue.map((r) => {
+      const d = r.date || r._id;
+      if (!d) return '';
+      try {
+        const date = new Date(d);
+        return date.toLocaleDateString('ar-EG', { weekday: 'short', day: 'numeric', month: 'short' });
+      } catch (e) {
+        return d;
+      }
+    }),
     datasets: [
       {
         label: 'الإيرادات',
         data: revenue.map((r) => r.total || r.amount || 0),
-        backgroundColor: '#0d9488',
-        borderRadius: 6,
-        borderSkipped: false,
+        borderColor: '#4F46E5',
+        backgroundColor: 'rgba(79, 70, 229, 0.08)',
+        fill: true,
+        tension: 0.4,
+        borderWidth: 3,
+        pointBackgroundColor: '#4F46E5',
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2,
+        pointRadius: 4,
+        pointHoverRadius: 6,
       },
     ],
   };
@@ -112,20 +131,32 @@ export default function Dashboard() {
     maintainAspectRatio: false,
     plugins: {
       legend: { display: false },
+      tooltip: {
+        titleFont: { family: 'Cairo', size: 12 },
+        bodyFont: { family: 'Cairo', size: 12 },
+        padding: 10,
+        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+        callbacks: {
+          label: function(context) {
+            return ` الإيرادات: ${context.parsed.y} ر.س`;
+          }
+        }
+      }
     },
     scales: {
       x: {
         grid: { display: false },
-        ticks: { font: { family: 'Cairo' } },
+        ticks: { font: { family: 'Cairo', size: 11 }, color: '#64748b' },
       },
       y: {
-        grid: { color: '#f0f0f0' },
-        ticks: { font: { family: 'Cairo' } },
+        grid: { color: '#f1f5f9' },
+        ticks: { font: { family: 'Cairo', size: 11 }, color: '#64748b' },
+        border: { dash: [4, 4] }
       },
     },
   };
 
-  const serviceColors = ['#0d9488', '#d97706', '#0284c7', '#16a34a', '#dc2626', '#8b5cf6', '#ec4899'];
+  const serviceColors = ['#4F46E5', '#10B981', '#F59E0B', '#3B82F6', '#EF4444', '#8B5CF6', '#EC4899'];
 
   const servicesChartData = {
     labels: popularServices.map((s) => s.name || s._id || ''),
@@ -180,7 +211,7 @@ export default function Dashboard() {
           </div>
           <div className="chart-card-body" style={{ height: 300 }}>
             {revenue.length > 0 ? (
-              <Bar data={revenueChartData} options={revenueChartOptions} />
+              <Line data={revenueChartData} options={revenueChartOptions} />
             ) : (
               <p className="text-center text-secondary" style={{ paddingTop: 100 }}>
                 لا توجد بيانات
