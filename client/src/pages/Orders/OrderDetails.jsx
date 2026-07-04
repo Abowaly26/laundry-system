@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Printer, Wallet, ArrowRight, CheckCircle2, User, Calendar, CreditCard, Clock, FileText } from 'lucide-react';
+import { Printer, Wallet, ArrowRight, CheckCircle2, User, Calendar, CreditCard, Clock, FileText, MessageSquare } from 'lucide-react';
 import { ordersAPI, paymentsAPI, itemsAPI } from '../../services/api';
 import Button from '../../components/UI/Button';
 import Card from '../../components/UI/Card';
@@ -174,6 +174,38 @@ export default function OrderDetails() {
     }
   };
 
+  const handleShareWhatsApp = () => {
+    if (!order) return;
+    const customerName = order.customer?.name || 'عميل';
+    const customerPhone = order.customer?.phone || '';
+    const orderId = order.id;
+    const itemsCount = order.items?.length || 0;
+    const totalAmount = parseFloat(order.total_amount).toFixed(2);
+    const remainingAmount = parseFloat(order.remaining_amount).toFixed(2);
+    const deliveryDate = formatDate(order.expected_delivery_at);
+    const trackingLink = `${window.location.origin}/portal?phone=${customerPhone}&id=${orderId}`;
+
+    const text = `السلام عليكم يا ${customerName}، تم استلام طلبك رقم ${orderId} بنجاح.
+تفاصيل الطلب:
+- عدد القطع: ${itemsCount}
+- إجمالي الفاتورة: ${totalAmount} ر.س
+- المتبقي للدفع: ${remainingAmount} ر.س
+- موعد التسليم المتوقع: ${deliveryDate}
+
+يمكنك تتبع حالة غسيل وكي ملابسك مباشرة من رابط التتبع الخاص بك:
+${trackingLink}
+
+شكراً لثقتكم بنا! ✨`;
+
+    const encodedText = encodeURIComponent(text);
+    let sanitizedPhone = customerPhone.replace(/\D/g, '');
+    if (sanitizedPhone.startsWith('05') && sanitizedPhone.length === 10) {
+      sanitizedPhone = '966' + sanitizedPhone.substring(1);
+    }
+    
+    window.open(`https://api.whatsapp.com/send?phone=${sanitizedPhone}&text=${encodedText}`, '_blank');
+  };
+
   const formatDate = (dateStr) => {
     if (!dateStr) return '-';
     const date = new Date(dateStr);
@@ -232,6 +264,10 @@ export default function OrderDetails() {
           <Button variant="secondary" onClick={handleDownloadInvoicePdf}>
             <FileText size={18} style={{ marginLeft: '8px' }} />
             تنزيل PDF للفاتورة
+          </Button>
+          <Button variant="success" onClick={handleShareWhatsApp}>
+            <MessageSquare size={18} style={{ marginLeft: '8px' }} />
+            مشاركة عبر واتساب
           </Button>
         </div>
       </div>

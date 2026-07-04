@@ -7,6 +7,7 @@ import {
   Package,
   Banknote,
   AlertTriangle,
+  Download,
 } from 'lucide-react';
 import {
   Chart as ChartJS,
@@ -59,6 +60,36 @@ export default function Dashboard() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const exportToCSV = () => {
+    if (!stats?.recentOrders || stats.recentOrders.length === 0) return;
+    
+    const headers = ['رقم الطلب', 'العميل', 'عدد القطع', 'الحالة', 'الإجمالي (ر.س)', 'تاريخ الطلب'];
+    
+    const rows = stats.recentOrders.map(order => [
+      order.id,
+      order.customer?.name || '-',
+      order.items?.length || 0,
+      order.status === 'pending' ? 'قيد الانتظار' : order.status === 'processing' ? 'قيد المعالجة' : order.status === 'ready' ? 'جاهز للتسليم' : order.status === 'delivered' ? 'تم التسليم' : 'ملغي',
+      order.totalAmount,
+      new Date(order.createdAt).toLocaleDateString('ar-EG')
+    ]);
+    
+    const csvContent = '\uFEFF' + [
+      headers.join(','),
+      ...rows.map(e => e.join(','))
+    ].join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `recent_orders_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   if (loading) return <LoadingSpinner />;
@@ -267,9 +298,20 @@ export default function Dashboard() {
       <div className="recent-orders">
         <div className="recent-orders-header">
           <h3 className="recent-orders-title">أحدث الطلبات</h3>
-          <Link to="/orders" className="recent-orders-link">
-            عرض الكل
-          </Link>
+          <div className="flex gap-sm items-center">
+            <button 
+              onClick={exportToCSV} 
+              className="recent-orders-link flex items-center"
+              style={{ cursor: 'pointer', background: 'none', border: 'none', font: 'inherit', display: 'flex', gap: '4px' }}
+            >
+              <Download size={16} />
+              تصدير البيانات
+            </button>
+            <span style={{ color: 'var(--border)' }}>|</span>
+            <Link to="/orders" className="recent-orders-link">
+              عرض الكل
+            </Link>
+          </div>
         </div>
         <div className="table-container">
           <table>

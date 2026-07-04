@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, MapPin, Calendar, Clock, RefreshCw, Shirt, ArrowRight } from 'lucide-react';
 import { ordersAPI } from '../../services/api';
 import Button from '../../components/UI/Button';
@@ -22,6 +22,36 @@ export default function CustomerPortal() {
   const [orders, setOrders] = useState([]);
   const [errorMsg, setErrorMsg] = useState('');
   const [searched, setSearched] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id');
+    const phone = params.get('phone');
+    const autoQuery = id || phone;
+    if (autoQuery) {
+      setQuery(autoQuery);
+      autoTrack(autoQuery);
+    }
+  }, []);
+
+  const autoTrack = async (searchVal) => {
+    setLoading(true);
+    setErrorMsg('');
+    setOrders([]);
+    setSearched(true);
+    try {
+      const res = await ordersAPI.track(searchVal);
+      if (res.success && res.data && res.data.length > 0) {
+        setOrders(res.data);
+      } else {
+        setErrorMsg('لم نجد أي طلب تطابق القيمة المدخلة.');
+      }
+    } catch (err) {
+      setErrorMsg(err.message || 'حدث خطأ في الاتصال بالخادم.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleTrack = async (e) => {
     e.preventDefault();
