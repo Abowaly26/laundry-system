@@ -116,9 +116,9 @@ export default function Customers() {
   };
 
   const formatDate = (dateStr) => {
-    if (!dateStr) return '';
+    if (!dateStr) return '-';
     const date = new Date(dateStr);
-    return date.toLocaleDateString('ar-EG', {
+    return isNaN(date.getTime()) ? '-' : date.toLocaleDateString('ar-EG', {
       year: 'numeric',
       month: 'long',
       day: 'numeric'

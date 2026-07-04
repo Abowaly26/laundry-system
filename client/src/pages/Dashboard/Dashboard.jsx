@@ -38,6 +38,10 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  const revenueList = Array.isArray(revenue) ? revenue : [];
+  const popularServicesList = Array.isArray(popularServices) ? popularServices : [];
+  const overdueList = Array.isArray(overdue) ? overdue : [];
+
   const formatDate = (dateStr) => {
     if (!dateStr) return '-';
     const d = new Date(dateStr);
@@ -57,10 +61,22 @@ export default function Dashboard() {
         dashboardAPI.getOverdue(),
       ]);
 
-      if (statsData.status === 'fulfilled') setStats(statsData.value);
-      if (revenueData.status === 'fulfilled') setRevenue(revenueData.value.data || revenueData.value || []);
-      if (servicesData.status === 'fulfilled') setPopularServices(servicesData.value.data || servicesData.value || []);
-      if (overdueData.status === 'fulfilled') setOverdue(overdueData.value.data || overdueData.value || []);
+      if (statsData.status === 'fulfilled') {
+        const val = statsData.value;
+        setStats(val && val.success ? val : null);
+      }
+      if (revenueData.status === 'fulfilled') {
+        const val = revenueData.value;
+        setRevenue(val && Array.isArray(val.data) ? val.data : (Array.isArray(val) ? val : []));
+      }
+      if (servicesData.status === 'fulfilled') {
+        const val = servicesData.value;
+        setPopularServices(val && Array.isArray(val.data) ? val.data : (Array.isArray(val) ? val : []));
+      }
+      if (overdueData.status === 'fulfilled') {
+        const val = overdueData.value;
+        setOverdue(val && Array.isArray(val.data) ? val.data : (Array.isArray(val) ? val : []));
+      }
     } catch (err) {
       console.error('Dashboard load error:', err);
     } finally {
@@ -69,17 +85,18 @@ export default function Dashboard() {
   };
 
   const exportToCSV = () => {
-    if (!stats?.recentOrders || stats.recentOrders.length === 0) return;
+    const recentOrdersList = Array.isArray(stats?.recentOrders) ? stats.recentOrders : [];
+    if (recentOrdersList.length === 0) return;
     
     const headers = ['رقم الطلب', 'العميل', 'عدد القطع', 'الحالة', 'الإجمالي (ر.س)', 'تاريخ الطلب'];
     
-    const rows = stats.recentOrders.map(order => [
-      order.id,
-      order.customer?.name || '-',
-      order.items?.length || 0,
-      order.status === 'pending' ? 'قيد الانتظار' : order.status === 'processing' ? 'قيد المعالجة' : order.status === 'ready' ? 'جاهز للتسليم' : order.status === 'delivered' ? 'تم التسليم' : 'ملغي',
-      order.totalAmount,
-      formatDate(order.createdAt || order.created_at)
+    const rows = recentOrdersList.map(order => [
+      order?.id,
+      order?.customer?.name || '-',
+      order?.items?.length || 0,
+      order?.status === 'pending' ? 'قيد الانتظار' : order?.status === 'processing' ? 'قيد المعالجة' : order?.status === 'ready' ? 'جاهز للتسليم' : order?.status === 'delivered' ? 'تم التسليم' : 'ملغي',
+      order?.totalAmount || order?.total_amount || 0,
+      formatDate(order?.createdAt || order?.created_at)
     ]);
     
     const csvContent = '\uFEFF' + [
@@ -135,7 +152,7 @@ export default function Dashboard() {
   ];
 
   const revenueChartData = {
-    labels: revenue.map((r) => {
+    labels: revenueList.map((r) => {
       const d = r.date || r._id;
       if (!d) return '';
       try {
@@ -149,7 +166,7 @@ export default function Dashboard() {
     datasets: [
       {
         label: 'الإيرادات',
-        data: revenue.map((r) => r.total || r.amount || 0),
+        data: revenueList.map((r) => r.total || r.amount || 0),
         borderColor: '#4F46E5',
         backgroundColor: 'rgba(79, 70, 229, 0.08)',
         fill: true,
@@ -197,11 +214,11 @@ export default function Dashboard() {
   const serviceColors = ['#4F46E5', '#10B981', '#F59E0B', '#3B82F6', '#EF4444', '#8B5CF6', '#EC4899'];
 
   const servicesChartData = {
-    labels: popularServices.map((s) => s.name || s._id || ''),
+    labels: popularServicesList.map((s) => s.name || s._id || ''),
     datasets: [
       {
-        data: popularServices.map((s) => s.count || s.total || 0),
-        backgroundColor: serviceColors.slice(0, popularServices.length),
+        data: popularServicesList.map((s) => s.count || s.total || 0),
+        backgroundColor: serviceColors.slice(0, popularServicesList.length),
         borderWidth: 0,
       },
     ],
@@ -248,7 +265,7 @@ export default function Dashboard() {
             <h3 className="chart-card-title">إيرادات آخر 7 أيام</h3>
           </div>
           <div className="chart-card-body" style={{ height: 300 }}>
-            {revenue.length > 0 ? (
+            {revenueList.length > 0 ? (
               <Line data={revenueChartData} options={revenueChartOptions} />
             ) : (
               <p className="text-center text-secondary" style={{ paddingTop: 100 }}>
@@ -263,7 +280,7 @@ export default function Dashboard() {
             <h3 className="chart-card-title">الخدمات الأكثر طلباً</h3>
           </div>
           <div className="chart-card-body" style={{ height: 300 }}>
-            {popularServices.length > 0 ? (
+            {popularServicesList.length > 0 ? (
               <Doughnut data={servicesChartData} options={servicesChartOptions} />
             ) : (
               <p className="text-center text-secondary" style={{ paddingTop: 100 }}>
@@ -275,13 +292,13 @@ export default function Dashboard() {
       </div>
 
       {/* Overdue Alerts */}
-      {overdue.length > 0 && (
+      {overdueList.length > 0 && (
         <div className="overdue-section">
           <h3 style={{ marginBottom: 'var(--space-sm)', fontSize: '0.95rem' }}>
             <AlertTriangle size={18} style={{ verticalAlign: 'middle', marginLeft: 6, color: 'var(--warning)' }} />
-            طلبات متأخرة ({overdue.length})
+            طلبات متأخرة ({overdueList.length})
           </h3>
-          {overdue.slice(0, 5).map((order) => (
+          {overdueList.slice(0, 5).map((order) => (
             <div className="overdue-alert" key={order._id || order.id}>
               <AlertTriangle size={18} className="alert-icon" />
               <span>
@@ -336,18 +353,18 @@ export default function Dashboard() {
               {stats?.recentOrders?.length > 0 ? (
                 stats.recentOrders.map((order) => (
                   <tr
-                    key={order._id || order.id}
+                    key={order?._id || order?.id}
                     className="clickable"
-                    onClick={() => navigate(`/orders/${order._id || order.id}`)}
+                    onClick={() => navigate(`/orders/${order?._id || order?.id}`)}
                   >
-                    <td>#{order.orderNumber || order.id}</td>
-                    <td>{order.customer?.name || '-'}</td>
-                    <td>{order.items?.length || 0}</td>
+                    <td>#{order?.orderNumber || order?.id}</td>
+                    <td>{order?.customer?.name || '-'}</td>
+                    <td>{order?.items?.length || 0}</td>
                     <td>
-                      <StatusBadge status={order.status} />
+                      <StatusBadge status={order?.status} />
                     </td>
-                    <td>{order.totalAmount} ر.س</td>
-                    <td>{formatDate(order.createdAt || order.created_at)}</td>
+                    <td>{order?.totalAmount || order?.total_amount || 0} ر.س</td>
+                    <td>{formatDate(order?.createdAt || order?.created_at)}</td>
                   </tr>
                 ))
               ) : (

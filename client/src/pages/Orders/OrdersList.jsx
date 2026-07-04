@@ -172,7 +172,8 @@ export default function OrdersList() {
               </tr>
             </thead>
             <tbody>
-              {orders.map((order) => {
+               {(Array.isArray(orders) ? orders : []).map((order) => {
+                if (!order) return null;
                 const isOverdue = order.status !== 'delivered' && 
                                   order.status !== 'cancelled' && 
                                   order.expected_delivery_at && 
@@ -189,9 +190,9 @@ export default function OrdersList() {
                     <td>{order.customer_phone || '-'}</td>
                     <td>{formatDate(order.created_at)}</td>
                     <td className="text-center font-semibold">{order.items_count || 0}</td>
-                    <td>{parseFloat(order.total_amount).toFixed(2)} ر.س</td>
-                    <td className={parseFloat(order.remaining_amount) > 0 ? 'text-warning font-semibold' : 'text-success font-semibold'}>
-                      {parseFloat(order.remaining_amount).toFixed(2)} ر.س
+                    <td>{parseFloat(order.total_amount || 0).toFixed(2)} ر.س</td>
+                    <td className={parseFloat(order.remaining_amount || 0) > 0 ? 'text-warning font-semibold' : 'text-success font-semibold'}>
+                      {parseFloat(order.remaining_amount || 0).toFixed(2)} ر.س
                     </td>
                     <td>
                       <StatusBadge status={order.status} type="order" />

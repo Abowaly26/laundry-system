@@ -237,10 +237,21 @@ ${trackingLink}
     return mapping[type] || type;
   };
 
-  if (loading && !order) {
+  if (loading) {
     return (
       <div className="flex justify-center items-center" style={{ height: '300px' }}>
         <LoadingSpinner />
+      </div>
+    );
+  }
+
+  if (!order) {
+    return (
+      <div className="page">
+        <EmptyState 
+          title="الطلب غير موجود" 
+          message="عذراً، لم يتم العثور على الطلب المطلوب أو تم حذفه."
+        />
       </div>
     );
   }
