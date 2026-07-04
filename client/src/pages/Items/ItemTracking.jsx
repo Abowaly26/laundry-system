@@ -202,6 +202,38 @@ export default function ItemTracking() {
                 )}
               </div>
 
+              {/* سجل تتبع الحالات */}
+              {currentItem.status_log && currentItem.status_log.length > 0 && (
+                <div className="status-log-timeline mt-md mb-md">
+                  <h4 className="timeline-title mb-sm">سجل حركة القطعة والعمليات:</h4>
+                  <div className="timeline-items">
+                    {currentItem.status_log.map((log, index) => (
+                      <div className="timeline-item" key={log.id || index}>
+                        <div className="timeline-dot"></div>
+                        <div className="timeline-content">
+                          <div className="timeline-header">
+                            <span className="timeline-status font-bold">
+                              {STATUS_STEPS.find(s => s.key === log.new_status)?.label || log.new_status}
+                            </span>
+                            <span className="timeline-time text-secondary">
+                              {new Date(log.created_at).toLocaleString('ar-EG', {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                day: 'numeric',
+                                month: 'short'
+                              })}
+                            </span>
+                          </div>
+                          {log.updated_by_name && (
+                            <span className="timeline-worker text-secondary">بواسطة: {log.updated_by_name}</span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* متتبع المراحل المرئي */}
               <div className="stepper-workflow mt-lg mb-lg">
                 {STATUS_STEPS.map((step, idx) => {
