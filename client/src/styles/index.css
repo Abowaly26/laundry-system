@@ -425,41 +425,38 @@ table tbody tr.clickable:active {
     padding: 4px 8px;
   }
 
-  /* 58mm Thermal Printer */
   @page {
-    size: 58mm auto;
-    margin: 2mm;
+    margin: 10mm;
   }
 
   .print-receipt {
-    width: 54mm;
-    font-size: 11px;
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    font-size: 14px;
+    background: #fff;
+    padding: 20px;
   }
 
   .print-receipt .receipt-header {
     text-align: center;
-    border-bottom: 1px dashed #000;
-    padding-bottom: 4px;
-    margin-bottom: 4px;
+    border-bottom: 2px solid #333;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
   }
 
   .print-receipt .receipt-row {
     display: flex;
     justify-content: space-between;
-    padding: 1px 0;
+    padding: 4px 0;
   }
 
   .print-receipt .receipt-total {
-    border-top: 1px dashed #000;
-    padding-top: 4px;
-    margin-top: 4px;
+    border-top: 2px solid #333;
+    padding-top: 10px;
+    margin-top: 10px;
     font-weight: bold;
-  }
-
-  /* 80mm Thermal Printer */
-  .print-receipt-80 {
-    width: 76mm;
-    font-size: 12px;
+    font-size: 16px;
   }
 
   /* QR Label Print */
