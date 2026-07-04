@@ -4,11 +4,8 @@
   right: 0;
   width: var(--sidebar-width);
   height: 100vh;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border-left: var(--glass-border);
-  box-shadow: 2px 0 20px rgba(0, 0, 0, 0.02);
+  background: var(--sidebar-bg);
+  border-left: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   z-index: var(--z-sidebar);

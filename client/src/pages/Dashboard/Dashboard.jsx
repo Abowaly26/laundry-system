@@ -38,12 +38,6 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  const formatDate = (dateStr) => {
-    if (!dateStr) return '-';
-    const d = new Date(dateStr);
-    return isNaN(d.getTime()) ? '-' : d.toLocaleDateString('ar-EG');
-  };
-
   useEffect(() => {
     loadDashboard();
   }, []);
@@ -79,7 +73,7 @@ export default function Dashboard() {
       order.items?.length || 0,
       order.status === 'pending' ? 'قيد الانتظار' : order.status === 'processing' ? 'قيد المعالجة' : order.status === 'ready' ? 'جاهز للتسليم' : order.status === 'delivered' ? 'تم التسليم' : 'ملغي',
       order.totalAmount,
-      formatDate(order.createdAt || order.created_at)
+      new Date(order.createdAt).toLocaleDateString('ar-EG')
     ]);
     
     const csvContent = '\uFEFF' + [
@@ -136,7 +130,7 @@ export default function Dashboard() {
 
   const revenueChartData = {
     labels: revenue.map((r) => {
-      const d = r?.date || r?._id;
+      const d = r.date || r._id;
       if (!d) return '';
       try {
         const date = new Date(d);
@@ -148,7 +142,7 @@ export default function Dashboard() {
     datasets: [
       {
         label: 'الإيرادات',
-        data: revenue.map((r) => r?.total || r?.amount || 0),
+        data: revenue.map((r) => r.total || r.amount || 0),
         borderColor: '#4F46E5',
         backgroundColor: 'rgba(79, 70, 229, 0.08)',
         fill: true,
@@ -196,10 +190,10 @@ export default function Dashboard() {
   const serviceColors = ['#4F46E5', '#10B981', '#F59E0B', '#3B82F6', '#EF4444', '#8B5CF6', '#EC4899'];
 
   const servicesChartData = {
-    labels: popularServices.map((s) => s?.name || s?._id || ''),
+    labels: popularServices.map((s) => s.name || s._id || ''),
     datasets: [
       {
-        data: popularServices.map((s) => s?.count || s?.total || 0),
+        data: popularServices.map((s) => s.count || s.total || 0),
         backgroundColor: serviceColors.slice(0, popularServices.length),
         borderWidth: 0,
       },
@@ -281,18 +275,18 @@ export default function Dashboard() {
             طلبات متأخرة ({overdue.length})
           </h3>
           {overdue.slice(0, 5).map((order) => (
-            <div className="overdue-alert" key={order?._id || order?.id}>
+            <div className="overdue-alert" key={order._id || order.id}>
               <AlertTriangle size={18} className="alert-icon" />
               <span>
                 الطلب{' '}
                 <span
                   className="order-link"
-                  onClick={() => navigate(`/orders/${order?._id || order?.id}`)}
+                  onClick={() => navigate(`/orders/${order._id || order.id}`)}
                 >
-                  #{order?.orderNumber || order?.id}
+                  #{order.orderNumber || order.id}
                 </span>
                 {' - '}
-                {order?.customer?.name || 'عميل'}
+                {order.customer?.name || 'عميل'}
                 {' - متأخر'}
               </span>
             </div>
@@ -335,18 +329,18 @@ export default function Dashboard() {
               {stats?.recentOrders?.length > 0 ? (
                 stats.recentOrders.map((order) => (
                   <tr
-                    key={order?._id || order?.id}
+                    key={order._id || order.id}
                     className="clickable"
-                    onClick={() => navigate(`/orders/${order?._id || order?.id}`)}
+                    onClick={() => navigate(`/orders/${order._id || order.id}`)}
                   >
-                    <td>#{order?.orderNumber || order?.id}</td>
-                    <td>{order?.customer?.name || '-'}</td>
-                    <td>{order?.items?.length || 0}</td>
+                    <td>#{order.orderNumber || order.id}</td>
+                    <td>{order.customer?.name || '-'}</td>
+                    <td>{order.items?.length || 0}</td>
                     <td>
-                      <StatusBadge status={order?.status} />
+                      <StatusBadge status={order.status} />
                     </td>
-                    <td>{order?.totalAmount || order?.total_amount || 0} ر.س</td>
-                    <td>{formatDate(order?.createdAt || order?.created_at)}</td>
+                    <td>{order.totalAmount} ر.س</td>
+                    <td>{new Date(order.createdAt).toLocaleDateString('ar-EG')}</td>
                   </tr>
                 ))
               ) : (
