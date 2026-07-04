@@ -8,6 +8,10 @@ import {
   Banknote,
   AlertTriangle,
   Download,
+  PlusCircle,
+  UserPlus,
+  Scan,
+  Wallet,
 } from 'lucide-react';
 import {
   Chart as ChartJS,
@@ -237,6 +241,38 @@ export default function Dashboard() {
 
   return (
     <div className="dashboard">
+      {/* Quick Actions Bar */}
+      <div className="quick-actions-bar">
+        <button className="quick-action-btn primary" onClick={() => navigate('/orders/new')}>
+          <div className="quick-action-icon"><PlusCircle size={20} /></div>
+          <div className="quick-action-info">
+            <span className="quick-action-title">طلب غسيل جديد</span>
+            <span className="quick-action-subtitle">إنشاء فاتورة واستلام الملابس</span>
+          </div>
+        </button>
+        <button className="quick-action-btn success" onClick={() => navigate('/customers')}>
+          <div className="quick-action-icon"><UserPlus size={20} /></div>
+          <div className="quick-action-info">
+            <span className="quick-action-title">تسجيل عميل جديد</span>
+            <span className="quick-action-subtitle">إضافة وتعديل بيانات العملاء</span>
+          </div>
+        </button>
+        <button className="quick-action-btn info" onClick={() => navigate('/tracking')}>
+          <div className="quick-action-icon"><Scan size={20} /></div>
+          <div className="quick-action-info">
+            <span className="quick-action-title">مسح كود QR للقطع</span>
+            <span className="quick-action-subtitle">تتبع الملابس وتحديث الحالة</span>
+          </div>
+        </button>
+        <button className="quick-action-btn warning" onClick={() => navigate('/finance')}>
+          <div className="quick-action-icon"><Wallet size={20} /></div>
+          <div className="quick-action-info">
+            <span className="quick-action-title">التقارير المالية</span>
+            <span className="quick-action-subtitle">عرض التحصيلات والديون المعلقة</span>
+          </div>
+        </button>
+      </div>
+
       {/* Stats Cards */}
       <div className="stats-grid">
         {statCards.map((stat, i) => {

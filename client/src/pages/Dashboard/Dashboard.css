@@ -304,3 +304,92 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Quick Actions Bar */
+.quick-actions-bar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+
+.quick-action-btn {
+  background: var(--bg-card);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: var(--glass-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md) var(--space-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  box-shadow: var(--glass-shadow);
+  transition: all var(--transition);
+  cursor: pointer;
+  text-align: right;
+  font-family: inherit;
+  width: 100%;
+}
+
+.quick-action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: rgba(var(--primary-rgb), 0.15);
+}
+
+.quick-action-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: transform var(--transition-fast);
+}
+
+.quick-action-btn:hover .quick-action-icon {
+  transform: scale(1.1);
+}
+
+/* Button colors */
+.quick-action-btn.primary .quick-action-icon {
+  background: rgba(79, 70, 229, 0.1);
+  color: var(--primary);
+}
+.quick-action-btn.success .quick-action-icon {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--success);
+}
+.quick-action-btn.info .quick-action-icon {
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--info);
+}
+.quick-action-btn.warning .quick-action-icon {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--warning);
+}
+
+.quick-action-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.quick-action-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+
+.quick-action-subtitle {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 768px) {
+  .quick-actions-bar {
+    grid-template-columns: 1fr;
+    gap: var(--space-sm);
+  }
+}
