@@ -213,7 +213,7 @@ ${trackingLink}
   const formatDate = (dateStr) => {
     if (!dateStr) return '-';
     const date = new Date(dateStr);
-    return date.toLocaleString('ar-EG', {
+    return isNaN(date.getTime()) ? '-' : date.toLocaleString('ar-EG', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
