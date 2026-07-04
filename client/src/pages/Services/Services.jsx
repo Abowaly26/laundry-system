@@ -190,7 +190,7 @@ export default function Services() {
                     <Edit2 size={14} style={{ marginLeft: '4px' }} />
                     تعديل
                   </Button>
-                  <Button variant="ghost" size="small" className="text-error" onClick={() => handleDelete(service.id)}>
+                  <Button variant="danger" size="small" onClick={() => handleDelete(service.id)}>
                     <Trash2 size={14} style={{ marginLeft: '4px' }} />
                     حذف
                   </Button>
