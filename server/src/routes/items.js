@@ -327,4 +327,77 @@ router.put('/:id/status', authMiddleware, async (req, res) => {
   }
 });
 
+/**
+ * PUT /api/items/:id/advance
+ * تقديم حالة القطعة للخطوة التالية بواسطة المعرف
+ */
+router.put('/:id/advance', authMiddleware, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const itemResult = await query(
+      'SELECT * FROM order_items WHERE id = $1',
+      [id]
+    );
+
+    if (itemResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'القطعة غير موجودة'
+      });
+    }
+    const item = itemResult.rows[0];
+
+    const nextStatus = getNextStatus(item.status);
+    if (!nextStatus) {
+      return res.status(400).json({
+        success: false,
+        message: 'القطعة في آخر مرحلة بالفعل'
+      });
+    }
+
+    // تحديث الحالة داخل معاملة
+    await transaction(async (client) => {
+      // تحديث حالة القطعة
+      await client.query(
+        "UPDATE order_items SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2",
+        [nextStatus, item.id]
+      );
+
+      // تسجيل التغيير
+      await client.query(
+        'INSERT INTO item_status_log (item_id, old_status, new_status, updated_by) VALUES ($1, $2, $3, $4)',
+        [item.id, item.status, nextStatus, req.user.id]
+      );
+
+      // مزامنة حالة الطلب
+      await syncOrderStatus(item.order_id, client);
+    });
+
+    // جلب البيانات المحدثة
+    const updatedItemResult = await query(`
+      SELECT oi.*, s.name_ar as service_name,
+        o.status as order_status, c.name as customer_name
+      FROM order_items oi
+      JOIN services s ON oi.service_id = s.id
+      JOIN orders o ON oi.order_id = o.id
+      JOIN customers c ON o.customer_id = c.id
+      WHERE oi.id = $1
+    `, [item.id]);
+
+    res.json({
+      success: true,
+      message: `تم تحديث الحالة إلى: ${nextStatus}`,
+      data: {
+        ...updatedItemResult.rows[0],
+        previous_status: item.status,
+        next_status: getNextStatus(nextStatus)
+      }
+    });
+  } catch (error) {
+    console.error('Advance item by ID error:', error);
+    res.status(500).json({ success: false, message: 'خطأ في تقديم حالة القطعة' });
+  }
+});
+
 module.exports = router;
