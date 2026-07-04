@@ -11,6 +11,8 @@ export default function Finance() {
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
   
+  const paymentsList = Array.isArray(payments) ? payments : [];
+
   // إحصائيات مالية
   const [financeStats, setFinanceStats] = useState({
     today_revenue: 0,
@@ -30,17 +32,19 @@ export default function Finance() {
     try {
       // 1. تحميل قائمة الدفعات بالفلترة
       const paymentsRes = await paymentsAPI.getAll(filters);
-      if (paymentsRes.success) {
-        setPayments(paymentsRes.data);
+      if (paymentsRes && paymentsRes.success) {
+        setPayments(Array.isArray(paymentsRes.data) ? paymentsRes.data : []);
+      } else {
+        setPayments([]);
       }
 
       // 2. تحميل إحصائيات لوحة التحكم للماليات
       const statsRes = await dashboardAPI.getStats();
-      if (statsRes.success) {
+      if (statsRes && statsRes.success) {
         setFinanceStats({
-          today_revenue: statsRes.data.today_revenue || 0,
-          pending_revenue: statsRes.data.total_remaining || 0,
-          total_revenue: statsRes.data.total_revenue || 0
+          today_revenue: parseFloat(statsRes.todayRevenue || 0),
+          pending_revenue: parseFloat(statsRes.total_remaining || 0),
+          total_revenue: parseFloat(statsRes.total_revenue || 0)
         });
       }
     } catch (err) {
@@ -75,7 +79,7 @@ export default function Finance() {
   };
 
   // إجمالي المبالغ في قائمة الدفعات المصفاة الحالية
-  const filteredTotal = payments.reduce((sum, p) => sum + (p.amount || 0), 0);
+  const filteredTotal = paymentsList.reduce((sum, p) => sum + (parseFloat(p?.amount || 0)), 0);
 
   return (
     <div className="page finance-page">
@@ -173,7 +177,7 @@ export default function Finance() {
         <div className="flex justify-center items-center" style={{ height: '200px' }}>
           <LoadingSpinner />
         </div>
-      ) : payments.length === 0 ? (
+      ) : paymentsList.length === 0 ? (
         <EmptyState 
           title="لا توجد عمليات تحصيل" 
           message="لم نجد أي حركات دفع مسجلة تطابق التصفية المحددة."
@@ -194,19 +198,19 @@ export default function Finance() {
               </tr>
             </thead>
             <tbody>
-              {payments.map((p) => (
-                <tr key={p.id}>
-                  <td><strong>#{p.id}</strong></td>
-                  <td><a href={`/orders/${p.order_id}`} className="text-primary font-semibold">#{p.order_id}</a></td>
-                  <td>{p.customer_name || 'عميل عام'}</td>
-                  <td className="font-bold text-success">+{parseFloat(p.amount).toFixed(2)} ر.س</td>
-                  <td>{p.method === 'cash' ? 'نقدي (كاش)' : 'إلكتروني (شبكة)'}</td>
+              {paymentsList.map((p) => (
+                <tr key={p?.id}>
+                  <td><strong>#{p?.id}</strong></td>
+                  <td><a href={`/orders/${p?.order_id}`} className="text-primary font-semibold">#{p?.order_id}</a></td>
+                  <td>{p?.customer_name || 'عميل عام'}</td>
+                  <td className="font-bold text-success">+{parseFloat(p?.amount || 0).toFixed(2)} ر.س</td>
+                  <td>{p?.method === 'cash' ? 'نقدي (كاش)' : 'إلكتروني (شبكة)'}</td>
                   <td>
-                    {p.type === 'deposit' ? 'دفعة مقدمة' : 
-                     p.type === 'balance' ? 'متبقي الطلب' : 'سداد كامل'}
+                    {p?.type === 'deposit' ? 'دفعة مقدمة' : 
+                     p?.type === 'balance' ? 'متبقي الطلب' : 'سداد كامل'}
                   </td>
-                  <td>{p.user_name || 'موظف الاستقبال'}</td>
-                  <td>{formatDate(p.created_at)}</td>
+                  <td>{p?.user_name || 'موظف الاستقبال'}</td>
+                  <td>{formatDate(p?.created_at)}</td>
                 </tr>
               ))}
             </tbody>
