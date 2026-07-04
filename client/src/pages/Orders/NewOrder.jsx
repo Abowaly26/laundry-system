@@ -188,9 +188,51 @@ export default function NewOrder() {
 
       const res = await ordersAPI.create(orderData);
       if (res.success) {
-        setCreatedOrder(res.data);
+        const newOrderData = res.data;
+        setCreatedOrder(newOrderData);
         showToast('تم حفظ وإنشاء الطلب بنجاح! 🎉', 'success');
         setShowPrintModal(true);
+
+        // مشاركة تلقائية عبر واتساب
+        const customerName = selectedCustomer.name || 'عميل';
+        const customerPhone = selectedCustomer.phone || '';
+        const orderId = newOrderData.id;
+        const itemsCount = items.length;
+        const formattedTotal = parseFloat(totalAmount).toFixed(2);
+        const formattedRemaining = parseFloat(totalAmount - (parseFloat(paidAmount) || 0)).toFixed(2);
+        
+        const deliveryDateStr = expectedDate.toLocaleString('ar-EG', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+        
+        const trackingLink = `${window.location.origin}/portal?phone=${customerPhone}&id=${orderId}`;
+
+        const text = `السلام عليكم يا ${customerName}، تم استلام طلبك رقم ${orderId} بنجاح.
+تفاصيل الطلب:
+- عدد القطع: ${itemsCount}
+- إجمالي الفاتورة: ${formattedTotal} ر.س
+- المتبقي للدفع: ${formattedRemaining} ر.س
+- موعد التسليم المتوقع: ${deliveryDateStr}
+
+يمكنك تتبع حالة غسيل وكي ملابسك مباشرة من رابط التتبع الخاص بك:
+${trackingLink}
+
+شكراً لثقتكم بنا! ✨`;
+
+        const encodedText = encodeURIComponent(text);
+        let sanitizedPhone = customerPhone.replace(/\D/g, '');
+        if (sanitizedPhone.startsWith('05') && sanitizedPhone.length === 10) {
+          sanitizedPhone = '966' + sanitizedPhone.substring(1);
+        }
+
+        // توجيه تلقائي لواتساب
+        setTimeout(() => {
+          window.open(`https://api.whatsapp.com/send?phone=${sanitizedPhone}&text=${encodedText}`, '_blank');
+        }, 800);
       } else {
         showToast(res.message || 'فشل في حفظ الطلب', 'error');
       }
