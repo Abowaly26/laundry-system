@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Search, Plus, User, Edit2, Trash2, Calendar, Phone, MapPin } from 'lucide-react';
 import { customersAPI } from '../../services/api';
+import { useToast } from '../../context/ToastContext';
 import Button from '../../components/UI/Button';
 import Card from '../../components/UI/Card';
 import Modal from '../../components/UI/Modal';
@@ -9,6 +10,7 @@ import EmptyState from '../../components/UI/EmptyState';
 import './Customers.css';
 
 export default function Customers() {
+  const { showToast } = useToast();
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -70,7 +72,7 @@ export default function Customers() {
       }
     } catch (err) {
       console.error(err);
-      alert('فشل في تحميل تفاصيل العميل');
+      showToast('فشل في تحميل تفاصيل العميل', 'error');
       setShowDetailModal(false);
     } finally {
       setLoadingDetail(false);
@@ -88,13 +90,14 @@ export default function Customers() {
       }
 
       if (res.success) {
+        showToast(modalMode === 'add' ? 'تم إضافة العميل بنجاح' : 'تم تحديث بيانات العميل بنجاح', 'success');
         setShowModal(false);
         loadCustomers();
       } else {
-        alert(res.message || 'حدث خطأ أثناء الحفظ');
+        showToast(res.message || 'حدث خطأ أثناء الحفظ', 'error');
       }
     } catch (err) {
-      alert(err.message || 'خطأ في الاتصال بالخادم');
+      showToast(err.message || 'خطأ في الاتصال بالخادم', 'error');
     }
   };
 
@@ -106,12 +109,13 @@ export default function Customers() {
     try {
       const res = await customersAPI.delete(id);
       if (res.success) {
+        showToast('تم حذف العميل بنجاح', 'success');
         loadCustomers();
       } else {
-        alert(res.message || 'فشل في حذف العميل');
+        showToast(res.message || 'فشل في حذف العميل', 'error');
       }
     } catch (err) {
-      alert(err.message || 'خطأ أثناء الحذف');
+      showToast(err.message || 'خطأ أثناء الحذف', 'error');
     }
   };
 

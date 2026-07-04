@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, Sparkles } from 'lucide-react';
 import { servicesAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
 import Button from '../../components/UI/Button';
 import Card from '../../components/UI/Card';
 import Modal from '../../components/UI/Modal';
@@ -11,6 +12,7 @@ import './Services.css';
 
 export default function Services() {
   const { isAdmin } = useAuth();
+  const { showToast } = useToast();
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   
@@ -75,7 +77,7 @@ export default function Services() {
   const handleSave = async (e) => {
     e.preventDefault();
     if (!isAdmin) {
-      alert('عذراً، هذا الإجراء يتطلب صلاحيات مدير النظام');
+      showToast('عذراً، هذا الإجراء يتطلب صلاحيات مدير النظام', 'error');
       return;
     }
 
@@ -95,19 +97,20 @@ export default function Services() {
       }
 
       if (res.success) {
+        showToast(modalMode === 'add' ? 'تم إضافة الخدمة بنجاح' : 'تم تحديث بيانات الخدمة بنجاح', 'success');
         setShowModal(false);
         loadServices();
       } else {
-        alert(res.message || 'حدث خطأ أثناء الحفظ');
+        showToast(res.message || 'حدث خطأ أثناء الحفظ', 'error');
       }
     } catch (err) {
-      alert(err.message || 'حدث خطأ في الاتصال بالخادم');
+      showToast(err.message || 'حدث خطأ في الاتصال بالخادم', 'error');
     }
   };
 
   const handleDelete = async (id) => {
     if (!isAdmin) {
-      alert('عذراً، هذا الإجراء يتطلب صلاحيات مدير النظام');
+      showToast('عذراً، هذا الإجراء يتطلب صلاحيات مدير النظام', 'error');
       return;
     }
     if (!window.confirm('هل أنت متأكد من رغبتك في حذف/تعطيل هذه الخدمة؟')) {
@@ -116,12 +119,13 @@ export default function Services() {
     try {
       const res = await servicesAPI.delete(id);
       if (res.success) {
+        showToast('تم حذف/تعطيل الخدمة بنجاح', 'success');
         loadServices();
       } else {
-        alert(res.message || 'فشل في حذف الخدمة');
+        showToast(res.message || 'فشل في حذف الخدمة', 'error');
       }
     } catch (err) {
-      alert(err.message || 'خطأ أثناء حذف الخدمة');
+      showToast(err.message || 'خطأ أثناء حذف الخدمة', 'error');
     }
   };
 

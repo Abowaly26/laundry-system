@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Plus, User, Edit2 } from 'lucide-react';
 import { usersAPI } from '../../services/api';
+import { useToast } from '../../context/ToastContext';
 import Button from '../../components/UI/Button';
 import Modal from '../../components/UI/Modal';
 import LoadingSpinner from '../../components/UI/LoadingSpinner';
@@ -8,6 +9,7 @@ import EmptyState from '../../components/UI/EmptyState';
 import './Users.css';
 
 export default function Users() {
+  const { showToast } = useToast();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   
@@ -79,7 +81,7 @@ export default function Users() {
 
       if (modalMode === 'add') {
         if (!dataToSave.password) {
-          alert('يرجى إدخال كلمة مرور للمستخدم الجديد');
+          showToast('يرجى إدخال كلمة مرور للمستخدم الجديد', 'error');
           return;
         }
         res = await usersAPI.create(dataToSave);
@@ -88,13 +90,14 @@ export default function Users() {
       }
 
       if (res.success) {
+        showToast(modalMode === 'add' ? 'تم إضافة المستخدم بنجاح' : 'تم تحديث بيانات المستخدم بنجاح', 'success');
         setShowModal(false);
         loadUsers();
       } else {
-        alert(res.message || 'حدث خطأ أثناء حفظ المستخدم');
+        showToast(res.message || 'حدث خطأ أثناء حفظ المستخدم', 'error');
       }
     } catch (err) {
-      alert(err.message || 'حدث خطأ في الاتصال بالخادم');
+      showToast(err.message || 'حدث خطأ في الاتصال بالخادم', 'error');
     }
   };
 
@@ -107,12 +110,13 @@ export default function Users() {
     try {
       const res = await usersAPI.update(user.id, { is_active: newStatus });
       if (res.success) {
+        showToast(`تم ${newStatus === 1 ? 'تفعيل' : 'تعطيل'} حساب المستخدم بنجاح`, 'success');
         loadUsers();
       } else {
-        alert(res.message || 'فشل في تغيير حالة المستخدم');
+        showToast(res.message || 'فشل في تغيير حالة المستخدم', 'error');
       }
     } catch (err) {
-      alert(err.message || 'خطأ أثناء تغيير حالة المستخدم');
+      showToast(err.message || 'خطأ أثناء تغيير حالة المستخدم', 'error');
     }
   };
 
