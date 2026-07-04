@@ -1,4 +1,4 @@
-import { NavLink, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
   PlusCircle,
@@ -75,16 +75,15 @@ export default function Sidebar({ isOpen, onClose }) {
             }
 
             return (
-              <NavLink
+              <Link
                 key={item.path}
                 to={item.path}
                 className={`sidebar-nav-item ${isActive ? 'active' : ''}`}
                 onClick={onClose}
-                end={item.path === '/'}
               >
                 <Icon size={20} className="nav-icon" />
                 <span>{item.label}</span>
-              </NavLink>
+              </Link>
             );
           })}
         </nav>
