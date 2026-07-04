@@ -65,10 +65,14 @@ export default function Sidebar({ isOpen, onClose }) {
         <nav className="sidebar-nav">
           {filteredItems.map((item) => {
             const Icon = item.icon;
-            const isActive =
-              item.path === '/'
-                ? location.pathname === '/'
-                : location.pathname.startsWith(item.path);
+            let isActive = false;
+            if (item.path === '/') {
+              isActive = location.pathname === '/';
+            } else if (item.path === '/orders') {
+              isActive = location.pathname === '/orders' || (location.pathname.startsWith('/orders/') && location.pathname !== '/orders/new');
+            } else {
+              isActive = location.pathname.startsWith(item.path);
+            }
 
             return (
               <NavLink
