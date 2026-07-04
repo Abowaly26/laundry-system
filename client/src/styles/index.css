@@ -295,7 +295,11 @@ table tbody tr.clickable:active {
 .page {
   padding: var(--space-lg);
   max-width: 1400px;
-  animation: fadeIn 0.3s ease;
+  animation: fadeIn 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  background: radial-gradient(circle at top right, rgba(79, 70, 229, 0.02), transparent 450px),
+              radial-gradient(circle at bottom left, rgba(16, 185, 129, 0.01), transparent 450px);
+  min-height: calc(100vh - var(--header-height));
+  border-radius: var(--radius-lg);
 }
 
 .page-header {
