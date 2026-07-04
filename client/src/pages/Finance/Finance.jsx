@@ -38,9 +38,9 @@ export default function Finance() {
       const statsRes = await dashboardAPI.getStats();
       if (statsRes.success) {
         setFinanceStats({
-          today_revenue: statsRes.data.today_revenue || 0,
-          pending_revenue: statsRes.data.total_remaining || 0,
-          total_revenue: statsRes.data.total_revenue || 0
+          today_revenue: statsRes.todayRevenue || 0,
+          pending_revenue: statsRes.total_remaining || 0,
+          total_revenue: statsRes.total_revenue || 0
         });
       }
     } catch (err) {
@@ -63,9 +63,9 @@ export default function Finance() {
   };
 
   const formatDate = (dateStr) => {
-    if (!dateStr) return '';
+    if (!dateStr) return '-';
     const date = new Date(dateStr);
-    return date.toLocaleString('ar-EG', {
+    return isNaN(date.getTime()) ? '-' : date.toLocaleString('ar-EG', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',

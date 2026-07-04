@@ -38,6 +38,12 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '-';
+    const d = new Date(dateStr);
+    return isNaN(d.getTime()) ? '-' : d.toLocaleDateString('ar-EG');
+  };
+
   useEffect(() => {
     loadDashboard();
   }, []);
@@ -73,7 +79,7 @@ export default function Dashboard() {
       order.items?.length || 0,
       order.status === 'pending' ? 'قيد الانتظار' : order.status === 'processing' ? 'قيد المعالجة' : order.status === 'ready' ? 'جاهز للتسليم' : order.status === 'delivered' ? 'تم التسليم' : 'ملغي',
       order.totalAmount,
-      new Date(order.createdAt).toLocaleDateString('ar-EG')
+      formatDate(order.createdAt || order.created_at)
     ]);
     
     const csvContent = '\uFEFF' + [
@@ -340,7 +346,7 @@ export default function Dashboard() {
                       <StatusBadge status={order.status} />
                     </td>
                     <td>{order.totalAmount} ر.س</td>
-                    <td>{new Date(order.createdAt).toLocaleDateString('ar-EG')}</td>
+                    <td>{formatDate(order.createdAt || order.created_at)}</td>
                   </tr>
                 ))
               ) : (
