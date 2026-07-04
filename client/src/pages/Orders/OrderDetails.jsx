@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Printer, Wallet, ArrowRight, CheckCircle2, User, Calendar, CreditCard, Clock, FileText, MessageSquare } from 'lucide-react';
 import { ordersAPI, paymentsAPI, itemsAPI } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
+import { useSettings } from '../../context/SettingsContext';
 import Button from '../../components/UI/Button';
 import Card from '../../components/UI/Card';
 import StatusBadge from '../../components/UI/StatusBadge';
@@ -16,6 +17,7 @@ export default function OrderDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { showToast } = useToast();
+  const { settings } = useSettings();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   
@@ -139,7 +141,7 @@ export default function OrderDetails() {
 
     // إذا كان هناك متبقي مالي، يجب دفعه أولاً أو تأكيد ذلك يدوياً
     if (order.remaining_amount > 0) {
-      if (!window.confirm(`يوجد مبلغ متبقي (${order.remaining_amount} ر.س). هل تريد تحصيل المبلغ وتسليم الطلب الآن؟`)) {
+      if (!window.confirm(`يوجد مبلغ متبقي (${order.remaining_amount} ${settings.currency}). هل تريد تحصيل المبلغ وتسليم الطلب الآن؟`)) {
         setShowPaymentModal(true);
         setPaymentType('balance');
         setPaymentAmount(order.remaining_amount);
@@ -189,17 +191,16 @@ export default function OrderDetails() {
     const deliveryDate = formatDate(order.expected_delivery_at);
     const trackingLink = `${window.location.origin}/portal?phone=${customerPhone}&id=${orderId}`;
 
-    const text = `السلام عليكم يا ${customerName}، تم استلام طلبك رقم ${orderId} بنجاح.
-تفاصيل الطلب:
-- عدد القطع: ${itemsCount}
-- إجمالي الفاتورة: ${totalAmount} ر.س
-- المتبقي للدفع: ${remainingAmount} ر.س
-- موعد التسليم المتوقع: ${deliveryDate}
-
-يمكنك تتبع حالة غسيل وكي ملابسك مباشرة من رابط التتبع الخاص بك:
-${trackingLink}
-
-شكراً لثقتكم بنا! ✨`;
+    let text = settings.whatsappTemplate || '';
+    text = text
+      .replace(/{customer_name}/g, customerName)
+      .replace(/{order_id}/g, orderId)
+      .replace(/{items_count}/g, itemsCount)
+      .replace(/{total_amount}/g, totalAmount)
+      .replace(/{remaining_amount}/g, remainingAmount)
+      .replace(/{currency}/g, settings.currency)
+      .replace(/{delivery_date}/g, deliveryDate)
+      .replace(/{tracking_link}/g, trackingLink);
 
     const encodedText = encodeURIComponent(text);
     let sanitizedPhone = customerPhone.replace(/\D/g, '');
@@ -241,17 +242,6 @@ ${trackingLink}
     return (
       <div className="flex justify-center items-center" style={{ height: '300px' }}>
         <LoadingSpinner />
-      </div>
-    );
-  }
-
-  if (!order) {
-    return (
-      <div className="page">
-        <EmptyState 
-          title="الطلب غير موجود" 
-          message="عذراً، لم يتم العثور على الطلب المطلوب أو تم حذفه."
-        />
       </div>
     );
   }
@@ -319,17 +309,17 @@ ${trackingLink}
 
           <Card title="الملخص المالي" className="mt-md">
             <div className="summary-finance-rows">
-              <div className="fin-row">
-                <span>الإجمالي الكلي:</span>
-                <span>{parseFloat(order.total_amount).toFixed(2)} ر.س</span>
+              <div className="summary-row">
+                <span>الإجمالي:</span>
+                <span>{parseFloat(order.total_amount).toFixed(2)} {settings.currency}</span>
               </div>
-              <div className="fin-row text-success">
-                <span>المبلغ المدفوع:</span>
-                <span>{parseFloat(order.paid_amount).toFixed(2)} ر.س</span>
+              <div className="summary-row">
+                <span>المدفوع:</span>
+                <span>{parseFloat(order.paid_amount).toFixed(2)} {settings.currency}</span>
               </div>
-              <div className="fin-row text-warning font-bold">
-                <span>المبلغ المتبقي:</span>
-                <span>{parseFloat(order.remaining_amount).toFixed(2)} ر.س</span>
+              <div className="summary-row">
+                <span>المتبقي:</span>
+                <span>{parseFloat(order.remaining_amount).toFixed(2)} {settings.currency}</span>
               </div>
             </div>
 
@@ -417,7 +407,7 @@ ${trackingLink}
                       <td>{getItemTypeAr(item.item_type)}</td>
                       <td>{item.service_name_ar || item.service?.name_ar}</td>
                       <td>{item.notes || '-'}</td>
-                      <td>{parseFloat(item.price).toFixed(2)} ر.س</td>
+                      <td>{parseFloat(item.price).toFixed(2)} {settings.currency}</td>
                       <td>
                         <StatusBadge status={item.status} type="item" />
                       </td>
@@ -460,7 +450,7 @@ ${trackingLink}
                     {order.payments?.map((payment) => (
                       <tr key={payment.id}>
                         <td>#{payment.id}</td>
-                        <td className="font-bold text-success">{parseFloat(payment.amount).toFixed(2)} ر.س</td>
+                        <td className="font-bold text-success">{parseFloat(payment.amount).toFixed(2)} {settings.currency}</td>
                         <td>{payment.method === 'cash' ? 'نقدي' : 'إلكتروني'}</td>
                         <td>
                           {payment.type === 'deposit' ? 'دفعة مقدمة' : 
@@ -485,7 +475,7 @@ ${trackingLink}
       >
         <form onSubmit={handleSavePayment}>
           <div className="form-group">
-            <label className="form-label">المبلغ المراد سداده (ر.س)</label>
+            <label className="form-label">المبلغ المراد سداده ({settings.currency})</label>
             <input
               type="number"
               className="form-input"
@@ -496,7 +486,7 @@ ${trackingLink}
               step="0.5"
               required
             />
-            <span className="help-text">الحد الأقصى المتبقي: {order?.remaining_amount} ر.س</span>
+            <span className="help-text">الحد الأقصى المتبقي: {order?.remaining_amount} {settings.currency}</span>
           </div>
 
           <div className="form-group">

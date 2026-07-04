@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Plus, Trash2, Search, UserPlus, Printer, ArrowRight, Save, FileText } from 'lucide-react';
 import { customersAPI, servicesAPI, ordersAPI } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
+import { useSettings } from '../../context/SettingsContext';
 import Button from '../../components/UI/Button';
 import Card from '../../components/UI/Card';
 import Modal from '../../components/UI/Modal';
@@ -25,6 +26,7 @@ const COMMON_ITEMS = [
 export default function NewOrder() {
   const navigate = useNavigate();
   const { showToast } = useToast();
+  const { settings } = useSettings();
   const [services, setServices] = useState([]);
   
   // بيانات العميل
@@ -210,17 +212,16 @@ export default function NewOrder() {
         
         const trackingLink = `${window.location.origin}/portal?phone=${customerPhone}&id=${orderId}`;
 
-        const text = `السلام عليكم يا ${customerName}، تم استلام طلبك رقم ${orderId} بنجاح.
-تفاصيل الطلب:
-- عدد القطع: ${itemsCount}
-- إجمالي الفاتورة: ${formattedTotal} ر.س
-- المتبقي للدفع: ${formattedRemaining} ر.س
-- موعد التسليم المتوقع: ${deliveryDateStr}
-
-يمكنك تتبع حالة غسيل وكي ملابسك مباشرة من رابط التتبع الخاص بك:
-${trackingLink}
-
-شكراً لثقتكم بنا! ✨`;
+        let text = settings.whatsappTemplate || '';
+        text = text
+          .replace(/{customer_name}/g, customerName)
+          .replace(/{order_id}/g, orderId)
+          .replace(/{items_count}/g, itemsCount)
+          .replace(/{total_amount}/g, formattedTotal)
+          .replace(/{remaining_amount}/g, formattedRemaining)
+          .replace(/{currency}/g, settings.currency)
+          .replace(/{delivery_date}/g, deliveryDateStr)
+          .replace(/{tracking_link}/g, trackingLink);
 
         const encodedText = encodeURIComponent(text);
         let sanitizedPhone = customerPhone.replace(/\D/g, '');
@@ -395,7 +396,7 @@ ${trackingLink}
                           <option value="">اختر الخدمة...</option>
                           {services.map(s => (
                             <option key={s.id} value={s.id}>
-                              {s.name_ar} ({s.price} ر.س)
+                              {s.name_ar} ({s.price} {settings.currency})
                             </option>
                           ))}
                         </select>
@@ -446,7 +447,7 @@ ${trackingLink}
             <div className="financials-summary-box">
               <div className="financial-row">
                 <span>إجمالي الطلب:</span>
-                <span className="amount-val font-bold">{totalAmount.toFixed(2)} ر.س</span>
+                <span className="amount-val font-bold">{totalAmount.toFixed(2)} {settings.currency}</span>
               </div>
               <div className="financial-row">
                 <span>المبلغ المدفوع (مقدم):</span>
@@ -460,13 +461,13 @@ ${trackingLink}
                     min="0"
                     step="0.5"
                   />
-                  <span className="suffix">ر.س</span>
+                  <span className="suffix">{settings.currency}</span>
                 </div>
               </div>
               <div className="financial-row">
                 <span>المتبقي عند التسليم:</span>
                 <span className={`amount-val font-bold ${remainingAmount > 0 ? 'text-warning' : 'text-success'}`}>
-                  {remainingAmount.toFixed(2)} ر.س
+                  {remainingAmount.toFixed(2)} {settings.currency}
                 </span>
               </div>
 

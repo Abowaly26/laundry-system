@@ -1,6 +1,8 @@
 import React from 'react';
+import { useSettings } from '../../context/SettingsContext';
 
 export default function PrintInvoice({ order }) {
+  const { settings } = useSettings();
   if (!order) return null;
 
   const formatDate = (dateStr) => {
@@ -47,9 +49,10 @@ export default function PrintInvoice({ order }) {
   return (
     <div className="print-receipt print-receipt-80" style={{ direction: 'rtl', fontFamily: 'Cairo, sans-serif' }}>
       <div className="receipt-header" style={{ textAlign: 'center', marginBottom: '15px' }}>
-        <h2 style={{ margin: '0 0 5px 0', fontSize: '18px' }}>مغسلة الملابس الذكية</h2>
-        <p style={{ margin: '0 0 5px 0', fontSize: '12px' }}>نظام إدارة وتتبع ذكي</p>
-        <p style={{ margin: '0', fontSize: '11px', color: '#666' }}>هاتف: 0501234567</p>
+        <h2 style={{ margin: '0 0 5px 0', fontSize: '16px', fontWeight: 'bold' }}>{settings.laundryName}</h2>
+        {settings.laundryAddress && <p style={{ margin: '0 0 3px 0', fontSize: '10px', color: '#555' }}>{settings.laundryAddress}</p>}
+        <p style={{ margin: '0 0 3px 0', fontSize: '10px', color: '#555' }}>هاتف: {settings.laundryPhone}</p>
+        {settings.taxNumber && <p style={{ margin: '0', fontSize: '10px', color: '#555', fontWeight: '600' }}>الرقم الضريبي: {settings.taxNumber}</p>}
       </div>
 
       <div style={{ borderBottom: '1px dashed #000', paddingBottom: '8px', marginBottom: '8px', fontSize: '12px' }}>
@@ -83,17 +86,29 @@ export default function PrintInvoice({ order }) {
       </table>
 
       <div style={{ borderTop: '1px dashed #000', paddingTop: '8px', fontSize: '12px' }}>
+        {settings.vatPercent > 0 && (
+          <>
+            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '2px 0', fontSize: '11px', color: '#555' }}>
+              <span>الإجمالي الخاضع للضريبة:</span>
+              <span>{formatAmount(order.total_amount / (1 + settings.vatPercent / 100))} {settings.currency}</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '2px 0', fontSize: '11px', color: '#555' }}>
+              <span>ضريبة القيمة المضافة ({settings.vatPercent}%):</span>
+              <span>{formatAmount(order.total_amount - (order.total_amount / (1 + settings.vatPercent / 100)))} {settings.currency}</span>
+            </div>
+          </>
+        )}
         <div style={{ display: 'flex', justifyContent: 'space-between', padding: '2px 0' }}>
-          <span>الإجمالي:</span>
-          <strong>{formatAmount(order.total_amount)} ر.س</strong>
+          <span><strong>الإجمالي شامل الضريبة:</strong></span>
+          <strong>{formatAmount(order.total_amount)} {settings.currency}</strong>
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', padding: '2px 0' }}>
           <span>المدفوع:</span>
-          <span>{formatAmount(order.paid_amount)} ر.س</span>
+          <span>{formatAmount(order.paid_amount)} {settings.currency}</span>
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', padding: '2px 0', borderTop: '1px solid #eee', marginTop: '4px' }}>
           <span>المتبقي:</span>
-          <strong style={{ fontSize: '13px' }}>{formatAmount(order.remaining_amount)} ر.س</strong>
+          <strong style={{ fontSize: '13px' }}>{formatAmount(order.remaining_amount)} {settings.currency}</strong>
         </div>
         {order.payment_method && (
           <div style={{ display: 'flex', justifyContent: 'space-between', padding: '2px 0' }}>

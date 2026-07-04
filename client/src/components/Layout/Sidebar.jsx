@@ -8,10 +8,12 @@ import {
   Sparkles,
   Wallet,
   UserCog,
+  Settings as SettingsIcon,
   LogOut,
   WashingMachine,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useSettings } from '../../context/SettingsContext';
 import './Sidebar.css';
 
 const navItems = [
@@ -23,6 +25,7 @@ const navItems = [
   { path: '/services', label: 'الخدمات', icon: Sparkles },
   { path: '/finance', label: 'المالية', icon: Wallet },
   { path: '/users', label: 'المستخدمين', icon: UserCog, adminOnly: true },
+  { path: '/settings', label: 'الإعدادات', icon: SettingsIcon, adminOnly: true },
 ];
 
 const roleLabels = {
@@ -34,6 +37,7 @@ const roleLabels = {
 
 export default function Sidebar({ isOpen, onClose }) {
   const { user, logout, isAdmin } = useAuth();
+  const { settings } = useSettings();
   const location = useLocation();
 
   const filteredItems = navItems.filter(
@@ -57,7 +61,7 @@ export default function Sidebar({ isOpen, onClose }) {
             <WashingMachine size={22} />
           </div>
           <div className="brand-text">
-            <span className="brand-name">المغسلة الذكية</span>
+            <span className="brand-name">{settings.laundryName || 'المغسلة الذكية'}</span>
             <span className="brand-subtitle">نظام إدارة المغاسل</span>
           </div>
         </div>
