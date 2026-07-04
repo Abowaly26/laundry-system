@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Printer, Wallet, ArrowRight, CheckCircle2, User, Calendar, CreditCard, Clock, FileText, MessageSquare } from 'lucide-react';
 import { ordersAPI, paymentsAPI, itemsAPI } from '../../services/api';
+import { useToast } from '../../context/ToastContext';
 import Button from '../../components/UI/Button';
 import Card from '../../components/UI/Card';
 import StatusBadge from '../../components/UI/StatusBadge';
@@ -14,6 +15,7 @@ import './OrderDetails.css';
 export default function OrderDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   
@@ -33,15 +35,14 @@ export default function OrderDetails() {
       const res = await ordersAPI.getById(id);
       if (res.success) {
         setOrder(res.data);
-        // تعيين المبلغ المتبقي كقيمة افتراضية للدفع
         setPaymentAmount(res.data.remaining_amount || 0);
       } else {
-        alert('لم يتم العثور على الطلب');
+        showToast('لم يتم العثور على الطلب', 'error');
         navigate('/orders');
       }
     } catch (err) {
       console.error(err);
-      alert('خطأ في تحميل تفاصيل الطلب');
+      showToast('خطأ في تحميل تفاصيل الطلب', 'error');
     } finally {
       setLoading(false);
     }
@@ -80,11 +81,11 @@ export default function OrderDetails() {
   const handleSavePayment = async (e) => {
     e.preventDefault();
     if (paymentAmount <= 0) {
-      alert('الرجاء إدخال مبلغ صحيح');
+      showToast('الرجاء إدخال مبلغ صحيح', 'warning');
       return;
     }
     if (paymentAmount > order.remaining_amount) {
-      alert('المبلغ المدفوع أكبر من المبلغ المتبقي على الطلب');
+      showToast('المبلغ المدفوع أكبر من المبلغ المتبقي على الطلب', 'warning');
       return;
     }
 
@@ -99,12 +100,13 @@ export default function OrderDetails() {
 
       if (res.success) {
         setShowPaymentModal(false);
+        showToast('تم تسجيل الدفعة بنجاح! 💸', 'success');
         loadOrderDetails();
       } else {
-        alert(res.message || 'فشل في حفظ الدفعة');
+        showToast(res.message || 'فشل في حفظ الدفعة', 'error');
       }
     } catch (err) {
-      alert(err.message || 'خطأ في الاتصال بالخادم');
+      showToast(err.message || 'خطأ في الاتصال بالخادم', 'error');
     } finally {
       setSavingPayment(false);
     }
@@ -115,12 +117,13 @@ export default function OrderDetails() {
     try {
       const res = await itemsAPI.advanceStatus(itemId);
       if (res.success) {
-        loadOrderDetails(); // إعادة تحميل الطلب لرؤية التحديثات
+        showToast('تم تحديث حالة القطعة بنجاح!', 'success');
+        loadOrderDetails();
       } else {
-        alert(res.message || 'فشل في تحديث حالة القطعة');
+        showToast(res.message || 'فشل في تحديث حالة القطعة', 'error');
       }
     } catch (err) {
-      alert(err.message || 'خطأ أثناء التحديث');
+      showToast(err.message || 'خطأ أثناء التحديث', 'error');
     }
   };
 
@@ -153,7 +156,7 @@ export default function OrderDetails() {
           type: 'balance'
         });
       } catch (err) {
-        alert('حدث خطأ أثناء تسجيل الدفعة المتبقية: ' + err.message);
+        showToast('حدث خطأ أثناء تسجيل الدفعة المتبقية: ' + err.message, 'error');
         setDelivering(false);
         return;
       }
@@ -163,12 +166,13 @@ export default function OrderDetails() {
       setDelivering(true);
       const res = await ordersAPI.update(id, { status: 'delivered' });
       if (res.success) {
+        showToast('تم تسليم الطلب وإغلاقه بنجاح! ✓', 'success');
         loadOrderDetails();
       } else {
-        alert(res.message || 'فشل في تحديث حالة الطلب');
+        showToast(res.message || 'فشل في تحديث حالة الطلب', 'error');
       }
     } catch (err) {
-      alert(err.message || 'خطأ أثناء تحديث الطلب');
+      showToast(err.message || 'خطأ أثناء تحديث الطلب', 'error');
     } finally {
       setDelivering(false);
     }

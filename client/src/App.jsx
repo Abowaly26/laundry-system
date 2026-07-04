@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, ProtectedRoute } from './context/AuthContext';
+import { ToastProvider } from './context/ToastContext';
 import Layout from './components/Layout/Layout';
 
 // استيراد الصفحات
@@ -18,7 +19,8 @@ import CustomerPortal from './pages/CustomerPortal/CustomerPortal';
 function App() {
   return (
     <Router>
-      <AuthProvider>
+      <ToastProvider>
+        <AuthProvider>
         <Routes>
           {/* مسار بوابة العميل العامة - لا تحتاج لمصادقة */}
           <Route path="/portal" element={<CustomerPortal />} />
@@ -65,7 +67,8 @@ function App() {
           {/* إعادة التوجيه الافتراضية */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </AuthProvider>
+        </AuthProvider>
+      </ToastProvider>
     </Router>
   );
 }

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Trash2, Search, UserPlus, Printer, ArrowRight, Save, Calendar, FileText } from 'lucide-react';
 import { customersAPI, servicesAPI, ordersAPI } from '../../services/api';
+import { useToast } from '../../context/ToastContext';
 import Button from '../../components/UI/Button';
 import Card from '../../components/UI/Card';
 import Modal from '../../components/UI/Modal';
@@ -24,6 +25,7 @@ const COMMON_ITEMS = [
 
 export default function NewOrder() {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [services, setServices] = useState([]);
   
   // بيانات العميل
@@ -154,13 +156,13 @@ export default function NewOrder() {
   // حفظ الطلب وإرساله للخادم
   const handleSubmitOrder = async () => {
     if (!selectedCustomer) {
-      alert('يرجى اختيار عميل أو إضافة عميل جديد أولاً');
+      showToast('يرجى اختيار عميل أو إضافة عميل جديد أولاً', 'warning');
       return;
     }
 
     const invalidItems = items.some(item => !item.service_id);
     if (invalidItems) {
-      alert('يرجى اختيار الخدمة المطلوبة لجميع القطع المضافة');
+      showToast('يرجى اختيار الخدمة المطلوبة لجميع القطع المضافة', 'warning');
       return;
     }
 
@@ -187,12 +189,13 @@ export default function NewOrder() {
       const res = await ordersAPI.create(orderData);
       if (res.success) {
         setCreatedOrder(res.data);
+        showToast('تم حفظ وإنشاء الطلب بنجاح! 🎉', 'success');
         setShowPrintModal(true);
       } else {
-        alert(res.message || 'فشل في حفظ الطلب');
+        showToast(res.message || 'فشل في حفظ الطلب', 'error');
       }
     } catch (err) {
-      alert(err.message || 'حدث خطأ في الاتصال بالخادم');
+      showToast(err.message || 'حدث خطأ في الاتصال بالخادم', 'error');
     } finally {
       setIsSubmitting(false);
     }
