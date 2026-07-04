@@ -163,8 +163,8 @@ export default function Dashboard() {
               <div className="stat-info">
                 <div className="stat-label">{stat.label}</div>
                 <div className="stat-value">
-                  {stat.value.toLocaleString('ar-SA')}
-                  {stat.unit && <span className="stat-unit">{stat.unit}</span>}
+                  {stat.value}
+                  {stat.unit && <span className="stat-unit"> {stat.unit}</span>}
                 </div>
               </div>
             </div>
@@ -221,7 +221,7 @@ export default function Dashboard() {
                   className="order-link"
                   onClick={() => navigate(`/orders/${order._id || order.id}`)}
                 >
-                  #{order.orderNumber || order._id}
+                  #{order.orderNumber || order.id}
                 </span>
                 {' - '}
                 {order.customer?.name || 'عميل'}
@@ -260,14 +260,14 @@ export default function Dashboard() {
                     className="clickable"
                     onClick={() => navigate(`/orders/${order._id || order.id}`)}
                   >
-                    <td>#{order.orderNumber || order._id?.slice(-6)}</td>
+                    <td>#{order.orderNumber || order.id}</td>
                     <td>{order.customer?.name || '-'}</td>
                     <td>{order.items?.length || 0}</td>
                     <td>
                       <StatusBadge status={order.status} />
                     </td>
-                    <td>{order.totalAmount?.toLocaleString('ar-SA')} ر.س</td>
-                    <td>{new Date(order.createdAt).toLocaleDateString('ar-SA')}</td>
+                    <td>{order.totalAmount} ر.س</td>
+                    <td>{new Date(order.createdAt).toLocaleDateString('ar-EG')}</td>
                   </tr>
                 ))
               ) : (
