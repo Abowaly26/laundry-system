@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Search, Plus, User, Edit2, Trash2, Calendar, Phone, MapPin } from 'lucide-react';
 import { customersAPI } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
+import { useSettings } from '../../context/SettingsContext';
 import Button from '../../components/UI/Button';
 import Card from '../../components/UI/Card';
 import Modal from '../../components/UI/Modal';
@@ -11,6 +12,7 @@ import './Customers.css';
 
 export default function Customers() {
   const { showToast } = useToast();
+  const { settings } = useSettings();
 
   const getInitials = (name) => {
     if (!name) return '؟';
@@ -316,21 +318,23 @@ export default function Customers() {
           <div className="customer-detail-content">
             <div className="customer-detail-summary-card mb-md">
               <div className="cust-info">
-                <h2>{customerDetail.customer?.name}</h2>
-                <p><Phone size={14} style={{ marginLeft: '4px' }} /> {customerDetail.customer?.phone}</p>
-                {customerDetail.customer?.address && (
-                  <p><MapPin size={14} style={{ marginLeft: '4px' }} /> {customerDetail.customer?.address}</p>
+                <h2>{customerDetail.name}</h2>
+                <p><Phone size={14} style={{ marginLeft: '4px' }} /> {customerDetail.phone}</p>
+                {customerDetail.address && (
+                  <p><MapPin size={14} style={{ marginLeft: '4px' }} /> {customerDetail.address}</p>
                 )}
-                <p><Calendar size={14} style={{ marginLeft: '4px' }} /> عميل منذ: {formatDate(customerDetail.customer?.created_at)}</p>
+                <p><Calendar size={14} style={{ marginLeft: '4px' }} /> عميل منذ: {formatDate(customerDetail.created_at)}</p>
               </div>
               <div className="cust-stats">
                 <div className="stat-box">
                   <span className="stat-lbl">إجمالي الطلبات</span>
-                  <span className="stat-val">{customerDetail.stats?.orders_count || 0}</span>
+                  <span className="stat-val">{customerDetail.orders?.length || 0}</span>
                 </div>
                 <div className="stat-box">
                   <span className="stat-lbl">إجمالي الإنفاق</span>
-                  <span className="stat-val text-success">{(customerDetail.stats?.total_spent || 0).toFixed(2)} ر.س</span>
+                  <span className="stat-val text-success">
+                    {((customerDetail.orders || []).reduce((sum, o) => sum + parseFloat(o.total_amount || 0), 0)).toFixed(2)} {settings?.currency || 'ر.س'}
+                  </span>
                 </div>
               </div>
             </div>
@@ -356,10 +360,10 @@ export default function Customers() {
                       <tr key={order.id}>
                         <td><strong>#{order.id}</strong></td>
                         <td>{formatDate(order.created_at)}</td>
-                        <td>{parseFloat(order.total_amount).toFixed(2)} ر.س</td>
-                        <td>{parseFloat(order.paid_amount).toFixed(2)} ر.س</td>
+                        <td>{parseFloat(order.total_amount).toFixed(2)} {settings?.currency || 'ر.س'}</td>
+                        <td>{parseFloat(order.paid_amount).toFixed(2)} {settings?.currency || 'ر.س'}</td>
                         <td className={parseFloat(order.remaining_amount) > 0 ? 'text-warning' : 'text-success'}>
-                          {parseFloat(order.remaining_amount).toFixed(2)} ر.s
+                          {parseFloat(order.remaining_amount).toFixed(2)} {settings?.currency || 'ر.س'}
                         </td>
                         <td>{order.status === 'pending' ? 'انتظار' : order.status === 'ready' ? 'جاهز' : 'مكتمل'}</td>
                       </tr>
