@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Wallet, Calendar, Search, CreditCard, ArrowRightLeft, TrendingUp } from 'lucide-react';
+import { Wallet, CreditCard, TrendingUp } from 'lucide-react';
 import { paymentsAPI, dashboardAPI } from '../../services/api';
 import Card from '../../components/UI/Card';
 import Button from '../../components/UI/Button';

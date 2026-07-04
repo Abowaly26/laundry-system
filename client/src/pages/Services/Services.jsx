@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, ShieldAlert, Sparkles, Check, X } from 'lucide-react';
+import { Plus, Edit2, Trash2, Sparkles } from 'lucide-react';
 import { servicesAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import Button from '../../components/UI/Button';

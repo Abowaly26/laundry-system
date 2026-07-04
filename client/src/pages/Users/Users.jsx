@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Plus, UserCog, User, Edit2, ShieldAlert, Check, X } from 'lucide-react';
+import { Plus, User, Edit2 } from 'lucide-react';
 import { usersAPI } from '../../services/api';
 import Button from '../../components/UI/Button';
-import Card from '../../components/UI/Card';
 import Modal from '../../components/UI/Modal';
 import LoadingSpinner from '../../components/UI/LoadingSpinner';
 import EmptyState from '../../components/UI/EmptyState';

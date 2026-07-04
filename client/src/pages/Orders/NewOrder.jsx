@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Trash2, Search, UserPlus, Printer, ArrowRight, Save, Calendar, FileText } from 'lucide-react';
+import { Plus, Trash2, Search, UserPlus, Printer, ArrowRight, Save, FileText } from 'lucide-react';
 import { customersAPI, servicesAPI, ordersAPI } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import Button from '../../components/UI/Button';
 import Card from '../../components/UI/Card';
 import Modal from '../../components/UI/Modal';
-import Table from '../../components/UI/Table';
 import PrintInvoice from '../../components/Print/PrintInvoice';
 import PrintQRLabels from '../../components/Print/PrintQRLabels';
 import './NewOrder.css';

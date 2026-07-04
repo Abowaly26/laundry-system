@@ -22,15 +22,6 @@ export default function PrintQRLabels({ items, orderId }) {
   return (
     <div className="print-labels-container" style={{ direction: 'rtl' }}>
       {items.map((item, index) => {
-        // إنشاء الكود ليكون معرفاً فريداً ومقروءاً بالـ QR
-        // البيانات المخزنة بالـ QR
-        const qrValue = JSON.stringify({
-          id: item.id,
-          order_id: orderId,
-          qr_code: item.qr_code,
-          service: item.service_name_ar || (item.service && item.service.name_ar) || ''
-        });
-
         return (
           <div 
             key={index} 

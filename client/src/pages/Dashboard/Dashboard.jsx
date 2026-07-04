@@ -22,7 +22,7 @@ import {
   Legend,
   Filler,
 } from 'chart.js';
-import { Bar, Line, Doughnut } from 'react-chartjs-2';
+import { Line, Doughnut } from 'react-chartjs-2';
 import { dashboardAPI } from '../../services/api';
 import StatusBadge from '../../components/UI/StatusBadge';
 import LoadingSpinner from '../../components/UI/LoadingSpinner';

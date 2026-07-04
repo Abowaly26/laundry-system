@@ -1,10 +1,9 @@
 import { useState } from 'react';
-import { Scan, Keyboard, Search, ArrowLeftRight, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Scan, Keyboard, Search, CheckCircle2, ArrowRight } from 'lucide-react';
 import { itemsAPI } from '../../services/api';
 import QRScanner from '../../components/QR/QRScanner';
 import Button from '../../components/UI/Button';
 import Card from '../../components/UI/Card';
-import StatusBadge from '../../components/UI/StatusBadge';
 import './ItemTracking.css';
 
 const STATUS_STEPS = [

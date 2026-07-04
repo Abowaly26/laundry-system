@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Plus, User, Edit2, Trash2, Calendar, Phone, MapPin, Eye } from 'lucide-react';
+import { Search, Plus, User, Edit2, Trash2, Calendar, Phone, MapPin } from 'lucide-react';
 import { customersAPI } from '../../services/api';
 import Button from '../../components/UI/Button';
 import Card from '../../components/UI/Card';
