@@ -271,7 +271,7 @@ export default function Dashboard() {
             عرض الكل
           </Link>
         </div>
-        <div className="table-container" style={{ border: 'none', borderRadius: 0 }}>
+        <div className="table-container">
           <table>
             <thead>
               <tr>
