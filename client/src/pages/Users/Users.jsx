@@ -10,6 +10,30 @@ import './Users.css';
 
 export default function Users() {
   const { showToast } = useToast();
+
+  const getInitials = (name) => {
+    if (!name) return '؟';
+    return name.split(' ').filter(Boolean).map((n) => n[0]).join('').slice(0, 2);
+  };
+
+  const getAvatarGradient = (name) => {
+    const gradients = [
+      'linear-gradient(135deg, #4F46E5 0%, #3B82F6 100%)', // Indigo/Blue
+      'linear-gradient(135deg, #10B981 0%, #059669 100%)', // Emerald/Green
+      'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)', // Amber/Orange
+      'linear-gradient(135deg, #EC4899 0%, #BE185D 100%)', // Pink/Rose
+      'linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)', // Purple/Violet
+      'linear-gradient(135deg, #06B6D4 0%, #0891B2 100%)', // Cyan/Teal
+    ];
+    let hash = 0;
+    const nameStr = name || '';
+    for (let i = 0; i < nameStr.length; i++) {
+      hash = nameStr.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const index = Math.abs(hash) % gradients.length;
+    return gradients[index];
+  };
+
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   
@@ -168,8 +192,16 @@ export default function Users() {
                 <tr key={user.id}>
                   <td>
                     <div className="flex items-center gap-sm">
-                      <div className="avatar-wrapper">
-                        <User size={16} />
+                      <div 
+                        className="avatar-wrapper"
+                        style={{ 
+                          background: getAvatarGradient(user.name),
+                          color: '#FFFFFF',
+                          fontWeight: 'bold',
+                          fontSize: '0.8rem'
+                        }}
+                      >
+                        {getInitials(user.name)}
                       </div>
                       <strong>{user.name}</strong>
                     </div>
