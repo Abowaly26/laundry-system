@@ -425,55 +425,45 @@ table tbody tr.clickable:active {
     padding: 4px 8px;
   }
 
+  /* Thermal Printer Layout */
   @page {
-    margin: 5mm;
+    size: 80mm auto;
+    margin: 0;
   }
 
-  /* Default hide all print containers */
-  .print-a4-container,
-  .print-thermal-container,
-  .print-qr-container {
-    display: none;
-  }
-
-  /* Show appropriate container based on body class */
-  body.print-a4-mode .print-a4-container {
-    display: block;
-  }
-  
-  body.print-thermal-mode .print-thermal-container {
-    display: block;
-  }
-
-  body.print-qr-mode .print-qr-container {
-    display: block;
-  }
-
-  /* A4 Invoice Styles */
   .print-receipt {
-    width: 100%;
-    max-width: 800px;
-    margin: 0 auto;
-    font-size: 14px;
-    background: #fff;
-    padding: 20px;
-  }
-
-  /* Thermal Receipt Styles */
-  .print-receipt-thermal {
     width: 76mm;
     margin: 0 auto;
-    font-size: 11px;
+    padding: 2mm;
+    font-size: 13px;
+    line-height: 1.4;
+    background: #fff;
+    color: #000;
   }
-  .print-receipt-thermal .receipt-header {
+
+  .print-receipt .receipt-header {
     text-align: center;
-    border-bottom: 1px dashed #000;
-    padding-bottom: 4px;
-    margin-bottom: 4px;
+    border-bottom: 2px dashed #000;
+    padding-bottom: 8px;
+    margin-bottom: 8px;
   }
-  .print-receipt-thermal table th, 
-  .print-receipt-thermal table td {
+
+  .print-receipt .receipt-row {
+    display: flex;
+    justify-content: space-between;
     padding: 2px 0;
+  }
+
+  .print-receipt .receipt-total {
+    border-top: 2px dashed #000;
+    padding-top: 6px;
+    margin-top: 6px;
+    font-weight: bold;
+    font-size: 14px;
+  }
+
+  .print-receipt-80 {
+    width: 76mm;
   }
 
   /* QR Label Print */
@@ -482,12 +472,8 @@ table tbody tr.clickable:active {
     height: 30mm;
     display: flex;
     align-items: center;
-    justify-content: center;
-    text-align: center;
-    page-break-after: always;
-    border: none;
-    padding: 0;
     gap: 4px;
+    page-break-after: always;
   }
 
   .print-qr-label canvas,
