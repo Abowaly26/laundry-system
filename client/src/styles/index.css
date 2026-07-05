@@ -426,9 +426,30 @@ table tbody tr.clickable:active {
   }
 
   @page {
-    margin: 10mm;
+    margin: 5mm;
   }
 
+  /* Default hide all print containers */
+  .print-a4-container,
+  .print-thermal-container,
+  .print-qr-container {
+    display: none;
+  }
+
+  /* Show appropriate container based on body class */
+  body.print-a4-mode .print-a4-container {
+    display: block;
+  }
+  
+  body.print-thermal-mode .print-thermal-container {
+    display: block;
+  }
+
+  body.print-qr-mode .print-qr-container {
+    display: block;
+  }
+
+  /* A4 Invoice Styles */
   .print-receipt {
     width: 100%;
     max-width: 800px;
@@ -438,25 +459,21 @@ table tbody tr.clickable:active {
     padding: 20px;
   }
 
-  .print-receipt .receipt-header {
+  /* Thermal Receipt Styles */
+  .print-receipt-thermal {
+    width: 76mm;
+    margin: 0 auto;
+    font-size: 11px;
+  }
+  .print-receipt-thermal .receipt-header {
     text-align: center;
-    border-bottom: 2px solid #333;
-    padding-bottom: 15px;
-    margin-bottom: 20px;
+    border-bottom: 1px dashed #000;
+    padding-bottom: 4px;
+    margin-bottom: 4px;
   }
-
-  .print-receipt .receipt-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 4px 0;
-  }
-
-  .print-receipt .receipt-total {
-    border-top: 2px solid #333;
-    padding-top: 10px;
-    margin-top: 10px;
-    font-weight: bold;
-    font-size: 16px;
+  .print-receipt-thermal table th, 
+  .print-receipt-thermal table td {
+    padding: 2px 0;
   }
 
   /* QR Label Print */
@@ -465,8 +482,12 @@ table tbody tr.clickable:active {
     height: 30mm;
     display: flex;
     align-items: center;
-    gap: 4px;
+    justify-content: center;
+    text-align: center;
     page-break-after: always;
+    border: none;
+    padding: 0;
+    gap: 4px;
   }
 
   .print-qr-label canvas,

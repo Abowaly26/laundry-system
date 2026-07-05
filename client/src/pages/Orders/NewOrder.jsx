@@ -8,6 +8,7 @@ import Button from '../../components/UI/Button';
 import Card from '../../components/UI/Card';
 import Modal from '../../components/UI/Modal';
 import PrintInvoice from '../../components/Print/PrintInvoice';
+import PrintInvoiceThermal from '../../components/Print/PrintInvoiceThermal';
 import PrintQRLabels from '../../components/Print/PrintQRLabels';
 import './NewOrder.css';
 
@@ -243,29 +244,17 @@ export default function NewOrder() {
     }
   };
 
-  const printOrder = (invoiceOnly = false) => {
+  const printOrder = (mode = 'a4') => {
     const cleanup = () => {
-      document.body.classList.remove('print-invoice-only');
+      document.body.classList.remove('print-a4-mode', 'print-thermal-mode', 'print-qr-mode');
       window.removeEventListener('afterprint', cleanup);
     };
 
-    if (invoiceOnly) {
-      document.body.classList.add('print-invoice-only');
-      window.addEventListener('afterprint', cleanup);
-    } else {
-      document.body.classList.remove('print-invoice-only');
-    }
+    document.body.classList.add(`print-${mode}-mode`);
+    window.addEventListener('afterprint', cleanup);
 
     window.print();
-    if (invoiceOnly) setTimeout(cleanup, 1000);
-  };
-
-  const handlePrintInvoice = () => {
-    printOrder(false);
-  };
-
-  const handleDownloadInvoicePdf = () => {
-    printOrder(true);
+    setTimeout(cleanup, 1000);
   };
 
   return (
@@ -586,15 +575,19 @@ export default function NewOrder() {
             </div>
 
             <div className="print-options-grid">
-              <Button variant="primary" className="print-option-btn" onClick={handlePrintInvoice}>
-                <Printer size={20} style={{ marginLeft: '8px' }} />
-                طباعة الفاتورة والملصقات
-              </Button>
-              <Button variant="secondary" className="print-option-btn" onClick={handleDownloadInvoicePdf}>
+              <Button variant="secondary" className="print-option-btn" onClick={() => printOrder('a4')}>
                 <FileText size={20} style={{ marginLeft: '8px' }} />
-                تنزيل PDF للفاتورة
+                طباعة فاتورة (A4)
               </Button>
-              <Button variant="secondary" onClick={() => {
+              <Button variant="secondary" className="print-option-btn" onClick={() => printOrder('thermal')}>
+                <Printer size={20} style={{ marginLeft: '8px' }} />
+                إيصال حراري (80mm)
+              </Button>
+              <Button variant="secondary" className="print-option-btn" onClick={() => printOrder('qr')}>
+                <Printer size={20} style={{ marginLeft: '8px' }} />
+                ملصقات (QR)
+              </Button>
+              <Button variant="primary" onClick={() => {
                 setShowPrintModal(false);
                 navigate('/orders');
               }}>
@@ -604,8 +597,15 @@ export default function NewOrder() {
 
             {/* العناصر غير المرئية المخصصة للطباعة فقط */}
             <div className="hidden-print-container">
-              <PrintInvoice order={createdOrder} />
-              <PrintQRLabels items={createdOrder.items || []} orderId={createdOrder.id} />
+              <div className="print-a4-container">
+                <PrintInvoice order={createdOrder} />
+              </div>
+              <div className="print-thermal-container">
+                <PrintInvoiceThermal order={createdOrder} />
+              </div>
+              <div className="print-qr-container">
+                <PrintQRLabels items={createdOrder.items || []} orderId={createdOrder.id} />
+              </div>
             </div>
           </div>
         </Modal>

@@ -10,6 +10,7 @@ import StatusBadge from '../../components/UI/StatusBadge';
 import LoadingSpinner from '../../components/UI/LoadingSpinner';
 import Modal from '../../components/UI/Modal';
 import PrintInvoice from '../../components/Print/PrintInvoice';
+import PrintInvoiceThermal from '../../components/Print/PrintInvoiceThermal';
 import PrintQRLabels from '../../components/Print/PrintQRLabels';
 import './OrderDetails.css';
 
@@ -54,21 +55,17 @@ export default function OrderDetails() {
     loadOrderDetails();
   }, [id]);
 
-  const printOrder = (invoiceOnly = false) => {
+  const printOrder = (mode = 'a4') => {
     const cleanup = () => {
-      document.body.classList.remove('print-invoice-only');
+      document.body.classList.remove('print-a4-mode', 'print-thermal-mode', 'print-qr-mode');
       window.removeEventListener('afterprint', cleanup);
     };
 
-    if (invoiceOnly) {
-      document.body.classList.add('print-invoice-only');
-      window.addEventListener('afterprint', cleanup);
-    } else {
-      document.body.classList.remove('print-invoice-only');
-    }
+    document.body.classList.add(`print-${mode}-mode`);
+    window.addEventListener('afterprint', cleanup);
 
     window.print();
-    if (invoiceOnly) setTimeout(cleanup, 1000);
+    setTimeout(cleanup, 1000);
   };
 
   const handlePrint = () => {
@@ -262,13 +259,17 @@ export default function OrderDetails() {
             <ArrowRight size={18} style={{ marginLeft: '8px' }} />
             قائمة الطلبات
           </Button>
-          <Button variant="secondary" onClick={handlePrint}>
-            <Printer size={18} style={{ marginLeft: '8px' }} />
-            طباعة الفاتورة والملصقات
-          </Button>
-          <Button variant="secondary" onClick={handleDownloadInvoicePdf}>
+          <Button variant="secondary" onClick={() => printOrder('a4')}>
             <FileText size={18} style={{ marginLeft: '8px' }} />
-            تنزيل PDF للفاتورة
+            طباعة فاتورة (A4)
+          </Button>
+          <Button variant="secondary" onClick={() => printOrder('thermal')}>
+            <Printer size={18} style={{ marginLeft: '8px' }} />
+            إيصال حراري (80mm)
+          </Button>
+          <Button variant="secondary" onClick={() => printOrder('qr')}>
+            <Printer size={18} style={{ marginLeft: '8px' }} />
+            ملصقات (QR)
           </Button>
           <Button variant="success" onClick={handleShareWhatsApp}>
             <MessageSquare size={18} style={{ marginLeft: '8px' }} />
@@ -527,8 +528,15 @@ export default function OrderDetails() {
       {/* عناصر الطباعة غير المرئية على الشاشة */}
       {order && (
         <div className="hidden-print-container">
-          <PrintInvoice order={order} />
-          <PrintQRLabels items={order.items || []} orderId={order.id} />
+          <div className="print-a4-container">
+            <PrintInvoice order={order} />
+          </div>
+          <div className="print-thermal-container">
+            <PrintInvoiceThermal order={order} />
+          </div>
+          <div className="print-qr-container">
+            <PrintQRLabels items={order.items || []} orderId={order.id} />
+          </div>
         </div>
       )}
     </div>
