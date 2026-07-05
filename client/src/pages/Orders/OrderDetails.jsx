@@ -54,29 +54,29 @@ export default function OrderDetails() {
     loadOrderDetails();
   }, [id]);
 
-  const printOrder = (invoiceOnly = false) => {
+  const printOrder = (type = 'invoice') => {
     const cleanup = () => {
-      document.body.classList.remove('print-invoice-only');
+      document.body.classList.remove('print-invoice-only', 'print-labels-only');
       window.removeEventListener('afterprint', cleanup);
     };
 
-    if (invoiceOnly) {
+    if (type === 'invoice') {
       document.body.classList.add('print-invoice-only');
-      window.addEventListener('afterprint', cleanup);
-    } else {
-      document.body.classList.remove('print-invoice-only');
+    } else if (type === 'labels') {
+      document.body.classList.add('print-labels-only');
     }
-
+    
+    window.addEventListener('afterprint', cleanup);
     window.print();
-    if (invoiceOnly) setTimeout(cleanup, 1000);
+    setTimeout(cleanup, 1000);
   };
 
-  const handlePrint = () => {
-    printOrder(false);
+  const handlePrintInvoice = () => {
+    printOrder('invoice');
   };
 
-  const handleDownloadInvoicePdf = () => {
-    printOrder(true);
+  const handlePrintLabels = () => {
+    printOrder('labels');
   };
 
   // تسجيل دفعة مالية جديدة
@@ -262,18 +262,20 @@ export default function OrderDetails() {
             <ArrowRight size={18} style={{ marginLeft: '8px' }} />
             قائمة الطلبات
           </Button>
-          <Button variant="secondary" onClick={handlePrint}>
+          <div className="header-actions">
+          <Button variant="secondary" onClick={handlePrintInvoice}>
             <Printer size={18} style={{ marginLeft: '8px' }} />
-            طباعة الفاتورة والملصقات
+            طباعة الفاتورة
           </Button>
-          <Button variant="secondary" onClick={handleDownloadInvoicePdf}>
+          <Button variant="secondary" onClick={handlePrintLabels}>
             <FileText size={18} style={{ marginLeft: '8px' }} />
-            تنزيل PDF للفاتورة
+            طباعة ملصقات القطع
           </Button>
           <Button variant="success" onClick={handleShareWhatsApp}>
             <MessageSquare size={18} style={{ marginLeft: '8px' }} />
             مشاركة عبر واتساب
           </Button>
+          </div>
         </div>
       </div>
 

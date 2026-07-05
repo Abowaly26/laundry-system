@@ -1,4 +1,5 @@
 import React from 'react';
+import { QRCodeCanvas } from 'qrcode.react';
 import { useSettings } from '../../context/SettingsContext';
 
 export default function PrintInvoice({ order }) {
@@ -144,6 +145,15 @@ export default function PrintInvoice({ order }) {
       <div style={{ textAlign: 'center', marginTop: '25px', fontSize: '12px', paddingTop: '15px' }}>
         <p style={{ margin: '0 0 5px 0', fontWeight: 'bold', fontSize: '14px' }}>شكراً لزيارتكم!</p>
         <p style={{ margin: '0' }}>يرجى الاحتفاظ بالإيصال لاستلام الملابس</p>
+      </div>
+
+      <div style={{ textAlign: 'center', marginTop: '15px' }}>
+        <QRCodeCanvas 
+          value={`ORDER-${order.id}`} 
+          size={100}
+          level="M"
+        />
+        <p style={{ margin: '5px 0 0', fontSize: '10px', color: '#000' }}>كود تتبع الطلب</p>
       </div>
     </div>
   );

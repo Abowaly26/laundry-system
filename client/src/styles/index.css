@@ -417,6 +417,14 @@ table tbody tr.clickable:active {
     margin: 0;
   }
 
+  body.print-invoice-only .print-labels-container {
+    display: none !important;
+  }
+
+  body.print-labels-only .print-receipt {
+    display: none !important;
+  }
+
   table {
     font-size: 11px;
   }
