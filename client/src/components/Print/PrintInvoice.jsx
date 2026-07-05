@@ -9,13 +9,16 @@ export default function PrintInvoice({ order }) {
   const formatDate = (dateStr) => {
     if (!dateStr) return '';
     const date = new Date(dateStr);
-    return date.toLocaleString('ar-EG', {
-      year: 'numeric',
-      month: 'numeric',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    const yyyy = date.getFullYear();
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const dd = String(date.getDate()).padStart(2, '0');
+    let hours = date.getHours();
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const ampm = hours >= 12 ? 'م' : 'ص';
+    hours = hours % 12;
+    hours = hours ? hours : 12; // the hour '0' should be '12'
+    const strTime = `${hours}:${minutes} ${ampm}`;
+    return `${yyyy}/${mm}/${dd} - ${strTime}`;
   };
 
   const getItemTypeAr = (type) => {
@@ -48,112 +51,135 @@ export default function PrintInvoice({ order }) {
   };
 
   return (
-    <div className="print-receipt print-receipt-80" style={{ direction: 'rtl', fontFamily: 'Cairo, sans-serif' }}>
-      <div className="receipt-header">
-        <h2 style={{ margin: '0 0 5px 0', fontSize: '18px', fontWeight: '900' }}>{settings.laundryName}</h2>
-        {settings.laundryAddress && <p style={{ margin: '0 0 3px 0', fontSize: '12px' }}>{settings.laundryAddress}</p>}
-        <p style={{ margin: '0 0 3px 0', fontSize: '12px' }}>هاتف: {settings.laundryPhone}</p>
-        {settings.taxNumber && <p style={{ margin: '0', fontSize: '12px', fontWeight: 'bold' }}>الرقم الضريبي: {settings.taxNumber}</p>}
+    <div className="print-receipt print-receipt-80" style={{ direction: 'rtl', fontFamily: 'Cairo, sans-serif', padding: '4px' }}>
+      {/* Header section */}
+      <div className="receipt-header" style={{ textAlign: 'center', marginBottom: '12px' }}>
+        <h1 style={{ margin: '0 0 6px 0', fontSize: '20px', fontWeight: '900', color: '#000' }}>{settings.laundryName}</h1>
+        {settings.laundryAddress && <p style={{ margin: '0 0 3px 0', fontSize: '11px', color: '#333' }}>{settings.laundryAddress}</p>}
+        <p style={{ margin: '0 0 4px 0', fontSize: '11px', color: '#333' }}>هاتف: {settings.laundryPhone}</p>
+        {settings.taxNumber && (
+          <div style={{ marginTop: '6px' }}>
+            <span style={{ fontSize: '11px', fontWeight: 'bold', border: '1px solid #000', padding: '3px 8px', borderRadius: '3px', display: 'inline-block' }}>
+              الرقم الضريبي: {settings.taxNumber}
+            </span>
+          </div>
+        )}
       </div>
 
-      <div style={{ paddingBottom: '8px', marginBottom: '8px', fontSize: '13px' }}>
+      <div style={{ borderBottom: '1px dashed #000', margin: '8px 0' }} />
+
+      {/* Metadata section */}
+      <div style={{ paddingBottom: '4px', fontSize: '12px', lineHeight: '1.6' }}>
         <div className="receipt-row">
-          <strong>رقم الطلب:</strong> 
-          <span>#{order.id}</span>
+          <strong style={{ color: '#444' }}>رقم الطلب:</strong> 
+          <span style={{ fontWeight: 'bold' }}>#{order.id}</span>
         </div>
         <div className="receipt-row">
-          <strong>التاريخ:</strong> 
+          <strong style={{ color: '#444' }}>التاريخ:</strong> 
           <span>{formatDate(order.created_at || new Date())}</span>
         </div>
         {order.expected_delivery_at && (
           <div className="receipt-row">
-            <strong>التسليم المتوقع:</strong> 
+            <strong style={{ color: '#444' }}>التسليم المتوقع:</strong> 
             <span>{formatDate(order.expected_delivery_at)}</span>
           </div>
         )}
         <div className="receipt-row">
-          <strong>العميل:</strong> 
-          <span>{order.customer_name || (order.customer && order.customer.name) || 'عميل عام'}</span>
+          <strong style={{ color: '#444' }}>العميل:</strong> 
+          <span style={{ fontWeight: 'bold' }}>{order.customer_name || (order.customer && order.customer.name) || 'عميل عام'}</span>
         </div>
         {(order.customer_phone || (order.customer && order.customer.phone)) && (
           <div className="receipt-row">
-            <strong>الجوال:</strong> 
-            <span>{order.customer_phone || (order.customer && order.customer.phone)}</span>
+            <strong style={{ color: '#444' }}>الجوال:</strong> 
+            <span style={{ direction: 'ltr' }}>{order.customer_phone || (order.customer && order.customer.phone)}</span>
           </div>
         )}
       </div>
 
-      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px', marginBottom: '8px' }}>
-        <thead>
-          <tr style={{ borderBottom: '1px solid #000' }}>
-            <th style={{ textAlign: 'right', padding: '4px 0', width: '40%' }}>الصنف</th>
-            <th style={{ textAlign: 'center', padding: '4px 0', width: '30%' }}>الخدمة</th>
-            <th style={{ textAlign: 'left', padding: '4px 0', width: '30%' }}>السعر</th>
-          </tr>
-        </thead>
-        <tbody>
-          {order.items && order.items.map((item, index) => (
-            <tr key={index}>
-              <td style={{ padding: '6px 0', fontWeight: 'bold' }}>
-                {getItemTypeAr(item.item_type)}
-                {item.notes && <span style={{ fontSize: '10px', display: 'block', fontWeight: 'normal' }}>({item.notes})</span>}
-              </td>
-              <td style={{ padding: '6px 0', textAlign: 'center' }}>{getServiceName(item)}</td>
-              <td style={{ padding: '6px 0', textAlign: 'left', fontWeight: 'bold' }}>{formatAmount(item.price)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <div style={{ borderBottom: '1px dashed #000', margin: '8px 0' }} />
 
-      <div style={{ borderTop: '1px dashed #000', paddingTop: '8px', fontSize: '13px' }}>
+      {/* Items List (POS Style) */}
+      <div style={{ padding: '4px 0' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '12px', paddingBottom: '6px', borderBottom: '1px solid #000', marginBottom: '8px' }}>
+          <span>الصنف والخدمة</span>
+          <span>السعر</span>
+        </div>
+        
+        {order.items && order.items.map((item, index) => (
+          <div key={index} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', fontSize: '12px', borderBottom: '1px dotted #eee' }}>
+            <div style={{ paddingLeft: '8px' }}>
+              <span style={{ fontWeight: 'bold' }}>{getItemTypeAr(item.item_type)}</span>
+              <div style={{ fontSize: '11px', color: '#555', marginTop: '2px' }}>
+                {getServiceName(item)}
+                {item.notes && <span style={{ color: '#ff0000', marginRight: '4px' }}>({item.notes})</span>}
+              </div>
+            </div>
+            <div style={{ fontWeight: 'bold', whiteSpace: 'nowrap', alignSelf: 'center' }}>
+              {formatAmount(item.price)} {settings.currency}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Totals Section */}
+      <div style={{ paddingTop: '8px', fontSize: '12px' }}>
         {settings.vatPercent > 0 && (
           <>
-            <div className="receipt-row" style={{ fontSize: '11px' }}>
+            <div className="receipt-row" style={{ fontSize: '11px', color: '#444' }}>
               <span>الإجمالي الخاضع للضريبة:</span>
               <span>{formatAmount(order.total_amount / (1 + settings.vatPercent / 100))} {settings.currency}</span>
             </div>
-            <div className="receipt-row" style={{ fontSize: '11px' }}>
-              <span>قيمة الضريبة المضافة ({settings.vatPercent}%):</span>
+            <div className="receipt-row" style={{ fontSize: '11px', color: '#444', marginBottom: '4px' }}>
+              <span>ضريبة القيمة المضافة ({settings.vatPercent}%):</span>
               <span>{formatAmount(order.total_amount - (order.total_amount / (1 + settings.vatPercent / 100)))} {settings.currency}</span>
             </div>
           </>
         )}
         
-        <div className="receipt-total receipt-row" style={{ fontSize: '16px' }}>
+        <div className="receipt-total receipt-row" style={{ fontSize: '15px', fontWeight: '950', borderTop: '1px solid #000', borderBottom: '1px solid #000', padding: '6px 0', margin: '6px 0' }}>
           <span>الإجمالي شامل الضريبة:</span>
           <span>{formatAmount(order.total_amount)} {settings.currency}</span>
         </div>
         
-        <div className="receipt-row" style={{ marginTop: '4px' }}>
+        <div className="receipt-row" style={{ color: '#444' }}>
           <span>المدفوع:</span>
           <span>{formatAmount(order.paid_amount)} {settings.currency}</span>
         </div>
-        <div className="receipt-row" style={{ fontWeight: 'bold' }}>
+        <div className="receipt-row" style={{ fontWeight: 'bold', fontSize: '13px' }}>
           <span>المتبقي:</span>
           <span>{formatAmount(order.remaining_amount)} {settings.currency}</span>
         </div>
         
         {order.payment_method && (
-          <div className="receipt-row" style={{ marginTop: '6px', paddingTop: '6px' }}>
+          <div className="receipt-row" style={{ marginTop: '4px', fontSize: '11px', color: '#555' }}>
             <span>طريقة الدفع:</span>
             <span>{getPaymentMethodAr(order.payment_method)}</span>
           </div>
         )}
-        {order.notes && <div style={{ padding: '6px 0', fontSize: '12px', marginTop: '6px' }}><strong>ملاحظات:</strong> {order.notes}</div>}
+        {order.notes && (
+          <div style={{ padding: '6px 0', fontSize: '11px', borderTop: '1px dotted #ccc', marginTop: '6px', color: '#444' }}>
+            <strong>ملاحظات:</strong> {order.notes}
+          </div>
+        )}
       </div>
 
-      <div style={{ textAlign: 'center', marginTop: '25px', fontSize: '12px', paddingTop: '15px' }}>
-        <p style={{ margin: '0 0 5px 0', fontWeight: 'bold', fontSize: '14px' }}>شكراً لزيارتكم!</p>
-        <p style={{ margin: '0' }}>يرجى الاحتفاظ بالإيصال لاستلام الملابس</p>
+      <div style={{ borderBottom: '1px dashed #000', margin: '12px 0' }} />
+
+      {/* Footer and QR Code */}
+      <div style={{ textAlign: 'center', fontSize: '12px' }}>
+        <p style={{ margin: '0 0 4px 0', fontWeight: 'bold', fontSize: '13px' }}>شكراً لزيارتكم!</p>
+        <p style={{ margin: '0', color: '#333' }}>يرجى الاحتفاظ بالإيصال لاستلام الملابس</p>
       </div>
 
       <div style={{ textAlign: 'center', marginTop: '15px' }}>
-        <QRCodeCanvas 
-          value={`ORDER-${order.id}`} 
-          size={100}
-          level="M"
-        />
-        <p style={{ margin: '5px 0 0', fontSize: '10px', color: '#000' }}>كود تتبع الطلب</p>
+        <div style={{ display: 'inline-block', padding: '6px', background: '#fff', border: '1px solid #eee', borderRadius: '4px' }}>
+          <QRCodeCanvas 
+            value={`ORDER-${order.id}`} 
+            size={90}
+            level="M"
+          />
+        </div>
+        <p style={{ margin: '4px 0 0', fontSize: '10px', fontWeight: 'bold', color: '#444' }}>كود تتبع الطلب سريع الكاشير</p>
       </div>
     </div>
   );
