@@ -55,7 +55,7 @@ export default function PrintInvoice({ order }) {
         {settings.taxNumber && <p style={{ margin: '0', fontSize: '12px', fontWeight: 'bold' }}>الرقم الضريبي: {settings.taxNumber}</p>}
       </div>
 
-      <div style={{ borderBottom: '2px dashed #000', paddingBottom: '8px', marginBottom: '8px', fontSize: '13px' }}>
+      <div style={{ borderBottom: '1px dashed #000', paddingBottom: '8px', marginBottom: '8px', fontSize: '13px' }}>
         <div className="receipt-row">
           <strong>رقم الطلب:</strong> 
           <span>#{order.id}</span>
@@ -84,10 +84,10 @@ export default function PrintInvoice({ order }) {
 
       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px', marginBottom: '8px' }}>
         <thead>
-          <tr style={{ borderBottom: '2px solid #000' }}>
-            <th style={{ textAlign: 'right', padding: '4px 0' }}>الصنف</th>
-            <th style={{ textAlign: 'center', padding: '4px 0' }}>الخدمة</th>
-            <th style={{ textAlign: 'left', padding: '4px 0' }}>السعر</th>
+          <tr style={{ borderBottom: '1px solid #000' }}>
+            <th style={{ textAlign: 'right', padding: '4px 0', width: '40%' }}>الصنف</th>
+            <th style={{ textAlign: 'center', padding: '4px 0', width: '30%' }}>الخدمة</th>
+            <th style={{ textAlign: 'left', padding: '4px 0', width: '30%' }}>السعر</th>
           </tr>
         </thead>
         <tbody>
@@ -104,7 +104,7 @@ export default function PrintInvoice({ order }) {
         </tbody>
       </table>
 
-      <div style={{ borderTop: '2px dashed #000', paddingTop: '8px', fontSize: '13px' }}>
+      <div style={{ borderTop: '1px dashed #000', paddingTop: '8px', fontSize: '13px' }}>
         {settings.vatPercent > 0 && (
           <>
             <div className="receipt-row" style={{ fontSize: '11px' }}>
@@ -141,7 +141,7 @@ export default function PrintInvoice({ order }) {
         {order.notes && <div style={{ padding: '6px 0', fontSize: '12px', borderTop: '1px dashed #000', marginTop: '6px' }}><strong>ملاحظات:</strong> {order.notes}</div>}
       </div>
 
-      <div style={{ textAlign: 'center', marginTop: '25px', fontSize: '12px', borderTop: '2px dashed #000', paddingTop: '15px' }}>
+      <div style={{ textAlign: 'center', marginTop: '25px', fontSize: '12px', borderTop: '1px dashed #000', paddingTop: '15px' }}>
         <p style={{ margin: '0 0 5px 0', fontWeight: 'bold', fontSize: '14px' }}>شكراً لزيارتكم!</p>
         <p style={{ margin: '0' }}>يرجى الاحتفاظ بالإيصال لاستلام الملابس</p>
       </div>

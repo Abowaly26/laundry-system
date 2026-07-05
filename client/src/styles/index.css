@@ -441,9 +441,13 @@ table tbody tr.clickable:active {
     color: #000;
   }
 
+  .print-receipt * {
+    color: #000 !important;
+  }
+
   .print-receipt .receipt-header {
     text-align: center;
-    border-bottom: 2px dashed #000;
+    border-bottom: 1px dashed #000;
     padding-bottom: 8px;
     margin-bottom: 8px;
   }
@@ -455,11 +459,11 @@ table tbody tr.clickable:active {
   }
 
   .print-receipt .receipt-total {
-    border-top: 2px dashed #000;
+    border-top: 1px dashed #000;
     padding-top: 6px;
     margin-top: 6px;
     font-weight: bold;
-    font-size: 14px;
+    font-size: 15px;
   }
 
   .print-receipt-80 {
