@@ -55,7 +55,7 @@ export default function PrintInvoice({ order }) {
         {settings.taxNumber && <p style={{ margin: '0', fontSize: '12px', fontWeight: 'bold' }}>الرقم الضريبي: {settings.taxNumber}</p>}
       </div>
 
-      <div style={{ borderBottom: '1px dashed #000', paddingBottom: '8px', marginBottom: '8px', fontSize: '13px' }}>
+      <div style={{ paddingBottom: '8px', marginBottom: '8px', fontSize: '13px' }}>
         <div className="receipt-row">
           <strong>رقم الطلب:</strong> 
           <span>#{order.id}</span>
@@ -92,7 +92,7 @@ export default function PrintInvoice({ order }) {
         </thead>
         <tbody>
           {order.items && order.items.map((item, index) => (
-            <tr key={index} style={{ borderBottom: '1px dotted #ccc' }}>
+            <tr key={index}>
               <td style={{ padding: '6px 0', fontWeight: 'bold' }}>
                 {getItemTypeAr(item.item_type)}
                 {item.notes && <span style={{ fontSize: '10px', display: 'block', fontWeight: 'normal' }}>({item.notes})</span>}
@@ -133,15 +133,15 @@ export default function PrintInvoice({ order }) {
         </div>
         
         {order.payment_method && (
-          <div className="receipt-row" style={{ borderTop: '1px solid #000', marginTop: '6px', paddingTop: '6px' }}>
+          <div className="receipt-row" style={{ marginTop: '6px', paddingTop: '6px' }}>
             <span>طريقة الدفع:</span>
             <span>{getPaymentMethodAr(order.payment_method)}</span>
           </div>
         )}
-        {order.notes && <div style={{ padding: '6px 0', fontSize: '12px', borderTop: '1px dashed #000', marginTop: '6px' }}><strong>ملاحظات:</strong> {order.notes}</div>}
+        {order.notes && <div style={{ padding: '6px 0', fontSize: '12px', marginTop: '6px' }}><strong>ملاحظات:</strong> {order.notes}</div>}
       </div>
 
-      <div style={{ textAlign: 'center', marginTop: '25px', fontSize: '12px', borderTop: '1px dashed #000', paddingTop: '15px' }}>
+      <div style={{ textAlign: 'center', marginTop: '25px', fontSize: '12px', paddingTop: '15px' }}>
         <p style={{ margin: '0 0 5px 0', fontWeight: 'bold', fontSize: '14px' }}>شكراً لزيارتكم!</p>
         <p style={{ margin: '0' }}>يرجى الاحتفاظ بالإيصال لاستلام الملابس</p>
       </div>

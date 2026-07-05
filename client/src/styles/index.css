@@ -459,7 +459,6 @@ table tbody tr.clickable:active {
   }
 
   .print-receipt .receipt-total {
-    border-top: 1px dashed #000;
     padding-top: 6px;
     margin-top: 6px;
     font-weight: bold;
