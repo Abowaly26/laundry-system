@@ -11,6 +11,7 @@ import {
   Settings as SettingsIcon,
   LogOut,
   WashingMachine,
+  Calendar,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../context/SettingsContext';
@@ -21,6 +22,7 @@ const navItems = [
   { path: '/orders/new', label: 'طلب جديد', icon: PlusCircle },
   { path: '/orders', label: 'الطلبات', icon: ClipboardList },
   { path: '/tracking', label: 'تتبع القطع', icon: ScanLine },
+  { path: '/workload', label: 'جدول ضغط العمل', icon: Calendar },
   { path: '/customers', label: 'العملاء', icon: Users },
   { path: '/services', label: 'الخدمات', icon: Sparkles },
   { path: '/finance', label: 'المالية', icon: Wallet },

@@ -128,6 +128,10 @@ export const ordersAPI = {
     request(`/orders/${id}`, { method: 'DELETE' }),
   track: (trackingCode) =>
     request(`/orders/track/${trackingCode}`),
+  getWorkloadStatus: () =>
+    request('/orders/workload/status'),
+  getWorkloadTimeline: (date) =>
+    request(`/orders/workload/timeline${date ? `?date=${date}` : ''}`),
 };
 
 // ===== Items =====

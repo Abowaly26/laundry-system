@@ -9,6 +9,7 @@ const pageTitles = {
   '/orders/new': 'طلب جديد',
   '/orders': 'الطلبات',
   '/tracking': 'تتبع القطع',
+  '/workload': 'جدول ضغط العمل',
   '/customers': 'العملاء',
   '/services': 'الخدمات',
   '/finance': 'المالية',

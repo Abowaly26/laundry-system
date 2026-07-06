@@ -199,6 +199,107 @@ router.get('/', authMiddleware, async (req, res) => {
 });
 
 /**
+ * GET /api/orders/workload/status
+ * جلب حالة ضغط العمل التقديرية في المغسلة
+ */
+router.get('/workload/status', authMiddleware, async (req, res) => {
+  try {
+    const itemsResult = await query(`
+      SELECT status, COUNT(*) as count 
+      FROM order_items 
+      WHERE status IN ('received', 'washing', 'drying', 'ironing')
+      GROUP BY status
+    `);
+
+    const activeOrdersResult = await query(`
+      SELECT COUNT(*) as count 
+      FROM orders 
+      WHERE status IN ('pending', 'processing')
+    `);
+
+    const stats = {
+      received: 0,
+      washing: 0,
+      drying: 0,
+      ironing: 0,
+      total_active_items: 0,
+      active_orders: parseInt(activeOrdersResult.rows[0].count) || 0
+    };
+
+    itemsResult.rows.forEach(row => {
+      stats[row.status] = parseInt(row.count) || 0;
+      stats.total_active_items += parseInt(row.count) || 0;
+    });
+
+    // Heuristic:
+    // Capacity = 8 items per hour.
+    // delay hours = Math.ceil(total_active_items / 8)
+    const delayHours = Math.ceil(stats.total_active_items / 8);
+    let workloadLevel = 'low';
+    if (stats.total_active_items > 40) {
+      workloadLevel = 'high';
+    } else if (stats.total_active_items > 15) {
+      workloadLevel = 'medium';
+    }
+
+    res.json({
+      success: true,
+      data: {
+        ...stats,
+        suggested_delay_hours: delayHours,
+        workload_level: workloadLevel
+      }
+    });
+  } catch (error) {
+    console.error('Workload status error:', error);
+    res.status(500).json({ success: false, message: 'خطأ في حساب ضغط العمل' });
+  }
+});
+
+/**
+ * GET /api/orders/workload/timeline
+ * جلب الطلبات النشطة لجدول خط التوقيت اليومي لليوم المحدد
+ */
+router.get('/workload/timeline', authMiddleware, async (req, res) => {
+  try {
+    const { date } = req.query;
+    let targetDateStr;
+
+    if (date) {
+      targetDateStr = date;
+    } else {
+      const today = new Date();
+      targetDateStr = today.toISOString().split('T')[0];
+    }
+
+    // جلب الطلبات النشطة التي موعد تسليمها المتوقع في اليوم المحدد
+    // أو الطلبات المتأخرة بالكامل (يعني موعد تسليمها قبل اليوم ومستواها ليس delivered/cancelled)
+    const timelineResult = await query(`
+      SELECT o.id, o.expected_delivery_at, o.status as order_status,
+             c.name as customer_name, c.phone as customer_phone,
+             (SELECT COUNT(*) FROM order_items WHERE order_id = o.id) as total_items,
+             (SELECT COUNT(*) FROM order_items WHERE order_id = o.id AND status = 'ready') as ready_items
+      FROM orders o
+      JOIN customers c ON o.customer_id = c.id
+      WHERE o.status NOT IN ('delivered', 'cancelled')
+        AND (
+          DATE(o.expected_delivery_at) = $1 
+          OR DATE(o.expected_delivery_at) < $1
+        )
+      ORDER BY o.expected_delivery_at ASC
+    `, [targetDateStr]);
+
+    res.json({
+      success: true,
+      data: timelineResult.rows
+    });
+  } catch (error) {
+    console.error('Workload timeline error:', error);
+    res.status(500).json({ success: false, message: 'خطأ في جلب خط التوقيت اليومي' });
+  }
+});
+
+/**
  * GET /api/orders/:id
  * عرض تفاصيل طلب واحد مع القطع والمدفوعات
  */

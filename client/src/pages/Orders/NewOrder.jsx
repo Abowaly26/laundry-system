@@ -52,14 +52,21 @@ export default function NewOrder() {
   const [createdOrder, setCreatedOrder] = useState(null);
   const [showPrintModal, setShowPrintModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [workloadStatus, setWorkloadStatus] = useState(null);
 
-  // تحميل الخدمات عند التحميل
+  // تحميل الخدمات وضغط العمل عند التحميل
   useEffect(() => {
     servicesAPI.getAll({ is_active: 1 })
       .then(res => {
         if (res.success) setServices(res.data);
       })
       .catch(err => console.error('خطأ في تحميل الخدمات', err));
+
+    ordersAPI.getWorkloadStatus()
+      .then(res => {
+        if (res.success) setWorkloadStatus(res.data);
+      })
+      .catch(err => console.error('خطأ في تحميل ضغط العمل', err));
   }, []);
 
   // البحث عن العميل
@@ -110,7 +117,7 @@ export default function NewOrder() {
     newItems[index].price = selectedService ? parseFloat(selectedService.price) || 0 : 0;
     setItems(newItems);
 
-    // تحديث ساعات التسليم المتوقعة بناءً على أطول مدة خدمة مطلوبة
+    // تحديث ساعات التسليم المتوقعة بناءً على أطول مدة خدمة مطلوبة + تأخير ضغط العمل
     let maxHours = 12;
     newItems.forEach(item => {
       const serv = services.find(s => s.id === parseInt(item.service_id));
@@ -119,7 +126,9 @@ export default function NewOrder() {
         maxHours = estimatedHours;
       }
     });
-    setExpectedHours(maxHours);
+
+    const extraDelay = workloadStatus ? parseInt(workloadStatus.suggested_delay_hours) || 0 : 0;
+    setExpectedHours(maxHours + extraDelay);
   };
 
   const handleItemTypeChange = (index, val) => {
@@ -345,6 +354,19 @@ export default function NewOrder() {
                 min="1"
               />
               <span className="help-text">تلقائياً بناءً على متوسط الخدمات المطلوبة</span>
+              
+              {workloadStatus && (
+                <div className={`workload-helper-badge mt-xs ${workloadStatus.workload_level}`}>
+                  <span>ضغط العمل الحالي: </span>
+                  <strong>
+                    {workloadStatus.workload_level === 'high' ? 'مرتفع' : 
+                     workloadStatus.workload_level === 'medium' ? 'متوسط' : 'منخفض'}
+                  </strong>
+                  {workloadStatus.suggested_delay_hours > 0 && (
+                    <span> (تمت إضافة {workloadStatus.suggested_delay_hours} ساعات إضافية للتسليم تلقائياً)</span>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="form-group">
