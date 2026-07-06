@@ -66,6 +66,7 @@ export default function NewOrder() {
 
   const [deliveryDate, setDeliveryDate] = useState(getTomorrowDate());
   const [deliveryTime, setDeliveryTime] = useState('16:00'); // الساعة 4:00 عصراً افتراضي
+  const [activeTimePreset, setActiveTimePreset] = useState('afternoon');
   const [isCustomDelivery, setIsCustomDelivery] = useState(false);
   const [orderNotes, setOrderNotes] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('cash');
@@ -191,7 +192,7 @@ export default function NewOrder() {
 
   // تطبيق الاختيار السريع للوقت
   const applyTimePreset = (type) => {
-    const now = new Date();
+    setActiveTimePreset(type);
     if (type === 'morning') {
       setDeliveryTime('10:00');
     } else if (type === 'afternoon') {
@@ -427,7 +428,12 @@ export default function NewOrder() {
                           <div 
                             key={day.date} 
                             className={`workload-day-card ${isSelected ? 'selected' : ''}`}
-                            onClick={() => setDeliveryDate(day.date)}
+                            onClick={() => {
+                              setDeliveryDate(day.date);
+                              if (activeTimePreset === 'rush3') {
+                                setActiveTimePreset('custom');
+                              }
+                            }}
                           >
                             <span className="day-name">{day.dayName}</span>
                             <span className="day-date">{getFormattedDayDate(day.date)}</span>
@@ -451,32 +457,42 @@ export default function NewOrder() {
                         <div className="schedule-presets-grid">
                           <button 
                             type="button" 
-                            className={`preset-pill ${(deliveryTime === '10:00') ? 'active' : ''}`}
+                            className={`preset-pill ${(activeTimePreset === 'morning') ? 'active' : ''}`}
                             onClick={() => applyTimePreset('morning')}
                           >
                             صباحاً (10 ص)
                           </button>
                           <button 
                             type="button" 
-                            className={`preset-pill ${(deliveryTime === '16:00') ? 'active' : ''}`}
+                            className={`preset-pill ${(activeTimePreset === 'afternoon') ? 'active' : ''}`}
                             onClick={() => applyTimePreset('afternoon')}
                           >
                             عصراً (4 م)
                           </button>
                           <button 
                             type="button" 
-                            className={`preset-pill ${(deliveryTime === '20:00') ? 'active' : ''}`}
+                            className={`preset-pill ${(activeTimePreset === 'evening') ? 'active' : ''}`}
                             onClick={() => applyTimePreset('evening')}
                           >
                             مساءً (8 م)
                           </button>
-                          <button 
-                            type="button" 
-                            className={`preset-pill preset-pill-rush ${(deliveryTime !== '10:00' && deliveryTime !== '16:00' && deliveryTime !== '20:00') ? 'active' : ''}`}
-                            onClick={() => applyTimePreset('rush3')}
-                          >
-                            مستعجل (3س)
-                          </button>
+                          {activeTimePreset === 'custom' ? (
+                            <button 
+                              type="button" 
+                              className="preset-pill active"
+                              onClick={() => applyTimePreset('rush3')}
+                            >
+                              آخر
+                            </button>
+                          ) : (
+                            <button 
+                              type="button" 
+                              className={`preset-pill preset-pill-rush ${(activeTimePreset === 'rush3') ? 'active' : ''}`}
+                              onClick={() => applyTimePreset('rush3')}
+                            >
+                              مستعجل (3س)
+                            </button>
+                          )}
                         </div>
                       </div>
 
@@ -487,7 +503,10 @@ export default function NewOrder() {
                           type="time"
                           className="form-input form-input-compact"
                           value={deliveryTime}
-                          onChange={(e) => setDeliveryTime(e.target.value)}
+                          onChange={(e) => {
+                            setDeliveryTime(e.target.value);
+                            setActiveTimePreset('custom');
+                          }}
                         />
                       </div>
                     </div>
