@@ -810,3 +810,21 @@
   color: var(--primary);
   font-weight: 800;
 }
+
+/* Clickable overlay style for forcing browser date/time picker */
+.picker-input-wrapper {
+  position: relative;
+  display: block;
+  width: 100%;
+}
+
+.picker-input-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  cursor: pointer;
+  background: transparent;
+  z-index: 5;
+}

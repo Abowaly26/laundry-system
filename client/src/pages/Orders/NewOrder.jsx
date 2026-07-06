@@ -499,19 +499,27 @@ export default function NewOrder() {
                       {/* ساعة التسليم الدقيقة */}
                       <div>
                         <span className="help-text">ساعة التسليم</span>
-                        <input
-                          type="time"
-                          className="form-input form-input-compact"
-                          value={deliveryTime}
-                          onChange={(e) => {
-                            setDeliveryTime(e.target.value);
-                            setActiveTimePreset('custom');
-                          }}
-                          onClick={(e) => {
-                            try { e.target.showPicker(); } catch (err) {}
-                          }}
-                          style={{ cursor: 'pointer' }}
-                        />
+                        <div className="picker-input-wrapper">
+                          <input
+                            type="time"
+                            className="form-input form-input-compact"
+                            value={deliveryTime}
+                            onChange={(e) => {
+                              setDeliveryTime(e.target.value);
+                              setActiveTimePreset('custom');
+                            }}
+                            style={{ cursor: 'pointer' }}
+                          />
+                          <div 
+                            className="picker-input-overlay"
+                            onClick={(e) => {
+                              const input = e.currentTarget.parentElement.querySelector('input');
+                              if (input) {
+                                try { input.showPicker(); } catch (err) {}
+                              }
+                            }}
+                          />
+                        </div>
                       </div>
                     </div>
                   ) : (
@@ -519,29 +527,45 @@ export default function NewOrder() {
                       <div className="flex gap-sm">
                         <div style={{ flex: 1 }}>
                           <span className="help-text">تاريخ التسليم</span>
-                          <input
-                            type="date"
-                            className="form-input form-input-compact"
-                            value={deliveryDate}
-                            onChange={(e) => setDeliveryDate(e.target.value)}
-                            onClick={(e) => {
-                              try { e.target.showPicker(); } catch (err) {}
-                            }}
-                            style={{ cursor: 'pointer' }}
-                          />
+                          <div className="picker-input-wrapper">
+                            <input
+                              type="date"
+                              className="form-input form-input-compact"
+                              value={deliveryDate}
+                              onChange={(e) => setDeliveryDate(e.target.value)}
+                              style={{ cursor: 'pointer' }}
+                            />
+                            <div 
+                              className="picker-input-overlay"
+                              onClick={(e) => {
+                                const input = e.currentTarget.parentElement.querySelector('input');
+                                if (input) {
+                                  try { input.showPicker(); } catch (err) {}
+                                }
+                              }}
+                            />
+                          </div>
                         </div>
                         <div style={{ flex: 1 }}>
                           <span className="help-text">وقت التسليم</span>
-                          <input
-                            type="time"
-                            className="form-input form-input-compact"
-                            value={deliveryTime}
-                            onChange={(e) => setDeliveryTime(e.target.value)}
-                            onClick={(e) => {
-                              try { e.target.showPicker(); } catch (err) {}
-                            }}
-                            style={{ cursor: 'pointer' }}
-                          />
+                          <div className="picker-input-wrapper">
+                            <input
+                              type="time"
+                              className="form-input form-input-compact"
+                              value={deliveryTime}
+                              onChange={(e) => setDeliveryTime(e.target.value)}
+                              style={{ cursor: 'pointer' }}
+                            />
+                            <div 
+                              className="picker-input-overlay"
+                              onClick={(e) => {
+                                const input = e.currentTarget.parentElement.querySelector('input');
+                                if (input) {
+                                  try { input.showPicker(); } catch (err) {}
+                                }
+                              }}
+                            />
+                          </div>
                         </div>
                       </div>
                     </div>
