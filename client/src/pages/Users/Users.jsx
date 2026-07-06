@@ -229,7 +229,8 @@ export default function Users() {
                       <Button 
                         variant="ghost" 
                         size="small" 
-                        className={user.is_active ? 'text-error' : 'text-success'}
+                        className={user.is_active ? 'text-warning' : 'text-success'}
+                        style={user.is_active ? { color: 'var(--warning, #f59e0b)', borderColor: 'var(--warning, #f59e0b)' } : {}}
                         onClick={() => handleToggleActive(user)}
                       >
                         {user.is_active ? 'تعطيل الحساب' : 'تفعيل الحساب'}
