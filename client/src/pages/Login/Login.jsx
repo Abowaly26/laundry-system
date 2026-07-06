@@ -68,8 +68,6 @@ export default function Login() {
           <div className="login-logo-container">
             <img src="/logo.png" alt="شعار نظام إدارة المغسلة" className="login-logo-image" />
           </div>
-          <h1 className="login-title">نظام إدارة المغسلة</h1>
-          <p className="login-subtitle">سجل دخولك للمتابعة</p>
         </div>
 
         <form className="login-form" onSubmit={handleSubmit} noValidate>
