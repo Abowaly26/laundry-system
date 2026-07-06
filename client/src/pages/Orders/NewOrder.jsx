@@ -54,6 +54,7 @@ export default function NewOrder() {
   const [isCustomDelivery, setIsCustomDelivery] = useState(false);
   const [orderNotes, setOrderNotes] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('cash');
+  const [paidAmount, setPaidAmount] = useState(0);
 
   // معالجة الطباعة والنجاح
   const [createdOrder, setCreatedOrder] = useState(null);
