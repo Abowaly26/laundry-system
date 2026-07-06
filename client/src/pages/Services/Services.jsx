@@ -177,10 +177,6 @@ export default function Services() {
                     <span>السعر:</span>
                     <strong className="text-primary font-bold">{parseFloat(service.price).toFixed(2)} ر.س / {service.unit === 'piece' ? 'قطعة' : 'كيلو'}</strong>
                   </div>
-                  <div className="meta-row">
-                    <span>مدة الإنجاز:</span>
-                    <span>{service.estimated_hours} ساعة</span>
-                  </div>
                 </div>
               </div>
 
@@ -257,16 +253,7 @@ export default function Services() {
             </div>
           </div>
 
-          <div className="form-group">
-            <label className="form-label">مدة الإنجاز التقريبية (بالساعات)</label>
-            <input
-              type="number"
-              className="form-input"
-              value={formData.estimated_hours}
-              onChange={(e) => setFormData({ ...formData, estimated_hours: e.target.value })}
-              min="1"
-            />
-          </div>
+
 
           <div className="form-group">
             <label className="form-label">حالة الخدمة</label>

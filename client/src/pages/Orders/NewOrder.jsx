@@ -44,7 +44,22 @@ export default function NewOrder() {
 
   // تفاصيل الطلب المالية والتواريخ
   const [paidAmount, setPaidAmount] = useState(0);
-  const [expectedHours, setExpectedHours] = useState(24); // افتراضي 24 ساعة
+  const [daysOffset, setDaysOffset] = useState(1); // افتراضي يوم واحد
+  const [hoursOffset, setHoursOffset] = useState(0); // 0 ساعة إضافية
+  const [deliveryDate, setDeliveryDate] = useState('');
+  const [deliveryTime, setDeliveryTime] = useState('');
+
+  useEffect(() => {
+    const target = new Date();
+    target.setDate(target.getDate() + daysOffset);
+    target.setHours(target.getHours() + hoursOffset);
+    
+    setDeliveryDate(target.toISOString().split('T')[0]);
+    const hh = String(target.getHours()).padStart(2, '0');
+    const mm = String(target.getMinutes()).padStart(2, '0');
+    setDeliveryTime(`${hh}:${mm}`);
+  }, [daysOffset, hoursOffset]);
+
   const [orderNotes, setOrderNotes] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('cash');
 
@@ -116,19 +131,6 @@ export default function NewOrder() {
     newItems[index].service_id = serviceId;
     newItems[index].price = selectedService ? parseFloat(selectedService.price) || 0 : 0;
     setItems(newItems);
-
-    // تحديث ساعات التسليم المتوقعة بناءً على أطول مدة خدمة مطلوبة + تأخير ضغط العمل
-    let maxHours = 12;
-    newItems.forEach(item => {
-      const serv = services.find(s => s.id === parseInt(item.service_id));
-      const estimatedHours = serv ? parseInt(serv.estimated_hours) || 0 : 0;
-      if (estimatedHours > maxHours) {
-        maxHours = estimatedHours;
-      }
-    });
-
-    const extraDelay = workloadStatus ? parseInt(workloadStatus.suggested_delay_hours) || 0 : 0;
-    setExpectedHours(maxHours + extraDelay);
   };
 
   const handleItemTypeChange = (index, val) => {
@@ -178,9 +180,8 @@ export default function NewOrder() {
 
     setIsSubmitting(true);
     try {
-      // حساب وقت التسليم المتوقع
-      const expectedDate = new Date();
-      expectedDate.setHours(expectedDate.getHours() + expectedHours);
+      // وقت التسليم المتوقع المحدد يدوياً
+      const expectedDate = new Date(`${deliveryDate}T${deliveryTime}`);
 
       const orderData = {
         customer_id: selectedCustomer.id,
@@ -345,29 +346,48 @@ export default function NewOrder() {
 
           <Card title="تفاصيل التسليم والدفع">
             <div className="form-group">
-              <label className="form-label">وقت التسليم المتوقع (بالساعات)</label>
-              <input
-                type="number"
-                className="form-input"
-                value={expectedHours}
-                onChange={(e) => setExpectedHours(parseInt(e.target.value) || 0)}
-                min="1"
-              />
-              <span className="help-text">تلقائياً بناءً على متوسط الخدمات المطلوبة</span>
-              
-              {workloadStatus && (
-                <div className={`workload-helper-badge mt-xs ${workloadStatus.workload_level}`}>
-                  <span>ضغط العمل الحالي: </span>
-                  <strong>
-                    {workloadStatus.workload_level === 'high' ? 'مرتفع' : 
-                     workloadStatus.workload_level === 'medium' ? 'متوسط' : 'منخفض'}
-                  </strong>
-                  {workloadStatus.suggested_delay_hours > 0 && (
-                    <span> (تمت إضافة {workloadStatus.suggested_delay_hours} ساعات إضافية للتسليم تلقائياً)</span>
-                  )}
+              <label className="form-label">وقت التسليم المتوقع (بالأيام والساعات)</label>
+              <div className="flex gap-sm mb-xs">
+                <div style={{ flex: 1 }}>
+                  <span className="help-text">الأيام</span>
+                  <input
+                    type="number"
+                    className="form-input"
+                    value={daysOffset}
+                    onChange={(e) => setDaysOffset(parseInt(e.target.value) || 0)}
+                    min="0"
+                  />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <span className="help-text">الساعات الإضافية</span>
+                  <input
+                    type="number"
+                    className="form-input"
+                    value={hoursOffset}
+                    onChange={(e) => setHoursOffset(parseInt(e.target.value) || 0)}
+                    min="0"
+                    max="23"
+                  />
+                </div>
+              </div>
+
+              {deliveryDate && deliveryTime && (
+                <div className="mt-sm p-sm" style={{ background: 'var(--bg-hover)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)' }}>
+                  <span className="help-text-label font-bold" style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '4px' }}>موعد التسليم الناتج:</span>
+                  <span className="text-primary font-bold" style={{ fontSize: '0.9rem' }}>
+                    {new Date(`${deliveryDate}T${deliveryTime}`).toLocaleString('ar-EG', {
+                      weekday: 'long',
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </span>
                 </div>
               )}
             </div>
+
 
             <div className="form-group">
               <label className="form-label">ملاحظات الطلب</label>
