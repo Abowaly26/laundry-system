@@ -257,25 +257,23 @@ export default function OrderDetails() {
           </div>
           <p className="page-subtitle">تتبع القطع، معالجة الدفعات، وإجراءات التسليم</p>
         </div>
-        <div className="flex gap-sm">
+        <div className="flex gap-sm items-center">
           <Button variant="secondary" onClick={() => navigate('/orders')}>
-            <ArrowRight size={18} style={{ marginLeft: '8px' }} />
-            قائمة الطلبات
+            <ArrowRight size={16} style={{ marginLeft: '6px' }} />
+            الرجوع للطلبات
           </Button>
-          <div className="header-actions">
-          <Button variant="secondary" onClick={handlePrintInvoice}>
-            <Printer size={18} style={{ marginLeft: '8px' }} />
+          <Button variant="primary" onClick={handlePrintInvoice}>
+            <Printer size={16} style={{ marginLeft: '6px' }} />
             طباعة الفاتورة
           </Button>
           <Button variant="secondary" onClick={handlePrintLabels}>
-            <FileText size={18} style={{ marginLeft: '8px' }} />
-            طباعة ملصقات القطع
+            <FileText size={16} style={{ marginLeft: '6px' }} />
+            طباعة الملصقات
           </Button>
           <Button variant="success" onClick={handleShareWhatsApp}>
-            <MessageSquare size={18} style={{ marginLeft: '8px' }} />
-            مشاركة عبر واتساب
+            <MessageSquare size={16} style={{ marginLeft: '6px' }} />
+            مشاركة واتساب
           </Button>
-          </div>
         </div>
       </div>
 
@@ -285,43 +283,43 @@ export default function OrderDetails() {
         <div className="details-sidebar no-print">
           <Card title="معلومات العميل">
             <div className="detail-item">
-              <User size={16} className="detail-icon" />
-              <div>
+              <div className="detail-item-left">
+                <User size={16} className="detail-icon" />
                 <span className="detail-label">الاسم:</span>
-                <span className="detail-value">{order.customer?.name || 'عميل عام'}</span>
               </div>
+              <span className="detail-value">{order.customer?.name || 'عميل عام'}</span>
             </div>
             <div className="detail-item">
-              <CreditCard size={16} className="detail-icon" />
-              <div>
+              <div className="detail-item-left">
+                <CreditCard size={16} className="detail-icon" />
                 <span className="detail-label">رقم الهاتف:</span>
-                <span className="detail-value">{order.customer?.phone || '-'}</span>
               </div>
+              <span className="detail-value">{order.customer?.phone || '-'}</span>
             </div>
             {order.customer?.address && (
               <div className="detail-item">
-                <Clock size={16} className="detail-icon" />
-                <div>
+                <div className="detail-item-left">
+                  <Clock size={16} className="detail-icon" />
                   <span className="detail-label">العنوان:</span>
-                  <span className="detail-value">{order.customer?.address}</span>
                 </div>
+                <span className="detail-value">{order.customer?.address}</span>
               </div>
             )}
           </Card>
 
           <Card title="الملخص المالي" className="mt-md">
             <div className="summary-finance-rows">
-              <div className="summary-row">
+              <div className="fin-row">
                 <span>الإجمالي:</span>
-                <span>{parseFloat(order.total_amount).toFixed(2)} {settings.currency}</span>
+                <span style={{ fontWeight: 'bold' }}>{parseFloat(order.total_amount).toFixed(2)} {settings.currency}</span>
               </div>
-              <div className="summary-row">
+              <div className="fin-row" style={{ color: 'var(--success)' }}>
                 <span>المدفوع:</span>
-                <span>{parseFloat(order.paid_amount).toFixed(2)} {settings.currency}</span>
+                <span style={{ fontWeight: 'bold' }}>{parseFloat(order.paid_amount).toFixed(2)} {settings.currency}</span>
               </div>
-              <div className="summary-row">
+              <div className={`fin-row ${order.remaining_amount > 0 ? 'text-warning' : 'text-success'}`}>
                 <span>المتبقي:</span>
-                <span>{parseFloat(order.remaining_amount).toFixed(2)} {settings.currency}</span>
+                <span style={{ fontWeight: 'bold' }}>{parseFloat(order.remaining_amount).toFixed(2)} {settings.currency}</span>
               </div>
             </div>
 
@@ -355,26 +353,26 @@ export default function OrderDetails() {
 
           <Card title="مواعيد وتواريخ" className="mt-md">
             <div className="detail-item">
-              <Calendar size={16} className="detail-icon" />
-              <div>
+              <div className="detail-item-left">
+                <Calendar size={16} className="detail-icon" />
                 <span className="detail-label">تاريخ الاستلام:</span>
-                <span className="detail-value">{formatDate(order.created_at)}</span>
               </div>
+              <span className="detail-value">{formatDate(order.created_at)}</span>
             </div>
             <div className="detail-item">
-              <Clock size={16} className="detail-icon" />
-              <div>
+              <div className="detail-item-left">
+                <Clock size={16} className="detail-icon" />
                 <span className="detail-label">موعد التسليم المتوقع:</span>
-                <span className="detail-value">{formatDate(order.expected_delivery_at)}</span>
               </div>
+              <span className="detail-value">{formatDate(order.expected_delivery_at)}</span>
             </div>
             {order.delivered_at && (
               <div className="detail-item">
-                <CheckCircle2 size={16} className="detail-icon" />
-                <div>
+                <div className="detail-item-left">
+                  <CheckCircle2 size={16} className="detail-icon" />
                   <span className="detail-label">تاريخ التسليم الفعلي:</span>
-                  <span className="detail-value">{formatDate(order.delivered_at)}</span>
                 </div>
+                <span className="detail-value">{formatDate(order.delivered_at)}</span>
               </div>
             )}
             {order.notes && (

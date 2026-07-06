@@ -9,7 +9,9 @@ import './Login.css';
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [generalError, setGeneralError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const { login } = useAuth();
@@ -18,21 +20,42 @@ export default function Login() {
 
   const from = location.state?.from?.pathname || '/';
 
+  const validate = () => {
+    let isValid = true;
+    setEmailError('');
+    setPasswordError('');
+    setGeneralError('');
+
+    if (!email) {
+      setEmailError('يرجى إدخال البريد الإلكتروني');
+      isValid = false;
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setEmailError('صيغة البريد الإلكتروني غير صحيحة');
+      isValid = false;
+    }
+
+    if (!password) {
+      setPasswordError('يرجى إدخال كلمة المرور');
+      isValid = false;
+    } else if (password.length < 6) {
+      setPasswordError('كلمة المرور يجب أن تكون 6 أحرف على الأقل');
+      isValid = false;
+    }
+
+    return isValid;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
 
-    if (!email || !password) {
-      setError('يرجى إدخال البريد الإلكتروني وكلمة المرور');
-      return;
-    }
+    if (!validate()) return;
 
     setLoading(true);
     try {
       await login({ email, password });
       navigate(from, { replace: true });
     } catch (err) {
-      setError(err.message || 'فشل تسجيل الدخول. تحقق من البيانات.');
+      setGeneralError(err.message || 'فشل تسجيل الدخول. تحقق من البيانات.');
     } finally {
       setLoading(false);
     }
@@ -50,7 +73,7 @@ export default function Login() {
         </div>
 
         <form className="login-form" onSubmit={handleSubmit}>
-          {error && <div className="login-error">{error}</div>}
+          {generalError && <div className="login-error">{generalError}</div>}
 
           <Input
             id="email"
@@ -60,6 +83,7 @@ export default function Login() {
             onChange={(e) => setEmail(e.target.value)}
             placeholder="admin@laundry.com"
             autoComplete="email"
+            error={emailError}
           />
 
           <Input
@@ -70,6 +94,7 @@ export default function Login() {
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
             autoComplete="current-password"
+            error={passwordError}
           />
 
           <div className="login-submit">

@@ -4,6 +4,7 @@ import { usersAPI } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import Button from '../../components/UI/Button';
 import Modal from '../../components/UI/Modal';
+import Input from '../../components/UI/Input';
 import LoadingSpinner from '../../components/UI/LoadingSpinner';
 import EmptyState from '../../components/UI/EmptyState';
 import './Users.css';
@@ -249,41 +250,35 @@ export default function Users() {
         title={modalMode === 'add' ? 'إضافة موظف جديد' : 'تعديل موظف'}
       >
         <form onSubmit={handleSave}>
-          <div className="form-group">
-            <label className="form-label">الاسم بالكامل *</label>
-            <input
-              type="text"
-              className="form-input"
-              required
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              placeholder="مثال: أحمد عبد الله"
-            />
-          </div>
-          <div className="form-group">
-            <label className="form-label">البريد الإلكتروني *</label>
-            <input
-              type="email"
-              className="form-input"
-              required
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              placeholder="name@laundry.com"
-            />
-          </div>
-          <div className="form-group">
-            <label className="form-label">
-              كلمة المرور {modalMode === 'edit' && '(اتركها فارغة إذا لم ترغب بتغييرها)'}
-            </label>
-            <input
-              type="password"
-              className="form-input"
-              value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              placeholder="••••••••"
-              required={modalMode === 'add'}
-            />
-          </div>
+          <Input
+            id="user-name"
+            label="الاسم بالكامل *"
+            type="text"
+            required
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            placeholder="مثال: أحمد عبد الله"
+          />
+          
+          <Input
+            id="user-email"
+            label="البريد الإلكتروني *"
+            type="email"
+            required
+            value={formData.email}
+            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            placeholder="name@laundry.com"
+          />
+
+          <Input
+            id="user-password"
+            label={`كلمة المرور ${modalMode === 'edit' ? '(اتركها فارغة إذا لم ترغب بتغييرها)' : ''}`}
+            type="password"
+            value={formData.password}
+            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+            placeholder="••••••••"
+            required={modalMode === 'add'}
+          />
 
           <div className="form-group">
             <label className="form-label">الصلاحية (الدور)</label>
