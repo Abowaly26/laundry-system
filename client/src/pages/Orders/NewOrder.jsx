@@ -534,8 +534,7 @@ export default function NewOrder() {
                     )}
                     <button 
                       type="button" 
-                      className="btn-text-action font-bold text-primary mr-sm"
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.8rem' }}
+                      className="btn-custom-date-toggle mr-sm"
                       onClick={() => setIsCustomDelivery(!isCustomDelivery)}
                     >
                       {isCustomDelivery ? 'تحديد سريع' : 'موعد مخصص...'}

@@ -747,3 +747,27 @@
 .btn-card-back:active {
   transform: scale(0.95);
 }
+
+/* Custom Date Toggle Button style */
+.btn-custom-date-toggle {
+  background: var(--bg-hover);
+  border: 1.5px solid var(--border);
+  color: var(--text-secondary);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-custom-date-toggle:hover {
+  background: rgba(79, 70, 229, 0.05);
+  color: var(--primary);
+  border-color: rgba(79, 70, 229, 0.2);
+}
+
+.btn-custom-date-toggle:active {
+  transform: scale(0.98);
+}
