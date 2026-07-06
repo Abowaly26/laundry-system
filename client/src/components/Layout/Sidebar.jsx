@@ -60,7 +60,7 @@ export default function Sidebar({ isOpen, onClose }) {
       <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
         <div className="sidebar-brand">
           <div className="brand-icon">
-            <WashingMachine size={22} />
+            <img src="/logo.png" alt="logo" className="sidebar-logo-image" />
           </div>
           <div className="brand-text">
             <span className="brand-name">{settings.laundryName || 'المغسلة الذكية'}</span>

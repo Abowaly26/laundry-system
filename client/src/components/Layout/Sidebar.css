@@ -205,3 +205,9 @@
     display: block;
   }
 }
+
+.sidebar-logo-image {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+}
