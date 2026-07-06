@@ -385,10 +385,10 @@ export default function NewOrder() {
               </table>
             </div>
 
-            <Button variant="secondary" className="mt-md" onClick={addItemRow}>
+            <button type="button" className="btn-add-item-dashed mt-md" onClick={addItemRow}>
               <Plus size={16} style={{ marginLeft: '6px' }} />
-              إضافة قطعة أخرى
-            </Button>
+              إضافة قطعة جديدة للطلب
+            </button>
           </Card>
         </div>
 
@@ -538,7 +538,7 @@ export default function NewOrder() {
             <div className="financials-summary-box">
               <div className="financial-row">
                 <span>إجمالي الطلب:</span>
-                <span className="amount-val font-bold">{totalAmount.toFixed(2)} {settings.currency}</span>
+                <span className="amount-val-total">{totalAmount.toFixed(2)} {settings.currency}</span>
               </div>
               <div className="financial-row">
                 <span>المبلغ المدفوع (مقدم):</span>
@@ -557,7 +557,7 @@ export default function NewOrder() {
               </div>
               <div className="financial-row">
                 <span>المتبقي عند التسليم:</span>
-                <span className={`amount-val font-bold ${remainingAmount > 0 ? 'text-warning' : 'text-success'}`}>
+                <span className={`amount-badge ${remainingAmount > 0 ? 'unpaid' : 'paid'}`}>
                   {remainingAmount.toFixed(2)} {settings.currency}
                 </span>
               </div>
