@@ -249,7 +249,7 @@ export default function Users() {
         onClose={() => setShowModal(false)}
         title={modalMode === 'add' ? 'إضافة موظف جديد' : 'تعديل موظف'}
       >
-        <form onSubmit={handleSave}>
+        <form onSubmit={handleSave} noValidate>
           <Input
             id="user-name"
             label="الاسم بالكامل *"

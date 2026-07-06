@@ -72,7 +72,7 @@ export default function Login() {
           <p className="login-subtitle">سجل دخولك للمتابعة</p>
         </div>
 
-        <form className="login-form" onSubmit={handleSubmit}>
+        <form className="login-form" onSubmit={handleSubmit} noValidate>
           {generalError && <div className="login-error">{generalError}</div>}
 
           <Input
