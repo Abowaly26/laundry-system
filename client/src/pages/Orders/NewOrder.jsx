@@ -296,17 +296,6 @@ export default function NewOrder() {
 
   return (
     <div className="page new-order-page">
-      <div className="page-header">
-        <div>
-          <h1 className="page-title">تسجيل طلب جديد</h1>
-          <p className="page-subtitle">إنشاء طلب جديد، إسناد الخدمات وتوليد ملصقات التتبع</p>
-        </div>
-        <Button variant="secondary" onClick={() => navigate('/orders')}>
-          <ArrowRight size={18} style={{ marginLeft: '8px' }} />
-          العودة للطلبات
-        </Button>
-      </div>
-
       <div className="new-order-layout">
         {/* الصف العلوي: العميل والجدولة */}
         <div className="new-order-top-row">
