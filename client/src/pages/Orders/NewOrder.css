@@ -627,30 +627,13 @@
 }
 
 .workload-days-grid {
-  display: flex;
-  overflow-x: auto;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
   margin-top: 6px;
-  padding: 4px 2px 8px;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(79, 70, 229, 0.2) transparent;
-}
-
-.workload-days-grid::-webkit-scrollbar {
-  height: 4px;
-}
-
-.workload-days-grid::-webkit-scrollbar-thumb {
-  background: rgba(79, 70, 229, 0.15);
-  border-radius: 4px;
-}
-
-.workload-days-grid::-webkit-scrollbar-thumb:hover {
-  background: rgba(79, 70, 229, 0.3);
 }
 
 .workload-day-card {
-  flex: 0 0 94px;
   background: var(--bg-hover);
   border: 1.5px solid var(--border);
   border-radius: 8px;
