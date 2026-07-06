@@ -305,23 +305,23 @@ router.get('/workload/timeline', authMiddleware, async (req, res) => {
  */
 router.get('/workload/weekly', authMiddleware, async (req, res) => {
   try {
-    // جلب مجموع القطع النشطة المجدولة لكل يوم خلال الـ 14 يوماً القادمة
+    // جلب مجموع القطع النشطة المجدولة لكل يوم خلال الـ 7 أيام القادمة
     const result = await query(`
       SELECT DATE(o.expected_delivery_at) as delivery_date, COUNT(oi.id) as items_count
       FROM orders o
       JOIN order_items oi ON o.id = oi.order_id
       WHERE o.status NOT IN ('delivered', 'cancelled')
         AND o.expected_delivery_at >= CURRENT_DATE
-        AND o.expected_delivery_at < CURRENT_DATE + INTERVAL '14 days'
+        AND o.expected_delivery_at < CURRENT_DATE + INTERVAL '7 days'
       GROUP BY DATE(o.expected_delivery_at)
       ORDER BY delivery_date ASC
     `);
 
-    // إعداد هيكل البيانات للأيام الـ 14 القادمة مع تعبئة الأيام الفارغة بـ 0
+    // إعداد هيكل البيانات للأيام السبعة القادمة مع تعبئة الأيام الفارغة بـ 0
     const weeklyData = [];
     const today = new Date();
     
-    for (let i = 0; i < 14; i++) {
+    for (let i = 0; i < 7; i++) {
       const date = new Date(today);
       date.setDate(today.getDate() + i);
       const dateStr = date.toISOString().split('T')[0];
