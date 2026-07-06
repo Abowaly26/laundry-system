@@ -537,7 +537,7 @@ export default function NewOrder() {
                       className="btn-custom-date-toggle"
                       onClick={() => setIsCustomDelivery(!isCustomDelivery)}
                     >
-                      {isCustomDelivery ? 'تحديد سريع' : 'موعد مخصص...'}
+                      {isCustomDelivery ? 'تحديد سريع' : 'موعد مخصص'}
                     </button>
                   </div>
                 </div>
