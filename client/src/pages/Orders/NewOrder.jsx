@@ -102,86 +102,95 @@ export default function NewOrder() {
         .then(res => {
           if (res.success) setSearchResults(res.data);
         })
-        .catch(err => console.error(err));
+        .catch(err => console.error('خطأ في البحث عن العميل', err));
     }, 300);
 
     return () => clearTimeout(delayDebounce);
   }, [searchQuery]);
 
-  // إضافة عميل جديد
+  // إجمالي التكلفة
+  const totalAmount = items.reduce((acc, curr) => acc + (parseFloat(curr.price) || 0), 0);
+  const remainingAmount = Math.max(0, totalAmount - (parseFloat(paidAmount) || 0));
+
+  // إدارة عناصر الفاتورة
+  const addItemRow = () => {
+    setItems([...items, { item_type: 'shirt', service_id: '', price: 0, notes: '' }]);
+  };
+
+  const removeItemRow = (index) => {
+    if (items.length > 1) {
+      const newItems = items.filter((_, i) => i !== index);
+      setItems(newItems);
+    }
+  };
+
+  const handleItemTypeChange = (index, value) => {
+    const newItems = [...items];
+    newItems[index].item_type = value;
+    setItems(newItems);
+  };
+
+  const handleServiceChange = (index, serviceId) => {
+    const newItems = [...items];
+    newItems[index].service_id = serviceId;
+    
+    // جلب سعر الخدمة المحدد تلقائياً
+    const service = services.find(s => s.id === parseInt(serviceId));
+    if (service) {
+      newItems[index].price = service.price;
+    } else {
+      newItems[index].price = 0;
+    }
+    
+    setItems(newItems);
+  };
+
+  const handlePriceChange = (index, value) => {
+    const newItems = [...items];
+    newItems[index].price = parseFloat(value) || 0;
+    setItems(newItems);
+  };
+
+  const handleNotesChange = (index, value) => {
+    const newItems = [...items];
+    newItems[index].notes = value;
+    setItems(newItems);
+  };
+
+  // إضافة عميل سريع
   const handleAddCustomer = async (e) => {
     e.preventDefault();
     setCustomerError('');
     if (!newCustomer.name || !newCustomer.phone) {
-      setCustomerError('الاسم ورقم الهاتف مطلوبان');
+      setCustomerError('الرجاء إدخال الاسم ورقم الجوال');
       return;
     }
+
     try {
       const res = await customersAPI.create(newCustomer);
       if (res.success) {
         setSelectedCustomer(res.data);
         setShowAddCustomerModal(false);
         setNewCustomer({ name: '', phone: '', address: '' });
-        setSearchQuery('');
+        showToast('تمت إضافة العميل وتحديده بنجاح!', 'success');
       } else {
-        setCustomerError(res.message || 'حدث خطأ أثناء إضافة العميل');
+        setCustomerError(res.message || 'فشل في إنشاء العميل');
       }
     } catch (err) {
-      setCustomerError(err.message || 'حدث خطأ في الاتصال بالخادم');
+      setCustomerError(err.message || 'خطأ في الاتصال بالخادم');
     }
   };
 
-  // تغيير الخدمة لقطعة معينة وتحديث السعر تلقائياً
-  const handleServiceChange = (index, serviceId) => {
-    const selectedService = services.find(s => s.id === parseInt(serviceId));
-    const newItems = [...items];
-    newItems[index].service_id = serviceId;
-    newItems[index].price = selectedService ? parseFloat(selectedService.price) || 0 : 0;
-    setItems(newItems);
-  };
-
-  const handleItemTypeChange = (index, val) => {
-    const newItems = [...items];
-    newItems[index].item_type = val;
-    setItems(newItems);
-  };
-
-  const handleNotesChange = (index, val) => {
-    const newItems = [...items];
-    newItems[index].notes = val;
-    setItems(newItems);
-  };
-
-  const handlePriceChange = (index, val) => {
-    const newItems = [...items];
-    newItems[index].price = parseFloat(val) || 0;
-    setItems(newItems);
-  };
-
-  const addItemRow = () => {
-    setItems([...items, { item_type: 'shirt', service_id: '', price: 0, notes: '' }]);
-  };
-
-  const removeItemRow = (index) => {
-    if (items.length === 1) return;
-    const newItems = items.filter((_, i) => i !== index);
-    setItems(newItems);
-  };
-
-  // حساب الإجماليات
-  const totalAmount = items.reduce((sum, item) => sum + (parseFloat(item.price) || 0), 0);
-  const remainingAmount = totalAmount - paidAmount;
-
-  // حفظ الطلب وإرساله للخادم
+  // حفظ الطلب
   const handleSubmitOrder = async () => {
     if (!selectedCustomer) {
-      showToast('يرجى اختيار عميل أو إضافة عميل جديد أولاً', 'warning');
+      showToast('الرجاء اختيار أو إضافة عميل أولاً', 'warning');
       return;
     }
 
     const invalidItems = items.some(item => !item.service_id);
     if (invalidItems) {
-      showToast('يرجى اختيار الخدمة المطلوبة لجميع القطع المضافة', 'warning');
+      showToast('الرجاء اختيار الخدمة لكل القطع المضافة', 'warning');
       return;
     }
 
@@ -299,150 +308,7 @@ export default function NewOrder() {
       </div>
 
       <div className="new-order-grid">
-        {/* العمود الأيمن: اختيار العميل وإضافة الملاحظات */}
-        <div className="new-order-sidebar">
-          <Card title="بيانات العميل" className="mb-md">
-            {!selectedCustomer ? (
-              <div className="customer-selector">
-                <div className="search-box">
-                  <input
-                    type="text"
-                    className="form-input"
-                    placeholder="ابحث بالاسم أو رقم الهاتف..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                  <Search size={18} className="search-icon" />
-                </div>
-
-                {searchResults.length > 0 && (
-                  <ul className="search-results-list">
-                    {searchResults.map(c => (
-                      <li key={c.id} onClick={() => {
-                        setSelectedCustomer(c);
-                        setSearchResults([]);
-                        setSearchQuery('');
-                      }}>
-                        <span className="customer-name">{c.name}</span>
-                        <span className="customer-phone">{c.phone}</span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-
-                <div className="divider-or"><span>أو</span></div>
-
-                <Button variant="secondary" className="w-full" onClick={() => setShowAddCustomerModal(true)}>
-                  <UserPlus size={18} style={{ marginLeft: '8px' }} />
-                  إضافة عميل جديد
-                </Button>
-              </div>
-            ) : (
-              <div className="selected-customer-card">
-                <div className="customer-info-detail">
-                  <h3>{selectedCustomer.name}</h3>
-                  <p>رقم الهاتف: {selectedCustomer.phone}</p>
-                  {selectedCustomer.address && <p>العنوان: {selectedCustomer.address}</p>}
-                </div>
-                <Button variant="ghost" className="text-error mt-sm w-full" onClick={() => setSelectedCustomer(null)}>
-                  تغيير العميل
-                </Button>
-              </div>
-            )}
-          </Card>
-
-          <Card title="تفاصيل التسليم والدفع">
-            <div className="form-group">
-              <label className="form-label">وقت التسليم المتوقع (بالأيام والساعات)</label>
-              <div className="flex gap-sm mb-xs">
-                <div style={{ flex: 1 }}>
-                  <span className="help-text">الأيام</span>
-                  <input
-                    type="number"
-                    className="form-input"
-                    value={daysOffset}
-                    onChange={(e) => setDaysOffset(parseInt(e.target.value) || 0)}
-                    min="0"
-                  />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <span className="help-text">الساعات الإضافية</span>
-                  <input
-                    type="number"
-                    className="form-input"
-                    value={hoursOffset}
-                    onChange={(e) => setHoursOffset(parseInt(e.target.value) || 0)}
-                    min="0"
-                    max="23"
-                  />
-                </div>
-              </div>
-
-              {deliveryDate && deliveryTime && (
-                <div className="mt-sm p-sm" style={{ background: 'var(--bg-hover)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)' }}>
-                  <span className="help-text-label font-bold" style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '4px' }}>موعد التسليم الناتج:</span>
-                  <span className="text-primary font-bold" style={{ fontSize: '0.9rem' }}>
-                    {new Date(`${deliveryDate}T${deliveryTime}`).toLocaleString('ar-EG', {
-                      weekday: 'long',
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
-                  </span>
-                </div>
-              )}
-
-              {weeklyWorkload && weeklyWorkload.length > 0 && (
-                <div className="weekly-workload-mini-chart mt-md">
-                  <span className="help-text-label font-bold mb-xs" style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                    مقياس ضغط العمل (القطع المجدولة للـ 7 أيام القادمة):
-                  </span>
-                  <div className="mini-chart-bars-container">
-                    {weeklyWorkload.map((day, idx) => {
-                      const maxCount = Math.max(...weeklyWorkload.map(d => d.count), 1);
-                      const barHeightPercent = Math.min(100, (day.count / maxCount) * 70 + 10);
-                      const isSelected = daysOffset === idx;
-                      
-                      return (
-                        <div 
-                          key={day.date} 
-                          className={`mini-chart-bar-col ${isSelected ? 'selected' : ''}`}
-                          onClick={() => setDaysOffset(idx)}
-                          title={`${day.dayName}: ${day.count} قطعة`}
-                        >
-                          <div className="mini-bar-wrapper">
-                            <div 
-                              className="mini-bar-fill" 
-                              style={{ height: `${day.count === 0 ? 4 : barHeightPercent}%` }}
-                            >
-                              {day.count > 0 && <span className="mini-bar-tooltip">{day.count}</span>}
-                            </div>
-                          </div>
-                          <span className="mini-bar-label">{day.dayName}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-            </div>
-
-
-            <div className="form-group">
-              <label className="form-label">ملاحظات الطلب</label>
-              <textarea
-                className="form-textarea"
-                value={orderNotes}
-                onChange={(e) => setOrderNotes(e.target.value)}
-                placeholder="ملاحظات عامة حول الطلب..."
-              />
-            </div>
-          </Card>
-        </div>
-
-        {/* العمود الأيسر: إضافة القطع وتفاصيل الدفع */}
+        {/* العمود الأيمن (الرئيسي): إضافة القطع */}
         <div className="new-order-main">
           <Card title="قطع الملابس / السجاد المضافة للطلب">
             <div className="items-table-container">
@@ -524,9 +390,151 @@ export default function NewOrder() {
               إضافة قطعة أخرى
             </Button>
           </Card>
+        </div>
 
-          {/* تفاصيل التكلفة النهائية */}
-          <Card className="mt-md">
+        {/* العمود الأيسر (الجانبي): اختيار العميل، الجدولة، والمالية */}
+        <div className="new-order-sidebar">
+          <Card title="بيانات العميل" className="mb-md">
+            {!selectedCustomer ? (
+              <div className="customer-selector">
+                <div className="search-box">
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="ابحث بالاسم أو رقم الهاتف..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                  <Search size={18} className="search-icon" />
+                </div>
+
+                {searchResults.length > 0 && (
+                  <ul className="search-results-list">
+                    {searchResults.map(c => (
+                      <li key={c.id} onClick={() => {
+                        setSelectedCustomer(c);
+                        setSearchResults([]);
+                        setSearchQuery('');
+                      }}>
+                        <span className="customer-name">{c.name}</span>
+                        <span className="customer-phone">{c.phone}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
+                <div className="divider-or"><span>أو</span></div>
+
+                <Button variant="secondary" className="w-full" onClick={() => setShowAddCustomerModal(true)}>
+                  <UserPlus size={18} style={{ marginLeft: '8px' }} />
+                  إضافة عميل جديد
+                </Button>
+              </div>
+            ) : (
+              <div className="selected-customer-card">
+                <div className="customer-info-detail">
+                  <h3>{selectedCustomer.name}</h3>
+                  <p>رقم الهاتف: {selectedCustomer.phone}</p>
+                  {selectedCustomer.address && <p>العنوان: {selectedCustomer.address}</p>}
+                </div>
+                <Button variant="ghost" className="text-error mt-sm w-full" onClick={() => setSelectedCustomer(null)}>
+                  تغيير العميل
+                </Button>
+              </div>
+            )}
+          </Card>
+
+          <Card title="تفاصيل التسليم والجدولة" className="mb-md">
+            <div className="form-group">
+              <label className="form-label">وقت التسليم المتوقع (بالأيام والساعات)</label>
+              <div className="flex gap-sm mb-xs">
+                <div style={{ flex: 1 }}>
+                  <span className="help-text">الأيام</span>
+                  <input
+                    type="number"
+                    className="form-input"
+                    value={daysOffset}
+                    onChange={(e) => setDaysOffset(parseInt(e.target.value) || 0)}
+                    min="0"
+                  />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <span className="help-text">الساعات الإضافية</span>
+                  <input
+                    type="number"
+                    className="form-input"
+                    value={hoursOffset}
+                    onChange={(e) => setHoursOffset(parseInt(e.target.value) || 0)}
+                    min="0"
+                    max="23"
+                  />
+                </div>
+              </div>
+
+              {deliveryDate && deliveryTime && (
+                <div className="mt-sm p-sm" style={{ background: 'var(--bg-hover)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)' }}>
+                  <span className="help-text-label font-bold" style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '4px' }}>موعد التسليم الناتج:</span>
+                  <span className="text-primary font-bold" style={{ fontSize: '0.9rem' }}>
+                    {new Date(`${deliveryDate}T${deliveryTime}`).toLocaleString('ar-EG', {
+                      weekday: 'long',
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </span>
+                </div>
+              )}
+
+              {weeklyWorkload && weeklyWorkload.length > 0 && (
+                <div className="weekly-workload-mini-chart mt-md">
+                  <span className="help-text-label font-bold mb-xs" style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                    مقياس ضغط العمل (القطع المجدولة للـ 7 أيام القادمة):
+                  </span>
+                  <div className="mini-chart-bars-container">
+                    {weeklyWorkload.map((day, idx) => {
+                      const maxCount = Math.max(...weeklyWorkload.map(d => d.count), 1);
+                      const barHeightPercent = Math.min(100, (day.count / maxCount) * 70 + 10);
+                      const isSelected = daysOffset === idx;
+                      
+                      return (
+                        <div 
+                          key={day.date} 
+                          className={`mini-chart-bar-col ${isSelected ? 'selected' : ''}`}
+                          onClick={() => setDaysOffset(idx)}
+                          title={`${day.dayName}: ${day.count} قطعة`}
+                        >
+                          <div className="mini-bar-wrapper">
+                            <div 
+                              className="mini-bar-fill" 
+                              style={{ height: `${day.count === 0 ? 4 : barHeightPercent}%` }}
+                            >
+                              {day.count > 0 && <span className="mini-bar-tooltip">{day.count}</span>}
+                            </div>
+                          </div>
+                          <span className="mini-bar-label">{day.dayName}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="form-group mt-md">
+              <label className="form-label">ملاحظات الطلب</label>
+              <textarea
+                className="form-textarea"
+                value={orderNotes}
+                onChange={(e) => setOrderNotes(e.target.value)}
+                placeholder="ملاحظات عامة حول الطلب..."
+              />
+            </div>
+          </Card>
+
+          {/* تفاصيل التكلفة والدفع */}
+          <Card title="تفاصيل الفاتورة والدفع">
             <div className="financials-summary-box">
               <div className="financial-row">
                 <span>إجمالي الطلب:</span>
@@ -577,13 +585,13 @@ export default function NewOrder() {
                       onChange={() => setPaymentMethod('electronic')}
                       className="sr-only"
                     />
-                    إلكتروني (مدى/شبكة)
+                    إلكتروني (شبكة)
                   </label>
                 </div>
               </div>
             </div>
 
-            <div className="submit-actions mt-lg">
+            <div className="submit-actions mt-md">
               <Button
                 variant="primary"
                 size="large"
