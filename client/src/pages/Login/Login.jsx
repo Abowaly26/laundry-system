@@ -81,7 +81,7 @@ export default function Login() {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="مثال: admin@laundry.com"
+            placeholder="أدخل بريدك الإلكتروني"
             autoComplete="email"
             error={emailError}
           />
