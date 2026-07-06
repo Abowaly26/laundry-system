@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Trash2, Search, UserPlus, Printer, ArrowRight, Save, FileText } from 'lucide-react';
+import { Plus, Trash2, Search, UserPlus, Printer, ArrowRight, Save, FileText, ChevronLeft, ChevronRight } from 'lucide-react';
 import { customersAPI, servicesAPI, ordersAPI } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import { useSettings } from '../../context/SettingsContext';
@@ -668,11 +668,15 @@ export default function NewOrder() {
                             {showDateDropdown && (
                               <div className="date-select-dropdown">
                                 <div className="calendar-header">
-                                  <button type="button" className="btn-month-nav" onClick={handlePrevMonth}>&gt;</button>
+                                  <button type="button" className="btn-month-nav" onClick={handlePrevMonth}>
+                                    <ChevronRight size={16} />
+                                  </button>
                                   <span className="month-year-label">
                                     {viewDate.toLocaleString('ar-EG', { month: 'long', year: 'numeric' })}
                                   </span>
-                                  <button type="button" className="btn-month-nav" onClick={handleNextMonth}>&lt;</button>
+                                  <button type="button" className="btn-month-nav" onClick={handleNextMonth}>
+                                    <ChevronLeft size={16} />
+                                  </button>
                                 </div>
                                 <div className="calendar-grid-weekdays">
                                   {WEEKDAYS.map(day => (
