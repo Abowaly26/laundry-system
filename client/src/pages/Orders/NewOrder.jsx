@@ -68,6 +68,7 @@ export default function NewOrder() {
   const [showPrintModal, setShowPrintModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [workloadStatus, setWorkloadStatus] = useState(null);
+  const [weeklyWorkload, setWeeklyWorkload] = useState([]);
 
   // تحميل الخدمات وضغط العمل عند التحميل
   useEffect(() => {
@@ -82,6 +83,12 @@ export default function NewOrder() {
         if (res.success) setWorkloadStatus(res.data);
       })
       .catch(err => console.error('خطأ في تحميل ضغط العمل', err));
+
+    ordersAPI.getWeeklyWorkload()
+      .then(res => {
+        if (res.success) setWeeklyWorkload(res.data);
+      })
+      .catch(err => console.error('خطأ في تحميل ضغط العمل الأسبوعي', err));
   }, []);
 
   // البحث عن العميل
@@ -384,6 +391,40 @@ export default function NewOrder() {
                       minute: '2-digit'
                     })}
                   </span>
+                </div>
+              )}
+
+              {weeklyWorkload && weeklyWorkload.length > 0 && (
+                <div className="weekly-workload-mini-chart mt-md">
+                  <span className="help-text-label font-bold mb-xs" style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                    مقياس ضغط العمل (القطع المجدولة للـ 7 أيام القادمة):
+                  </span>
+                  <div className="mini-chart-bars-container">
+                    {weeklyWorkload.map((day, idx) => {
+                      const maxCount = Math.max(...weeklyWorkload.map(d => d.count), 1);
+                      const barHeightPercent = Math.min(100, (day.count / maxCount) * 70 + 10);
+                      const isSelected = daysOffset === idx;
+                      
+                      return (
+                        <div 
+                          key={day.date} 
+                          className={`mini-chart-bar-col ${isSelected ? 'selected' : ''}`}
+                          onClick={() => setDaysOffset(idx)}
+                          title={`${day.dayName}: ${day.count} قطعة`}
+                        >
+                          <div className="mini-bar-wrapper">
+                            <div 
+                              className="mini-bar-fill" 
+                              style={{ height: `${day.count === 0 ? 4 : barHeightPercent}%` }}
+                            >
+                              {day.count > 0 && <span className="mini-bar-tooltip">{day.count}</span>}
+                            </div>
+                          </div>
+                          <span className="mini-bar-label">{day.dayName}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
             </div>

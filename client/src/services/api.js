@@ -132,6 +132,8 @@ export const ordersAPI = {
     request('/orders/workload/status'),
   getWorkloadTimeline: (date) =>
     request(`/orders/workload/timeline${date ? `?date=${date}` : ''}`),
+  getWeeklyWorkload: () =>
+    request('/orders/workload/weekly'),
 };
 
 // ===== Items =====
