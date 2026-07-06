@@ -1087,7 +1087,7 @@ export default function NewOrder() {
                         onChange={() => setPaymentMethod('electronic')}
                         className="sr-only"
                       />
-                      إلكتروني (شبكة)
+                      إلكتروني
                     </label>
                   </div>
                 </div>
