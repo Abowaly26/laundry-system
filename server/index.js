@@ -133,6 +133,34 @@ app.get('/api/debug/users', async (req, res) => {
   }
 });
 
+// Endpoint للتحقق من جداول قاعدة البيانات
+app.get('/api/debug/tables', async (req, res) => {
+  try {
+    const tables = await query(`
+      SELECT table_name 
+      FROM information_schema.tables 
+      WHERE table_schema = 'public'
+      ORDER BY table_name
+    `);
+    res.json({ 
+      success: true, 
+      tables: tables.rows.map(r => r.table_name)
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Endpoint لتشغيل الـ migrations يدوياً (طوارئ فقط)
+app.post('/api/debug/run-migrations', async (req, res) => {
+  try {
+    await runPendingMigrations();
+    res.json({ success: true, message: 'Migrations executed successfully' });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // دالة تهيئة قاعدة البيانات
 async function initializeDatabase() {
   console.log('\n🚀 Starting database initialization...\n');

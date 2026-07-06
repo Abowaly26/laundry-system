@@ -55,6 +55,11 @@ router.get('/', async (req, res) => {
 
     res.json({ success: true, data: result });
   } catch (error) {
+    // إذا كانت الجداول غير موجودة بعد (migration لم يُنفَّذ)، نُرجع قائمة فارغة
+    if (error.code === '42P01') { // PostgreSQL: table does not exist
+      console.warn('⚠️  item_types tables not found - migration may be pending');
+      return res.json({ success: true, data: [] });
+    }
     console.error('Get item types error:', error);
     res.status(500).json({ success: false, message: 'خطأ في جلب أنواع القطع والأسعار' });
   }
