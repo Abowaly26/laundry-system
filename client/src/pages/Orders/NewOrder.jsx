@@ -300,7 +300,35 @@ export default function NewOrder() {
         {/* الصف العلوي: العميل والجدولة */}
         <div className="new-order-top-row">
           <div className="layout-card-wrapper">
-            <Card title="بيانات العميل">
+            <Card 
+              title="بيانات العميل" 
+              actions={
+                <button 
+                  type="button" 
+                  className="btn-back-tiny" 
+                  onClick={() => navigate('/orders')}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    background: 'none',
+                    border: 'none',
+                    color: 'var(--text-secondary)',
+                    fontSize: '0.8rem',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    padding: '4px 8px',
+                    borderRadius: '6px',
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseOver={(e) => { e.currentTarget.style.color = 'var(--primary)'; e.currentTarget.style.background = 'rgba(79, 70, 229, 0.05)'; }}
+                  onMouseOut={(e) => { e.currentTarget.style.color = 'var(--text-secondary)'; e.currentTarget.style.background = 'none'; }}
+                >
+                  <ArrowRight size={14} style={{ marginLeft: '4px' }} />
+                  العودة للطلبات
+                </button>
+              }
+            >
               {!selectedCustomer ? (
                 <div className="customer-selector">
                   <div className="search-box">
