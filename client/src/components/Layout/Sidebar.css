@@ -24,8 +24,8 @@
 }
 
 .sidebar-brand .brand-icon {
-  width: 40px;
-  height: 40px;
+  width: 46px;
+  height: 46px;
   background: #FFFFFF; /* White background badge */
   border-radius: 50%; /* Circle shape */
   display: flex;
@@ -206,7 +206,7 @@
 }
 
 .sidebar-logo-image {
-  width: 26px;
-  height: 26px;
+  width: 32px;
+  height: 32px;
   object-fit: contain;
 }
