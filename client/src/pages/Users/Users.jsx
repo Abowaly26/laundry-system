@@ -5,6 +5,7 @@ import { useToast } from '../../context/ToastContext';
 import Button from '../../components/UI/Button';
 import Modal from '../../components/UI/Modal';
 import Input from '../../components/UI/Input';
+import Switch from '../../components/UI/Switch';
 import LoadingSpinner from '../../components/UI/LoadingSpinner';
 import EmptyState from '../../components/UI/EmptyState';
 import './Users.css';
@@ -226,14 +227,12 @@ export default function Users() {
                         <Edit2 size={14} style={{ marginLeft: '4px' }} />
                         تعديل
                       </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="small" 
-                        className={user.is_active ? 'text-warning' : 'text-success'}
-                        onClick={() => handleToggleActive(user)}
-                      >
-                        {user.is_active ? 'تعطيل الحساب' : 'تفعيل الحساب'}
-                      </Button>
+                      <div className="flex items-center" title={user.is_active ? 'تعطيل الحساب' : 'تفعيل الحساب'}>
+                        <Switch 
+                          checked={user.is_active ? true : false} 
+                          onChange={() => handleToggleActive(user)} 
+                        />
+                      </div>
                     </div>
                   </td>
                 </tr>
