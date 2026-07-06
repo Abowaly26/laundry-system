@@ -119,6 +119,9 @@ export default function NewOrder() {
   const customTimeRef = useRef(null);
   const dateRef = useRef(null);
 
+  const [openItemTypeIndex, setOpenItemTypeIndex] = useState(null);
+  const [openServiceIndex, setOpenServiceIndex] = useState(null);
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (showQuickTimeDropdown && quickTimeRef.current && !quickTimeRef.current.contains(event.target)) {
@@ -129,6 +132,11 @@ export default function NewOrder() {
       }
       if (showDateDropdown && dateRef.current && !dateRef.current.contains(event.target)) {
         setShowDateDropdown(false);
+      }
+      
+      if (!event.target.closest('.table-select-container')) {
+        setOpenItemTypeIndex(null);
+        setOpenServiceIndex(null);
       }
     };
 
@@ -828,29 +836,78 @@ export default function NewOrder() {
                     {items.map((item, index) => (
                       <tr key={index}>
                         <td>
-                          <select
-                            className="form-select select-compact"
-                            value={item.item_type}
-                            onChange={(e) => handleItemTypeChange(index, e.target.value)}
-                          >
-                            {COMMON_ITEMS.map(opt => (
-                              <option key={opt.value} value={opt.value}>{opt.label}</option>
-                            ))}
-                          </select>
+                          <div className="table-select-container">
+                            <button
+                              type="button"
+                              className="table-select-trigger"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setOpenServiceIndex(null);
+                                setOpenItemTypeIndex(openItemTypeIndex === index ? null : index);
+                              }}
+                            >
+                              {COMMON_ITEMS.find(opt => opt.value === item.item_type)?.label || item.item_type}
+                            </button>
+                            {openItemTypeIndex === index && (
+                              <div className="table-select-dropdown">
+                                {COMMON_ITEMS.map((opt) => (
+                                  <button
+                                    key={opt.value}
+                                    type="button"
+                                    className={`table-select-item ${item.item_type === opt.value ? 'selected' : ''}`}
+                                    onClick={() => {
+                                      handleItemTypeChange(index, opt.value);
+                                      setOpenItemTypeIndex(null);
+                                    }}
+                                  >
+                                    {opt.label}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
                         </td>
                         <td>
-                          <select
-                            className="form-select select-compact"
-                            value={item.service_id}
-                            onChange={(e) => handleServiceChange(index, e.target.value)}
-                          >
-                            <option value="">اختر الخدمة...</option>
-                            {services.map(s => (
-                              <option key={s.id} value={s.id}>
-                                {s.name_ar} ({s.price} {settings.currency})
-                              </option>
-                            ))}
-                          </select>
+                          <div className="table-select-container">
+                            <button
+                              type="button"
+                              className="table-select-trigger"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setOpenItemTypeIndex(null);
+                                setOpenServiceIndex(openServiceIndex === index ? null : index);
+                              }}
+                            >
+                              {services.find(s => s.id === parseInt(item.service_id))?.name_ar || 'اختر الخدمة...'}
+                            </button>
+                            {openServiceIndex === index && (
+                              <div className="table-select-dropdown">
+                                <button
+                                  type="button"
+                                  className={`table-select-item ${!item.service_id ? 'selected' : ''}`}
+                                  onClick={() => {
+                                    handleServiceChange(index, '');
+                                    setOpenServiceIndex(null);
+                                  }}
+                                >
+                                  اختر الخدمة...
+                                </button>
+                                {services.map((s) => (
+                                  <button
+                                    key={s.id}
+                                    type="button"
+                                    className={`table-select-item ${item.service_id === String(s.id) ? 'selected' : ''}`}
+                                    onClick={() => {
+                                      handleServiceChange(index, String(s.id));
+                                      setOpenServiceIndex(null);
+                                    }}
+                                  >
+                                    {s.name_ar} ({s.price} {settings.currency})
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
                         </td>
                         <td>
                           <input
