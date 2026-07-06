@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Trash2, Search, UserPlus, Printer, ArrowRight, Save, FileText, ChevronLeft, ChevronRight } from 'lucide-react';
 import { customersAPI, servicesAPI, ordersAPI } from '../../services/api';
@@ -114,6 +114,29 @@ export default function NewOrder() {
   const [showCustomTimeDropdown, setShowCustomTimeDropdown] = useState(false);
   const [viewDate, setViewDate] = useState(new Date());
   const [showDateDropdown, setShowDateDropdown] = useState(false);
+
+  const quickTimeRef = useRef(null);
+  const customTimeRef = useRef(null);
+  const dateRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showQuickTimeDropdown && quickTimeRef.current && !quickTimeRef.current.contains(event.target)) {
+        setShowQuickTimeDropdown(false);
+      }
+      if (showCustomTimeDropdown && customTimeRef.current && !customTimeRef.current.contains(event.target)) {
+        setShowCustomTimeDropdown(false);
+      }
+      if (showDateDropdown && dateRef.current && !dateRef.current.contains(event.target)) {
+        setShowDateDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showQuickTimeDropdown, showCustomTimeDropdown, showDateDropdown]);
 
   const getDaysInMonthGrid = (date) => {
     const year = date.getFullYear();
@@ -639,7 +662,7 @@ export default function NewOrder() {
                       {/* ساعة التسليم الدقيقة */}
                       <div>
                         <span className="help-text">ساعة التسليم</span>
-                        <div className="custom-time-select-container">
+                        <div className="custom-time-select-container" ref={quickTimeRef}>
                           <button
                             type="button"
                             className="time-select-trigger"
@@ -673,7 +696,7 @@ export default function NewOrder() {
                       <div className="flex gap-sm">
                         <div style={{ flex: 1 }}>
                           <span className="help-text">تاريخ التسليم</span>
-                          <div className="custom-date-select-container">
+                          <div className="custom-date-select-container" ref={dateRef}>
                             <button
                               type="button"
                               className="date-select-trigger"
@@ -725,7 +748,7 @@ export default function NewOrder() {
                         </div>
                         <div style={{ flex: 1 }}>
                           <span className="help-text">وقت التسليم</span>
-                          <div className="custom-time-select-container">
+                          <div className="custom-time-select-container" ref={customTimeRef}>
                             <button
                               type="button"
                               className="time-select-trigger"
