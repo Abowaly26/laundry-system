@@ -70,11 +70,14 @@ export default function Services() {
       const res = await itemTypesAPI.getAll();
       if (res.success) {
         setItemTypes(res.data);
+      } else {
+        setItemTypes([]);
       }
     } catch (err) {
       console.error(err);
+      setItemTypes([]);
     } finally {
-      setItemTypes(false);
+      setLoadingItemTypes(false);
     }
   };
 
@@ -423,7 +426,7 @@ export default function Services() {
           <div className="flex justify-center items-center" style={{ height: '200px' }}>
             <LoadingSpinner />
           </div>
-        ) : itemTypes.length === 0 ? (
+        ) : !Array.isArray(itemTypes) || itemTypes.length === 0 ? (
           <EmptyState 
             title="لا توجد قطع ملابس" 
             message="لم نجد أي أنواع قطع ملابس معرفة بالنظام حالياً. اضغط لإضافة نوع قطعة جديد."

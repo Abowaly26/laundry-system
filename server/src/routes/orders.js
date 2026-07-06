@@ -111,9 +111,10 @@ router.get('/track/:orderIdOrPhone', async (req, res) => {
 
         orders = await Promise.all(customerOrdersResult.rows.map(async order => {
           const itemsResult = await query(`
-            SELECT oi.*, s.name_ar as service_name
+            SELECT oi.*, s.name_ar as service_name, sz.size_name
             FROM order_items oi
             JOIN services s ON oi.service_id = s.id
+            LEFT JOIN item_sizes sz ON oi.size_id = sz.id
             WHERE oi.order_id = $1
           `, [order.id]);
           return { ...order, items: itemsResult.rows };
@@ -404,7 +405,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
  */
 router.post('/', authMiddleware, async (req, res) => {
   try {
-    const { customer_id, items, notes, paid_amount, payment_method } = req.body;
+    const { customer_id, items, notes, paid_amount, payment_method, expected_delivery_at } = req.body;
 
     if (!customer_id || !items || !Array.isArray(items) || items.length === 0) {
       return res.status(400).json({
@@ -430,21 +431,29 @@ router.post('/', authMiddleware, async (req, res) => {
       }
       const service = serviceResult.rows[0];
       const quantity = item.quantity || 1;
-      const itemPrice = service.price * quantity;
+      // Use the client-sent price (which may be size-specific); fall back to service base price
+      const itemPrice = (item.price != null && parseFloat(item.price) > 0) 
+        ? parseFloat(item.price) * quantity 
+        : service.price * quantity;
       totalAmount += itemPrice;
       if (service.estimated_hours > maxEstimatedHours) {
         maxEstimatedHours = service.estimated_hours;
       }
-      return { ...item, service, price: service.price, quantity };
+      return { ...item, service, price: (item.price != null && parseFloat(item.price) > 0) ? parseFloat(item.price) : service.price, quantity };
     }));
 
     const paidAmount = parseFloat(paid_amount) || 0;
     const remainingAmount = totalAmount - paidAmount;
 
-    // تاريخ التسليم المتوقع
-    const expectedDelivery = new Date();
-    expectedDelivery.setHours(expectedDelivery.getHours() + maxEstimatedHours);
-    const expectedDeliveryStr = expectedDelivery.toISOString();
+    // تاريخ التسليم المتوقع - إذا أرسل العميل تاريخاً نستخدمه، وإلا نحسب تلقائياً
+    let expectedDeliveryStr;
+    if (expected_delivery_at) {
+      expectedDeliveryStr = new Date(expected_delivery_at).toISOString();
+    } else {
+      const expectedDelivery = new Date();
+      expectedDelivery.setHours(expectedDelivery.getHours() + maxEstimatedHours);
+      expectedDeliveryStr = expectedDelivery.toISOString();
+    }
 
     // إنشاء الطلب والقطع داخل معاملة واحدة
     const result = await transaction(async (client) => {

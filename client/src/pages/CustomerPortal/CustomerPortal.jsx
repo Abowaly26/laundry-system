@@ -187,7 +187,7 @@ export default function CustomerPortal() {
                     <div key={item.id} className="portal-item-row">
                       <div className="item-info">
                         <span className="item-code">{item.qr_code}</span>
-                        <strong className="item-name">{getItemTypeAr(item.item_type)}</strong>
+                        <strong className="item-name">{getItemTypeAr(item.item_type)}{item.size_name ? ` (${item.size_name})` : ''}</strong>
                         <span className="item-service text-secondary">- {item.service_name || 'تنظيف'}</span>
                       </div>
                       

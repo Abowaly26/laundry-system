@@ -83,12 +83,14 @@ router.get('/scan/:qrCode', authMiddleware, async (req, res) => {
     const itemResult = await query(`
       SELECT oi.*, 
         s.name_ar as service_name, s.name as service_name_en,
+        sz.size_name,
         o.id as order_id, o.status as order_status,
         c.name as customer_name, c.phone as customer_phone
       FROM order_items oi
       JOIN services s ON oi.service_id = s.id
       JOIN orders o ON oi.order_id = o.id
       JOIN customers c ON o.customer_id = c.id
+      LEFT JOIN item_sizes sz ON oi.size_id = sz.id
       WHERE oi.qr_code = $1
     `, [qrCode]);
 
@@ -175,11 +177,13 @@ router.put('/scan/:qrCode/advance', authMiddleware, async (req, res) => {
     // جلب البيانات المحدثة
     const updatedItemResult = await query(`
       SELECT oi.*, s.name_ar as service_name,
+        sz.size_name,
         o.status as order_status, c.name as customer_name
       FROM order_items oi
       JOIN services s ON oi.service_id = s.id
       JOIN orders o ON oi.order_id = o.id
       JOIN customers c ON o.customer_id = c.id
+      LEFT JOIN item_sizes sz ON oi.size_id = sz.id
       WHERE oi.id = $1
     `, [item.id]);
 
@@ -207,12 +211,14 @@ router.get('/:id', authMiddleware, async (req, res) => {
     const itemResult = await query(`
       SELECT oi.*, 
         s.name_ar as service_name, s.name as service_name_en,
+        sz.size_name,
         o.id as order_id, o.status as order_status,
         c.name as customer_name, c.phone as customer_phone
       FROM order_items oi
       JOIN services s ON oi.service_id = s.id
       JOIN orders o ON oi.order_id = o.id
       JOIN customers c ON o.customer_id = c.id
+      LEFT JOIN item_sizes sz ON oi.size_id = sz.id
       WHERE oi.id = $1
     `, [req.params.id]);
 

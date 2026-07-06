@@ -404,7 +404,7 @@ export default function OrderDetails() {
                   {order.items?.map((item) => (
                     <tr key={item.id}>
                       <td><strong>{item.qr_code}</strong></td>
-                      <td>{getItemTypeAr(item.item_type)}</td>
+                      <td>{getItemTypeAr(item.item_type)}{item.size_name ? <span style={{ color: 'var(--text-secondary)', fontSize: '0.85em', marginRight: '4px' }}> ({item.size_name})</span> : ''}</td>
                       <td>{item.service_name_ar || item.service?.name_ar}</td>
                       <td>{item.notes || '-'}</td>
                       <td>{parseFloat(item.price).toFixed(2)} {settings.currency}</td>

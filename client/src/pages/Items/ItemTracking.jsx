@@ -184,7 +184,7 @@ export default function ItemTracking() {
               <div className="item-meta-info">
                 <div className="info-row">
                   <span>نوع القطعة:</span>
-                  <strong>{getItemTypeAr(currentItem.item_type)}</strong>
+                  <strong>{getItemTypeAr(currentItem.item_type)}{currentItem.size_name ? ` (${currentItem.size_name})` : ''}</strong>
                 </div>
                 <div className="info-row">
                   <span>الخدمة المطلوبة:</span>
