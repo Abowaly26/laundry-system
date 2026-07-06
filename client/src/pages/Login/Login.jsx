@@ -65,8 +65,8 @@ export default function Login() {
     <div className="login-page">
       <div className="login-card">
         <div className="login-header">
-          <div className="login-icon">
-            <WashingMachine size={32} />
+          <div className="login-logo-container">
+            <img src="/logo.png" alt="شعار المغسلة الذكية" className="login-logo-image" />
           </div>
           <h1 className="login-title">المغسلة الذكية</h1>
           <p className="login-subtitle">سجل دخولك للمتابعة</p>

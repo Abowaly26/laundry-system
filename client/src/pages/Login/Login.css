@@ -72,24 +72,31 @@
   margin-bottom: 32px;
 }
 
-.login-icon {
-  width: 80px;
-  height: 80px;
-  background: linear-gradient(135deg, var(--primary) 0%, #6366f1 100%);
-  border-radius: 24px;
+.login-logo-container {
+  width: 130px;
+  height: 130px;
+  margin: 0 auto 24px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 24px;
-  color: white;
-  box-shadow: 0 10px 25px rgba(79, 70, 229, 0.4);
+  background: #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  padding: 8px;
   transform: translateY(0);
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.login-icon:hover {
+.login-logo-container:hover {
   transform: translateY(-5px) scale(1.05);
-  box-shadow: 0 15px 35px rgba(79, 70, 229, 0.5);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+}
+
+.login-logo-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
 }
 
 .login-title {
