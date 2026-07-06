@@ -66,9 +66,9 @@ export default function Login() {
       <div className="login-card">
         <div className="login-header">
           <div className="login-logo-container">
-            <img src="/logo.png" alt="شعار المغسلة الذكية" className="login-logo-image" />
+            <img src="/logo.png" alt="شعار نظام إدارة المغسلة" className="login-logo-image" />
           </div>
-          <h1 className="login-title">المغسلة الذكية</h1>
+          <h1 className="login-title">نظام إدارة المغسلة</h1>
           <p className="login-subtitle">سجل دخولك للمتابعة</p>
         </div>
 
