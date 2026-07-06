@@ -95,6 +95,21 @@ export default function NewOrder() {
     return `${formattedHour}:${mm} ${period}`;
   };
 
+  const renderTimeLabel = (timeVal) => {
+    const rawLabel = getTimeLabel(timeVal);
+    if (!rawLabel) return null;
+    const parts = rawLabel.split(' ');
+    const digits = parts[0];
+    const period = parts[1] || '';
+    
+    return (
+      <span className="time-label-flex">
+        <span className="time-label-digits">{digits}</span>
+        {period && <span className="time-label-period">{period}</span>}
+      </span>
+    );
+  };
+
   const [showQuickTimeDropdown, setShowQuickTimeDropdown] = useState(false);
   const [showCustomTimeDropdown, setShowCustomTimeDropdown] = useState(false);
   const [viewDate, setViewDate] = useState(new Date());
@@ -165,23 +180,6 @@ export default function NewOrder() {
   
   const handleNextMonth = () => {
     setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1));
-  };
-
-  const getSafeDeliveryDateObject = () => {
-    if (!deliveryDate || !deliveryTime) return new Date();
-    try {
-      const dateParts = deliveryDate.split('-');
-      const timeParts = deliveryTime.split(':');
-      if (dateParts.length < 3 || timeParts.length < 2) return new Date();
-      const year = parseInt(dateParts[0]);
-      const month = parseInt(dateParts[1]) - 1;
-      const day = parseInt(dateParts[2]);
-      const hours = parseInt(timeParts[0]);
-      const minutes = parseInt(timeParts[1]);
-      return new Date(year, month, day, hours, minutes);
-    } catch (err) {
-      return new Date();
-    }
   };
 
   const WEEKDAYS = ['أح', 'اث', 'ثلا', 'أر', 'خم', 'جم', 'سب'];
@@ -376,7 +374,7 @@ export default function NewOrder() {
     setIsSubmitting(true);
     try {
       // وقت التسليم المتوقع المحدد يدوياً
-      const expectedDate = getSafeDeliveryDateObject();
+      const expectedDate = new Date(`${deliveryDate}T${deliveryTime}`);
 
       const orderData = {
         customer_id: selectedCustomer.id,
@@ -652,8 +650,9 @@ export default function NewOrder() {
                           {showQuickTimeDropdown && (
                             <div className="time-select-dropdown">
                               {TIME_OPTIONS.map((opt) => (
-                                <div
+                                <button
                                   key={opt.value}
+                                  type="button"
                                   className={`time-select-item ${deliveryTime === opt.value ? 'selected' : ''}`}
                                   onClick={() => {
                                     setDeliveryTime(opt.value);
@@ -662,7 +661,7 @@ export default function NewOrder() {
                                   }}
                                 >
                                   {renderTimeLabel(opt.value)}
-                                </div>
+                                </button>
                               ))}
                             </div>
                           )}
@@ -737,8 +736,9 @@ export default function NewOrder() {
                             {showCustomTimeDropdown && (
                               <div className="time-select-dropdown">
                                 {TIME_OPTIONS.map((opt) => (
-                                  <div
+                                  <button
                                     key={opt.value}
+                                    type="button"
                                     className={`time-select-item ${deliveryTime === opt.value ? 'selected' : ''}`}
                                     onClick={() => {
                                       setDeliveryTime(opt.value);
@@ -746,7 +746,7 @@ export default function NewOrder() {
                                     }}
                                   >
                                     {renderTimeLabel(opt.value)}
-                                  </div>
+                                  </button>
                                 ))}
                               </div>
                             )}
@@ -761,7 +761,7 @@ export default function NewOrder() {
                       <div className="scheduler-result-text">
                         <span className="result-label">الموعد المحدد:</span>
                         <span className="result-value">
-                          {getSafeDeliveryDateObject().toLocaleString('ar-EG', {
+                          {new Date(`${deliveryDate}T${deliveryTime}`).toLocaleString('ar-EG', {
                             weekday: 'long',
                             year: 'numeric',
                             month: 'short',
