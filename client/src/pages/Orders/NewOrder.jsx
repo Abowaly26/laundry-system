@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Trash2, Search, UserPlus, Printer, ArrowRight, Save, FileText, ChevronLeft, ChevronRight } from 'lucide-react';
-import { customersAPI, servicesAPI, ordersAPI } from '../../services/api';
+import { customersAPI, servicesAPI, ordersAPI, itemTypesAPI } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import { useSettings } from '../../context/SettingsContext';
 import Button from '../../components/UI/Button';
@@ -10,18 +10,6 @@ import Modal from '../../components/UI/Modal';
 import PrintInvoice from '../../components/Print/PrintInvoice';
 import PrintQRLabels from '../../components/Print/PrintQRLabels';
 import './NewOrder.css';
-
-const COMMON_ITEMS = [
-  { value: 'shirt', label: 'قميص / تيشرت' },
-  { value: 'pants', label: 'بنطلون / جينز' },
-  { value: 'thobe', label: 'ثوب' },
-  { value: 'dress', label: 'فستان' },
-  { value: 'suit', label: 'بدلة كاملة' },
-  { value: 'jacket', label: 'جاكيت / معطف' },
-  { value: 'blanket', label: 'بطانية' },
-  { value: 'carpet', label: 'سجادة' },
-  { value: 'other', label: 'أخرى / قطعة منوعة' }
-];
 
 const TIME_OPTIONS = [
   { value: '08:00', label: '08:00 ص' },
@@ -137,6 +125,7 @@ export default function NewOrder() {
       if (!event.target.closest('.table-select-container')) {
         setOpenItemTypeIndex(null);
         setOpenServiceIndex(null);
+        setOpenSizeIndex(null);
       }
     };
 
@@ -225,8 +214,10 @@ export default function NewOrder() {
 
   // عناصر الطلب
   const [items, setItems] = useState([
-    { item_type: 'shirt', service_id: '', price: 0, notes: '' }
+    { item_type: '', size_name: '', service_id: '', price: 0, notes: '' }
   ]);
+  const [itemTypes, setItemTypes] = useState([]);
+  const [openSizeIndex, setOpenSizeIndex] = useState(null);
 
   // تفاصيل الجدولة
   const getTomorrowDate = () => {
@@ -257,6 +248,22 @@ export default function NewOrder() {
         if (res.success) setServices(res.data);
       })
       .catch(err => console.error('خطأ في تحميل الخدمات', err));
+
+    itemTypesAPI.getAll()
+      .then(res => {
+        if (res.success) {
+          setItemTypes(res.data);
+          // تهيئة السطر الأول بالقيمة الافتراضية لأول نوع قطعة متوفر
+          if (res.data.length > 0) {
+            const firstType = res.data[0];
+            const defaultSize = firstType.sizes.length > 0 ? firstType.sizes[0].size_name : 'عادي';
+            setItems([
+              { item_type: firstType.name_ar, size_name: defaultSize, service_id: '', price: 0, notes: '' }
+            ]);
+          }
+        }
+      })
+      .catch(err => console.error('خطأ في تحميل أنواع الملابس', err));
 
     ordersAPI.getWorkloadStatus()
       .then(res => {
@@ -294,7 +301,9 @@ export default function NewOrder() {
 
   // إدارة عناصر الفاتورة
   const addItemRow = () => {
-    setItems([...items, { item_type: 'shirt', service_id: '', price: 0, notes: '' }]);
+    const defaultType = itemTypes.length > 0 ? itemTypes[0].name_ar : '';
+    const defaultSize = itemTypes.length > 0 && itemTypes[0].sizes.length > 0 ? itemTypes[0].sizes[0].size_name : 'عادي';
+    setItems([...items, { item_type: defaultType, size_name: defaultSize, service_id: '', price: 0, notes: '' }]);
   };
 
   const removeItemRow = (index) => {
@@ -304,24 +313,60 @@ export default function NewOrder() {
     }
   };
 
+  // دالة مساعدة لتحديث السعر بناء على نوع القطعة والحجم والخدمة
+  const updateItemPrice = (newItems, index) => {
+    const item = newItems[index];
+    const foundType = itemTypes.find(t => t.name_ar === item.item_type);
+    
+    if (foundType && item.service_id) {
+      const foundSize = foundType.sizes.find(s => s.size_name === item.size_name) 
+        || (foundType.sizes.length > 0 ? foundType.sizes[0] : null);
+        
+      if (foundSize) {
+        const foundPrice = foundSize.prices.find(p => p.service_id === parseInt(item.service_id));
+        if (foundPrice) {
+          item.price = foundPrice.price;
+          return;
+        }
+      }
+    }
+    
+    // Fallback لأسعار الخدمة العامة
+    const service = services.find(s => s.id === parseInt(item.service_id));
+    if (service) {
+      item.price = service.price;
+    } else {
+      item.price = 0;
+    }
+  };
+
   const handleItemTypeChange = (index, value) => {
     const newItems = [...items];
     newItems[index].item_type = value;
+    
+    // تحديد الحجم الافتراضي الأول للقطعة الجديدة
+    const foundType = itemTypes.find(t => t.name_ar === value);
+    if (foundType && foundType.sizes.length > 0) {
+      newItems[index].size_name = foundType.sizes[0].size_name;
+    } else {
+      newItems[index].size_name = 'عادي';
+    }
+
+    updateItemPrice(newItems, index);
+    setItems(newItems);
+  };
+
+  const handleSizeChange = (index, sizeName) => {
+    const newItems = [...items];
+    newItems[index].size_name = sizeName;
+    updateItemPrice(newItems, index);
     setItems(newItems);
   };
 
   const handleServiceChange = (index, serviceId) => {
     const newItems = [...items];
     newItems[index].service_id = serviceId;
-    
-    // جلب سعر الخدمة المحدد تلقائياً
-    const service = services.find(s => s.id === parseInt(serviceId));
-    if (service) {
-      newItems[index].price = service.price;
-    } else {
-      newItems[index].price = 0;
-    }
-    
+    updateItemPrice(newItems, index);
     setItems(newItems);
   };
 
@@ -411,6 +456,7 @@ export default function NewOrder() {
         customer_id: selectedCustomer.id,
         items: items.map(item => ({
           item_type: item.item_type,
+          size_name: item.size_name,
           service_id: parseInt(item.service_id),
           notes: item.notes,
           price: item.price
@@ -825,10 +871,11 @@ export default function NewOrder() {
                 <table className="new-order-items-table">
                   <thead>
                     <tr>
-                      <th style={{ width: '22%' }}>نوع القطعة</th>
-                      <th style={{ width: '25%' }}>الخدمة المطلوبة</th>
+                      <th style={{ width: '20%' }}>نوع القطعة</th>
+                      <th style={{ width: '12%' }}>الحجم</th>
+                      <th style={{ width: '22%' }}>الخدمة المطلوبة</th>
                       <th style={{ width: '10%' }}>السعر</th>
-                      <th style={{ width: '38%' }}>ملاحظات على القطعة</th>
+                      <th style={{ width: '31%' }}>ملاحظات على القطعة</th>
                       <th style={{ width: '5%' }}>إجراء</th>
                     </tr>
                   </thead>
@@ -843,24 +890,59 @@ export default function NewOrder() {
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setOpenServiceIndex(null);
+                                setOpenSizeIndex(null);
                                 setOpenItemTypeIndex(openItemTypeIndex === index ? null : index);
                               }}
                             >
-                              {COMMON_ITEMS.find(opt => opt.value === item.item_type)?.label || item.item_type}
+                              {item.item_type || 'اختر القطعة...'}
                             </button>
                             {openItemTypeIndex === index && (
                               <div className="table-select-dropdown">
-                                {COMMON_ITEMS.map((opt) => (
+                                {itemTypes.map((t) => (
                                   <button
-                                    key={opt.value}
+                                    key={t.id}
                                     type="button"
-                                    className={`table-select-item ${item.item_type === opt.value ? 'selected' : ''}`}
+                                    className={`table-select-item ${item.item_type === t.name_ar ? 'selected' : ''}`}
                                     onClick={() => {
-                                      handleItemTypeChange(index, opt.value);
+                                      handleItemTypeChange(index, t.name_ar);
                                       setOpenItemTypeIndex(null);
                                     }}
                                   >
-                                    {opt.label}
+                                    {t.name_ar}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                        <td>
+                          <div className="table-select-container">
+                            <button
+                              type="button"
+                              className="table-select-trigger"
+                              disabled={!item.item_type}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setOpenItemTypeIndex(null);
+                                setOpenServiceIndex(null);
+                                setOpenSizeIndex(openSizeIndex === index ? null : index);
+                              }}
+                            >
+                              {item.size_name || 'عادي'}
+                            </button>
+                            {openSizeIndex === index && item.item_type && (
+                              <div className="table-select-dropdown">
+                                {(itemTypes.find(t => t.name_ar === item.item_type)?.sizes || []).map((sz) => (
+                                  <button
+                                    key={sz.id}
+                                    type="button"
+                                    className={`table-select-item ${item.size_name === sz.size_name ? 'selected' : ''}`}
+                                    onClick={() => {
+                                      handleSizeChange(index, sz.size_name);
+                                      setOpenSizeIndex(null);
+                                    }}
+                                  >
+                                    {sz.size_name}
                                   </button>
                                 ))}
                               </div>
@@ -875,6 +957,7 @@ export default function NewOrder() {
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setOpenItemTypeIndex(null);
+                                setOpenSizeIndex(null);
                                 setOpenServiceIndex(openServiceIndex === index ? null : index);
                               }}
                             >
@@ -902,7 +985,7 @@ export default function NewOrder() {
                                       setOpenServiceIndex(null);
                                     }}
                                   >
-                                    {s.name_ar} ({s.price} {settings.currency})
+                                    {s.name_ar}
                                   </button>
                                 ))}
                               </div>

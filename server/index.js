@@ -53,6 +53,7 @@ const itemsRouter = require('./src/routes/items');
 const paymentsRouter = require('./src/routes/payments');
 const dashboardRouter = require('./src/routes/dashboard');
 const usersRouter = require('./src/routes/users');
+const itemTypesRouter = require('./src/routes/itemTypes');
 
 // ربط المسارات
 app.use('/api/auth', authRouter);
@@ -63,6 +64,7 @@ app.use('/api/items', itemsRouter);
 app.use('/api/payments', paymentsRouter);
 app.use('/api/dashboard', dashboardRouter);
 app.use('/api/users', usersRouter);
+app.use('/api/item-types', itemTypesRouter);
 
 // اختبار الاتصال بالخادم
 app.get('/api/health', async (req, res) => {

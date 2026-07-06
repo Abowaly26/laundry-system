@@ -108,7 +108,7 @@ export default function PrintInvoice({ order }) {
         {order.items && order.items.map((item, index) => (
           <div key={index} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', fontSize: '12px', borderBottom: '1px dotted #eee' }}>
             <div style={{ paddingLeft: '8px' }}>
-              <span style={{ fontWeight: 'bold' }}>{getItemTypeAr(item.item_type)}</span>
+              <span style={{ fontWeight: 'bold' }}>{getItemTypeAr(item.item_type)}{item.size_name ? ` (${item.size_name})` : ''}</span>
               <div style={{ fontSize: '11px', color: '#555', marginTop: '2px' }}>
                 {getServiceName(item)}
                 {item.notes && <span style={{ color: '#ff0000', marginRight: '4px' }}>({item.notes})</span>}

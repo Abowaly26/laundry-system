@@ -49,7 +49,7 @@ export default function PrintQRLabels({ items, orderId }) {
             <div className="label-info" style={{ fontSize: '9px', lineHeight: '1.3', flexGrow: 1 }}>
               <div style={{ fontWeight: 'bold', fontSize: '11px', borderBottom: '1px solid #000' }}>#{orderId}</div>
               <div><strong>كود:</strong> {item.qr_code}</div>
-              <div><strong>النوع:</strong> {getItemTypeAr(item.item_type)}</div>
+              <div><strong>النوع:</strong> {getItemTypeAr(item.item_type)}{item.size_name ? ` (${item.size_name})` : ''}</div>
               <div><strong>الخدمة:</strong> {item.service_name_ar || (item.service && item.service.name_ar) || ''}</div>
               {item.notes && <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: '#555' }}>{item.notes}</div>}
             </div>

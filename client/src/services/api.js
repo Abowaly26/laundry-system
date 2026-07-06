@@ -114,6 +114,18 @@ export const servicesAPI = {
     request(`/services/${id}`, { method: 'DELETE' }),
 };
 
+// ===== Item Types & Pricing Matrix =====
+export const itemTypesAPI = {
+  getAll: () =>
+    request('/item-types'),
+  create: (data) =>
+    request('/item-types', { method: 'POST', body: data }),
+  update: (id, data) =>
+    request(`/item-types/${id}`, { method: 'PUT', body: data }),
+  delete: (id) =>
+    request(`/item-types/${id}`, { method: 'DELETE' }),
+};
+
 // ===== Orders =====
 export const ordersAPI = {
   getAll: (params = {}) =>

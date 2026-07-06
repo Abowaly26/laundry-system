@@ -87,3 +87,204 @@
   border-top: 1px solid var(--border);
   padding-top: var(--space-sm);
 }
+
+/* Tab Selector Styles */
+.page-header-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.services-tab-links {
+  display: flex;
+  gap: 8px;
+  background: var(--bg-hover);
+  padding: 4px;
+  border-radius: var(--radius-md);
+  align-self: flex-start;
+}
+
+.tab-link-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.88rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tab-link-btn.active {
+  background: var(--bg-card);
+  color: var(--primary);
+  box-shadow: 0 4px 10px -2px rgba(0, 0, 0, 0.05);
+}
+
+.item-tag-icon {
+  background: rgba(16, 185, 129, 0.1) !important;
+  color: rgb(16, 185, 129) !important;
+}
+
+/* Size Pill Badges */
+.size-badges-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.size-pill-badge {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--primary);
+  background: var(--primary-light);
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+/* Price Preview Table */
+.item-price-preview-table-wrapper {
+  background: var(--bg-hover);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  padding: 8px;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.price-preview-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+
+.price-preview-table th {
+  text-align: right;
+  color: var(--text-secondary);
+  font-weight: 700;
+  padding: 4px 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.price-preview-table td {
+  padding: 6px;
+  color: var(--text);
+  border-bottom: 1px dashed rgba(0, 0, 0, 0.04);
+}
+
+.price-preview-table tr:last-child td {
+  border-bottom: none;
+}
+
+.size-group-cell {
+  font-weight: 700;
+  color: var(--primary);
+  border-left: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+/* Dynamic Chips Input Container */
+.size-chips-input-container {
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.chips-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.size-chip-bubble {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--primary);
+  color: white;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.remove-chip-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.remove-chip-btn:hover {
+  color: white;
+}
+
+.chip-add-flex {
+  display: flex;
+  gap: 8px;
+}
+
+.size-add-input {
+  flex-grow: 1;
+  padding: 6px 12px !important;
+  font-size: 0.85rem !important;
+  height: 38px;
+}
+
+/* Pricing Grid Matrix */
+.pricing-grid-matrix-container {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-hover);
+  padding: 12px;
+}
+
+.matrix-scroll-wrapper {
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.pricing-matrix-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.pricing-matrix-table th {
+  padding: 8px 12px;
+  text-align: right;
+  color: var(--text-secondary);
+  border-bottom: 2px solid var(--border);
+  min-width: 100px;
+}
+
+.pricing-matrix-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+.size-name-col {
+  color: var(--primary);
+  border-left: 1px solid var(--border);
+}
+
+.matrix-price-input {
+  width: 90px;
+  padding: 6px 10px !important;
+  height: 32px !important;
+  font-size: 0.85rem !important;
+  border-radius: 6px !important;
+  text-align: center;
+}

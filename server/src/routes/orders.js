@@ -81,9 +81,10 @@ router.get('/track/:orderIdOrPhone', async (req, res) => {
       if (orderResult.rows.length > 0) {
         const order = orderResult.rows[0];
         const itemsResult = await query(`
-          SELECT oi.*, s.name_ar as service_name
+          SELECT oi.*, s.name_ar as service_name, sz.size_name
           FROM order_items oi
           JOIN services s ON oi.service_id = s.id
+          LEFT JOIN item_sizes sz ON oi.size_id = sz.id
           WHERE oi.order_id = $1
         `, [order.id]);
         orders = [{ ...order, items: itemsResult.rows }];
@@ -370,9 +371,10 @@ router.get('/:id', authMiddleware, async (req, res) => {
 
     // جلب القطع
     const itemsResult = await query(`
-      SELECT oi.*, s.name_ar as service_name, s.name as service_name_en
+      SELECT oi.*, s.name_ar as service_name, s.name as service_name_en, sz.size_name
       FROM order_items oi
       JOIN services s ON oi.service_id = s.id
+      LEFT JOIN item_sizes sz ON oi.size_id = sz.id
       WHERE oi.order_id = $1
       ORDER BY oi.id ASC
     `, [order.id]);
@@ -462,11 +464,25 @@ router.post('/', authMiddleware, async (req, res) => {
         for (let i = 0; i < quantity; i++) {
           const qrCode = await generateQRCode(item.item_type || item.service.name);
           
+          let sizeId = null;
+          if (item.size_name && item.item_type) {
+            const sizeLookup = await client.query(`
+              SELECT s.id 
+              FROM item_sizes s
+              JOIN item_types t ON s.item_type_id = t.id
+              WHERE t.name_ar = $1 AND s.size_name = $2
+              LIMIT 1
+            `, [item.item_type, item.size_name]);
+            if (sizeLookup.rows.length > 0) {
+              sizeId = sizeLookup.rows[0].id;
+            }
+          }
+
           const itemResult = await client.query(`
-            INSERT INTO order_items (order_id, service_id, item_type, qr_code, status, notes, price)
-            VALUES ($1, $2, $3, $4, 'received', $5, $6)
+            INSERT INTO order_items (order_id, service_id, item_type, size_id, qr_code, status, notes, price)
+            VALUES ($1, $2, $3, $4, $5, 'received', $6, $7)
             RETURNING id
-          `, [orderId, item.service_id, item.item_type || item.service.name, qrCode, item.notes || '', item.price]);
+          `, [orderId, item.service_id, item.item_type || item.service.name, sizeId, qrCode, item.notes || '', item.price]);
 
           const itemId = itemResult.rows[0].id;
 
@@ -480,6 +496,7 @@ router.post('/', authMiddleware, async (req, res) => {
             id: itemId,
             qr_code: qrCode,
             item_type: item.item_type || item.service.name,
+            size_name: item.size_name || '',
             service_name: item.service.name_ar,
             status: 'received',
             price: item.price,
