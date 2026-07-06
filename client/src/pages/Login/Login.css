@@ -80,12 +80,6 @@
   align-items: center;
   justify-content: center;
   background: transparent;
-  transform: translateY(0);
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.login-logo-container:hover {
-  transform: translateY(-5px) scale(1.05);
 }
 
 .login-logo-image {
