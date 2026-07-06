@@ -753,21 +753,60 @@
   background: var(--bg-hover);
   border: 1.5px solid var(--border);
   color: var(--text-secondary);
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 0.78rem;
-  font-weight: bold;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 38px;
 }
 
 .btn-custom-date-toggle:hover {
-  background: rgba(79, 70, 229, 0.05);
+  background: rgba(79, 70, 229, 0.04);
   color: var(--primary);
-  border-color: rgba(79, 70, 229, 0.2);
+  border-color: rgba(79, 70, 229, 0.15);
 }
 
 .btn-custom-date-toggle:active {
-  transform: scale(0.98);
+  transform: scale(0.97);
+}
+
+/* Scheduler Result Bar styling */
+.scheduler-result-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1.5px dashed var(--border);
+}
+
+.scheduler-result-text {
+  background: rgba(79, 70, 229, 0.02);
+  border: 1px solid rgba(79, 70, 229, 0.08);
+  padding: 8px 12px;
+  border-radius: 8px;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: var(--text);
+  height: 38px;
+}
+
+.scheduler-result-text .result-label {
+  color: var(--text-secondary);
+  font-weight: 700;
+}
+
+.scheduler-result-text .result-value {
+  color: var(--primary);
+  font-weight: 800;
 }

@@ -516,11 +516,11 @@ export default function NewOrder() {
                     </div>
                   )}
 
-                  <div className="flex justify-between align-center mt-xs">
+                  <div className="scheduler-result-bar">
                     {deliveryDate && deliveryTime && (
-                      <div className="p-xs-compact" style={{ background: 'var(--bg-hover)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', flex: 1 }}>
-                        <span className="help-text-label font-bold" style={{ display: 'inline-block', fontSize: '0.8rem', color: 'var(--text-secondary)', marginLeft: '6px' }}>الموعد المحدد:</span>
-                        <span className="text-primary font-bold" style={{ fontSize: '0.85rem' }}>
+                      <div className="scheduler-result-text">
+                        <span className="result-label">الموعد المحدد:</span>
+                        <span className="result-value">
                           {new Date(`${deliveryDate}T${deliveryTime}`).toLocaleString('ar-EG', {
                             weekday: 'long',
                             year: 'numeric',
@@ -534,7 +534,7 @@ export default function NewOrder() {
                     )}
                     <button 
                       type="button" 
-                      className="btn-custom-date-toggle mr-sm"
+                      className="btn-custom-date-toggle"
                       onClick={() => setIsCustomDelivery(!isCustomDelivery)}
                     >
                       {isCustomDelivery ? 'تحديد سريع' : 'موعد مخصص...'}
