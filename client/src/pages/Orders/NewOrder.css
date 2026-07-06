@@ -1196,3 +1196,14 @@
   background: var(--primary);
   color: white;
 }
+
+/* Force visible overflow in the bottom items card and table rows to prevent dropdown clipping */
+.bottom-items-wrapper,
+.bottom-items-wrapper > .card,
+.bottom-items-wrapper .card-body,
+.items-table-container,
+.new-order-items-table,
+.new-order-items-table tr,
+.new-order-items-table td {
+  overflow: visible !important;
+}
