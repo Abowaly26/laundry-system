@@ -23,6 +23,41 @@ const COMMON_ITEMS = [
   { value: 'other', label: 'أخرى / قطعة منوعة' }
 ];
 
+const TIME_OPTIONS = [
+  { value: '08:00', label: '08:00 ص (صباحاً)' },
+  { value: '08:30', label: '08:30 ص (صباحاً)' },
+  { value: '09:00', label: '09:00 ص (صباحاً)' },
+  { value: '09:30', label: '09:30 ص (صباحاً)' },
+  { value: '10:00', label: '10:00 ص (صباحاً)' },
+  { value: '10:30', label: '10:30 ص (صباحاً)' },
+  { value: '11:00', label: '11:00 ص (صباحاً)' },
+  { value: '11:30', label: '11:30 ص (صباحاً)' },
+  { value: '12:00', label: '12:00 م (ظهراً)' },
+  { value: '12:30', label: '12:30 م (ظهراً)' },
+  { value: '13:00', label: '01:00 م (مساءً)' },
+  { value: '13:30', label: '01:30 م (مساءً)' },
+  { value: '14:00', label: '02:00 م (مساءً)' },
+  { value: '14:30', label: '02:30 م (مساءً)' },
+  { value: '15:00', label: '03:00 م (مساءً)' },
+  { value: '15:30', label: '03:30 م (مساءً)' },
+  { value: '16:00', label: '04:00 م (مساءً)' },
+  { value: '16:30', label: '04:30 م (مساءً)' },
+  { value: '17:00', label: '05:00 م (مساءً)' },
+  { value: '17:30', label: '05:30 م (مساءً)' },
+  { value: '18:00', label: '06:00 م (مساءً)' },
+  { value: '18:30', label: '06:30 م (مساءً)' },
+  { value: '19:00', label: '07:00 م (مساءً)' },
+  { value: '19:30', label: '07:30 م (مساءً)' },
+  { value: '20:00', label: '08:00 م (مساءً)' },
+  { value: '20:30', label: '08:30 م (مساءً)' },
+  { value: '21:00', label: '09:00 م (مساءً)' },
+  { value: '21:30', label: '09:30 م (مساءً)' },
+  { value: '22:00', label: '10:00 م (مساءً)' },
+  { value: '22:30', label: '10:30 م (مساءً)' },
+  { value: '23:00', label: '11:00 م (مساءً)' },
+  { value: '23:30', label: '11:30 م (مساءً)' }
+];
+
 export default function NewOrder() {
   const navigate = useNavigate();
   const { showToast } = useToast();
@@ -43,6 +78,25 @@ export default function NewOrder() {
     if (count <= 25) return { className: 'workload-medium', text: 'متوسط' };
     return { className: 'workload-high', text: 'مزدحم' };
   };
+
+  const getTimeLabel = (timeVal) => {
+    const option = TIME_OPTIONS.find(opt => opt.value === timeVal);
+    if (option) return option.label;
+    
+    if (!timeVal) return '';
+    const parts = timeVal.split(':');
+    if (parts.length < 2) return timeVal;
+    let hh = parseInt(parts[0]);
+    const mm = parts[1];
+    const period = hh >= 12 ? 'م' : 'ص';
+    if (hh > 12) hh -= 12;
+    if (hh === 0) hh = 12;
+    const formattedHour = String(hh).padStart(2, '0');
+    return `${formattedHour}:${mm} ${period}`;
+  };
+
+  const [showQuickTimeDropdown, setShowQuickTimeDropdown] = useState(false);
+  const [showCustomTimeDropdown, setShowCustomTimeDropdown] = useState(false);
 
   // بيانات العميل
   const [searchQuery, setSearchQuery] = useState('');
@@ -499,26 +553,31 @@ export default function NewOrder() {
                       {/* ساعة التسليم الدقيقة */}
                       <div>
                         <span className="help-text">ساعة التسليم</span>
-                        <div className="picker-input-wrapper">
-                          <input
-                            type="time"
-                            className="form-input form-input-compact"
-                            value={deliveryTime}
-                            onChange={(e) => {
-                              setDeliveryTime(e.target.value);
-                              setActiveTimePreset('custom');
-                            }}
-                            style={{ cursor: 'pointer' }}
-                          />
-                          <div 
-                            className="picker-input-overlay"
-                            onClick={(e) => {
-                              const input = e.currentTarget.parentElement.querySelector('input');
-                              if (input) {
-                                try { input.showPicker(); } catch (err) {}
-                              }
-                            }}
-                          />
+                        <div className="custom-time-select-container">
+                          <button
+                            type="button"
+                            className="time-select-trigger"
+                            onClick={() => setShowQuickTimeDropdown(!showQuickTimeDropdown)}
+                          >
+                            {getTimeLabel(deliveryTime)}
+                          </button>
+                          {showQuickTimeDropdown && (
+                            <div className="time-select-dropdown">
+                              {TIME_OPTIONS.map((opt) => (
+                                <div
+                                  key={opt.value}
+                                  className={`time-select-item ${deliveryTime === opt.value ? 'selected' : ''}`}
+                                  onClick={() => {
+                                    setDeliveryTime(opt.value);
+                                    setActiveTimePreset('custom');
+                                    setShowQuickTimeDropdown(false);
+                                  }}
+                                >
+                                  {opt.label}
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -548,23 +607,30 @@ export default function NewOrder() {
                         </div>
                         <div style={{ flex: 1 }}>
                           <span className="help-text">وقت التسليم</span>
-                          <div className="picker-input-wrapper">
-                            <input
-                              type="time"
-                              className="form-input form-input-compact"
-                              value={deliveryTime}
-                              onChange={(e) => setDeliveryTime(e.target.value)}
-                              style={{ cursor: 'pointer' }}
-                            />
-                            <div 
-                              className="picker-input-overlay"
-                              onClick={(e) => {
-                                const input = e.currentTarget.parentElement.querySelector('input');
-                                if (input) {
-                                  try { input.showPicker(); } catch (err) {}
-                                }
-                              }}
-                            />
+                          <div className="custom-time-select-container">
+                            <button
+                              type="button"
+                              className="time-select-trigger"
+                              onClick={() => setShowCustomTimeDropdown(!showCustomTimeDropdown)}
+                            >
+                              {getTimeLabel(deliveryTime)}
+                            </button>
+                            {showCustomTimeDropdown && (
+                              <div className="time-select-dropdown">
+                                {TIME_OPTIONS.map((opt) => (
+                                  <div
+                                    key={opt.value}
+                                    className={`time-select-item ${deliveryTime === opt.value ? 'selected' : ''}`}
+                                    onClick={() => {
+                                      setDeliveryTime(opt.value);
+                                      setShowCustomTimeDropdown(false);
+                                    }}
+                                  >
+                                    {opt.label}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
