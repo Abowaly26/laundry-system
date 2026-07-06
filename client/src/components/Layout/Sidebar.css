@@ -27,7 +27,7 @@
   width: 52px;
   height: 52px;
   background: #FFFFFF; /* White background badge */
-  border-radius: 50%; /* Circle shape */
+  border-radius: 10px; /* Small rounded square */
   display: flex;
   align-items: center;
   justify-content: center;
