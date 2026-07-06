@@ -417,7 +417,7 @@ export default function NewOrder() {
                 {weeklyWorkload && weeklyWorkload.length > 0 && (
                   <div className="weekly-workload-cards-section">
                     <span className="help-text-label font-bold mb-xs" style={{ display: 'block', fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
-                      اختر يوم التسليم (مقياس ضغط العمل للـ 7 أيام القادمة):
+                      اختر يوم التسليم (مقياس ضغط العمل للـ 14 يوماً القادمة):
                     </span>
                     <div className="workload-days-grid">
                       {weeklyWorkload.map((day) => {
