@@ -97,6 +97,77 @@ export default function NewOrder() {
 
   const [showQuickTimeDropdown, setShowQuickTimeDropdown] = useState(false);
   const [showCustomTimeDropdown, setShowCustomTimeDropdown] = useState(false);
+  const [viewDate, setViewDate] = useState(new Date());
+  const [showDateDropdown, setShowDateDropdown] = useState(false);
+
+  const getDaysInMonthGrid = (date) => {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const startDayOfWeek = firstDay.getDay();
+    const totalDays = new Date(year, month + 1, 0).getDate();
+    const prevTotalDays = new Date(year, month, 0).getDate();
+    const daysGrid = [];
+    
+    for (let i = startDayOfWeek - 1; i >= 0; i--) {
+      daysGrid.push({
+        dayNum: prevTotalDays - i,
+        isCurrentMonth: false,
+        date: new Date(year, month - 1, prevTotalDays - i)
+      });
+    }
+    
+    for (let i = 1; i <= totalDays; i++) {
+      daysGrid.push({
+        dayNum: i,
+        isCurrentMonth: true,
+        date: new Date(year, month, i)
+      });
+    }
+    
+    const remaining = 42 - daysGrid.length;
+    for (let i = 1; i <= remaining; i++) {
+      daysGrid.push({
+        dayNum: i,
+        isCurrentMonth: false,
+        date: new Date(year, month + 1, i)
+      });
+    }
+    return daysGrid;
+  };
+
+  const getFormattedDateLabel = (dateStr) => {
+    if (!dateStr) return '';
+    try {
+      const dateObj = new Date(dateStr);
+      return dateObj.toLocaleDateString('ar-EG', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+    } catch (err) {
+      return dateStr;
+    }
+  };
+
+  const handleSelectDate = (targetDate) => {
+    const yyyy = targetDate.getFullYear();
+    const mm = String(targetDate.getMonth() + 1).padStart(2, '0');
+    const dd = String(targetDate.getDate()).padStart(2, '0');
+    setDeliveryDate(`${yyyy}-${mm}-${dd}`);
+    setShowDateDropdown(false);
+  };
+
+  const handlePrevMonth = () => {
+    setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1));
+  };
+  
+  const handleNextMonth = () => {
+    setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1));
+  };
+
+  const WEEKDAYS = ['أح', 'اث', 'ثلا', 'أر', 'خم', 'جم', 'سب'];
 
   // بيانات العميل
   const [searchQuery, setSearchQuery] = useState('');
@@ -586,23 +657,50 @@ export default function NewOrder() {
                       <div className="flex gap-sm">
                         <div style={{ flex: 1 }}>
                           <span className="help-text">تاريخ التسليم</span>
-                          <div className="picker-input-wrapper">
-                            <input
-                              type="date"
-                              className="form-input form-input-compact"
-                              value={deliveryDate}
-                              onChange={(e) => setDeliveryDate(e.target.value)}
-                              style={{ cursor: 'pointer' }}
-                            />
-                            <div 
-                              className="picker-input-overlay"
-                              onClick={(e) => {
-                                const input = e.currentTarget.parentElement.querySelector('input');
-                                if (input) {
-                                  try { input.showPicker(); } catch (err) {}
-                                }
-                              }}
-                            />
+                          <div className="custom-date-select-container">
+                            <button
+                              type="button"
+                              className="date-select-trigger"
+                              onClick={() => setShowDateDropdown(!showDateDropdown)}
+                            >
+                              {getFormattedDateLabel(deliveryDate) || 'اختر التاريخ...'}
+                            </button>
+                            {showDateDropdown && (
+                              <div className="date-select-dropdown">
+                                <div className="calendar-header">
+                                  <button type="button" className="btn-month-nav" onClick={handlePrevMonth}>&gt;</button>
+                                  <span className="month-year-label">
+                                    {viewDate.toLocaleString('ar-EG', { month: 'long', year: 'numeric' })}
+                                  </span>
+                                  <button type="button" className="btn-month-nav" onClick={handleNextMonth}>&lt;</button>
+                                </div>
+                                <div className="calendar-grid-weekdays">
+                                  {WEEKDAYS.map(day => (
+                                    <div key={day} className="weekday-header">{day}</div>
+                                  ))}
+                                </div>
+                                <div className="calendar-grid-days">
+                                  {getDaysInMonthGrid(viewDate).map((cell, idx) => {
+                                    const cellDateStr = cell.date.toISOString().split('T')[0];
+                                    const isSelected = deliveryDate === cellDateStr;
+                                    const isToday = new Date().toISOString().split('T')[0] === cellDateStr;
+                                    const isPast = cell.date < new Date(new Date().setHours(0,0,0,0));
+                                    
+                                    return (
+                                      <button
+                                        key={idx}
+                                        type="button"
+                                        disabled={isPast}
+                                        className={`calendar-day-cell ${!cell.isCurrentMonth ? 'other-month' : ''} ${isSelected ? 'selected' : ''} ${isToday ? 'today' : ''}`}
+                                        onClick={() => handleSelectDate(cell.date)}
+                                      >
+                                        {cell.dayNum}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            )}
                           </div>
                         </div>
                         <div style={{ flex: 1 }}>
