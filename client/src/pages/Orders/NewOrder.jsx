@@ -42,24 +42,16 @@ export default function NewOrder() {
     { item_type: 'shirt', service_id: '', price: 0, notes: '' }
   ]);
 
-  // تفاصيل الطلب المالية والتواريخ
-  const [paidAmount, setPaidAmount] = useState(0);
-  const [daysOffset, setDaysOffset] = useState(1); // افتراضي يوم واحد
-  const [hoursOffset, setHoursOffset] = useState(0); // 0 ساعة إضافية
-  const [deliveryDate, setDeliveryDate] = useState('');
-  const [deliveryTime, setDeliveryTime] = useState('');
-
-  useEffect(() => {
+  // تفاصيل الجدولة
+  const getTomorrowDate = () => {
     const target = new Date();
-    target.setDate(target.getDate() + daysOffset);
-    target.setHours(target.getHours() + hoursOffset);
-    
-    setDeliveryDate(target.toISOString().split('T')[0]);
-    const hh = String(target.getHours()).padStart(2, '0');
-    const mm = String(target.getMinutes()).padStart(2, '0');
-    setDeliveryTime(`${hh}:${mm}`);
-  }, [daysOffset, hoursOffset]);
+    target.setDate(target.getDate() + 1);
+    return target.toISOString().split('T')[0];
+  };
 
+  const [deliveryDate, setDeliveryDate] = useState(getTomorrowDate());
+  const [deliveryTime, setDeliveryTime] = useState('16:00'); // الساعة 4:00 عصراً افتراضي
+  const [isCustomDelivery, setIsCustomDelivery] = useState(false);
   const [orderNotes, setOrderNotes] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('cash');
 
@@ -178,6 +170,34 @@ export default function NewOrder() {
       }
     } catch (err) {
       setCustomerError(err.message || 'خطأ في الاتصال بالخادم');
+    }
+  };
+
+  // تطبيق الاختيار السريع للوقت
+  const applyTimePreset = (type) => {
+    const now = new Date();
+    if (type === 'morning') {
+      setDeliveryTime('10:00');
+    } else if (type === 'afternoon') {
+      setDeliveryTime('16:00');
+    } else if (type === 'evening') {
+      setDeliveryTime('20:00');
+    } else if (type === 'rush3') {
+      // بعد 3 ساعات
+      const target = new Date();
+      target.setHours(target.getHours() + 3);
+      setDeliveryDate(target.toISOString().split('T')[0]);
+      const hh = String(target.getHours()).padStart(2, '0');
+      const mm = String(target.getMinutes()).padStart(2, '0');
+      setDeliveryTime(`${hh}:${mm}`);
+    } else if (type === 'rush1') {
+      // بعد ساعة
+      const target = new Date();
+      target.setHours(target.getHours() + 1);
+      setDeliveryDate(target.toISOString().split('T')[0]);
+      const hh = String(target.getHours()).padStart(2, '0');
+      const mm = String(target.getMinutes()).padStart(2, '0');
+      setDeliveryTime(`${hh}:${mm}`);
     }
   };
 
@@ -377,99 +397,22 @@ export default function NewOrder() {
           <div className="layout-card-wrapper">
             <Card title="تفاصيل التسليم والجدولة">
               <div className="form-group">
-                <label className="form-label label-compact">وقت التسليم المتوقع</label>
-                
-                <div className="scheduler-fields-grid">
-                  {/* حقول الأيام والساعات */}
-                  <div className="flex gap-sm">
-                    <div style={{ flex: 1 }}>
-                      <span className="help-text">الأيام</span>
-                      <input
-                        type="number"
-                        className="form-input form-input-compact"
-                        value={daysOffset}
-                        onChange={(e) => setDaysOffset(parseInt(e.target.value) || 0)}
-                        min="0"
-                      />
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <span className="help-text">الساعات الإضافية</span>
-                      <input
-                        type="number"
-                        className="form-input form-input-compact"
-                        value={hoursOffset}
-                        onChange={(e) => setHoursOffset(parseInt(e.target.value) || 0)}
-                        min="0"
-                        max="23"
-                      />
-                    </div>
-                  </div>
-
-                  {/* أزرار الاختيار السريع المضافة باحترافية */}
-                  <div className="schedule-presets-grid">
-                    <button 
-                      type="button" 
-                      className={`preset-pill ${(daysOffset === 0 && hoursOffset === 6) ? 'active' : ''}`}
-                      onClick={() => { setDaysOffset(0); setHoursOffset(6); }}
-                    >
-                      اليوم (+6س)
-                    </button>
-                    <button 
-                      type="button" 
-                      className={`preset-pill ${(daysOffset === 1 && hoursOffset === 0) ? 'active' : ''}`}
-                      onClick={() => { setDaysOffset(1); setHoursOffset(0); }}
-                    >
-                      غداً
-                    </button>
-                    <button 
-                      type="button" 
-                      className={`preset-pill ${(daysOffset === 2 && hoursOffset === 0) ? 'active' : ''}`}
-                      onClick={() => { setDaysOffset(2); setHoursOffset(0); }}
-                    >
-                      بعد يومين
-                    </button>
-                    <button 
-                      type="button" 
-                      className={`preset-pill ${(daysOffset === 0 && hoursOffset === 3) ? 'active' : ''}`}
-                      onClick={() => { setDaysOffset(0); setHoursOffset(3); }}
-                    >
-                      مستعجل (+3س)
-                    </button>
-                  </div>
-                </div>
-
-                {deliveryDate && deliveryTime && (
-                  <div className="mt-xs p-xs-compact" style={{ background: 'var(--bg-hover)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)' }}>
-                    <span className="help-text-label font-bold" style={{ display: 'inline-block', fontSize: '0.8rem', color: 'var(--text-secondary)', marginLeft: '6px' }}>موعد التسليم الناتج:</span>
-                    <span className="text-primary font-bold" style={{ fontSize: '0.85rem' }}>
-                      {new Date(`${deliveryDate}T${deliveryTime}`).toLocaleString('ar-EG', {
-                        weekday: 'long',
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </span>
-                  </div>
-                )}
-
                 {weeklyWorkload && weeklyWorkload.length > 0 && (
-                  <div className="weekly-workload-mini-chart mt-sm">
+                  <div className="weekly-workload-mini-chart">
                     <span className="help-text-label font-bold mb-xs" style={{ display: 'block', fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
-                      مقياس ضغط العمل (القطع المجدولة للـ 7 أيام القادمة):
+                      اختر يوم التسليم (مقياس ضغط العمل للـ 7 أيام القادمة):
                     </span>
                     <div className="mini-chart-bars-container">
-                      {weeklyWorkload.map((day, idx) => {
+                      {weeklyWorkload.map((day) => {
                         const maxCount = Math.max(...weeklyWorkload.map(d => d.count), 1);
                         const barHeightPercent = Math.min(100, (day.count / maxCount) * 70 + 10);
-                        const isSelected = daysOffset === idx;
+                        const isSelected = deliveryDate === day.date;
                         
                         return (
                           <div 
                             key={day.date} 
                             className={`mini-chart-bar-col ${isSelected ? 'selected' : ''}`}
-                            onClick={() => setDaysOffset(idx)}
+                            onClick={() => setDeliveryDate(day.date)}
                             title={`${day.dayName}: ${day.count} قطعة`}
                           >
                             <div className="mini-bar-wrapper">
@@ -487,6 +430,107 @@ export default function NewOrder() {
                     </div>
                   </div>
                 )}
+
+                <div className="scheduler-ux-bottom mt-sm">
+                  {!isCustomDelivery ? (
+                    <div className="scheduler-fields-grid">
+                      {/* أزرار الفترات الزمنية السريعة */}
+                      <div>
+                        <span className="help-text">فترة التسليم</span>
+                        <div className="schedule-presets-grid">
+                          <button 
+                            type="button" 
+                            className={`preset-pill ${(deliveryTime === '10:00') ? 'active' : ''}`}
+                            onClick={() => applyTimePreset('morning')}
+                          >
+                            صباحاً (10 ص)
+                          </button>
+                          <button 
+                            type="button" 
+                            className={`preset-pill ${(deliveryTime === '16:00') ? 'active' : ''}`}
+                            onClick={() => applyTimePreset('afternoon')}
+                          >
+                            عصراً (4 م)
+                          </button>
+                          <button 
+                            type="button" 
+                            className={`preset-pill ${(deliveryTime === '20:00') ? 'active' : ''}`}
+                            onClick={() => applyTimePreset('evening')}
+                          >
+                            مساءً (8 م)
+                          </button>
+                          <button 
+                            type="button" 
+                            className={`preset-pill preset-pill-rush ${(deliveryTime !== '10:00' && deliveryTime !== '16:00' && deliveryTime !== '20:00') ? 'active' : ''}`}
+                            onClick={() => applyTimePreset('rush3')}
+                          >
+                            مستعجل (3س)
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* ساعة التسليم الدقيقة */}
+                      <div>
+                        <span className="help-text">ساعة التسليم</span>
+                        <input
+                          type="time"
+                          className="form-input form-input-compact"
+                          value={deliveryTime}
+                          onChange={(e) => setDeliveryTime(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="custom-datetime-container">
+                      <div className="flex gap-sm">
+                        <div style={{ flex: 1 }}>
+                          <span className="help-text">تاريخ التسليم</span>
+                          <input
+                            type="date"
+                            className="form-input form-input-compact"
+                            value={deliveryDate}
+                            onChange={(e) => setDeliveryDate(e.target.value)}
+                          />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <span className="help-text">وقت التسليم</span>
+                          <input
+                            type="time"
+                            className="form-input form-input-compact"
+                            value={deliveryTime}
+                            onChange={(e) => setDeliveryTime(e.target.value)}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex justify-between align-center mt-xs">
+                    {deliveryDate && deliveryTime && (
+                      <div className="p-xs-compact" style={{ background: 'var(--bg-hover)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', flex: 1 }}>
+                        <span className="help-text-label font-bold" style={{ display: 'inline-block', fontSize: '0.8rem', color: 'var(--text-secondary)', marginLeft: '6px' }}>الموعد المحدد:</span>
+                        <span className="text-primary font-bold" style={{ fontSize: '0.85rem' }}>
+                          {new Date(`${deliveryDate}T${deliveryTime}`).toLocaleString('ar-EG', {
+                            weekday: 'long',
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </span>
+                      </div>
+                    )}
+                    <button 
+                      type="button" 
+                      className="btn-text-action font-bold text-primary mr-sm"
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.8rem' }}
+                      onClick={() => setIsCustomDelivery(!isCustomDelivery)}
+                    >
+                      {isCustomDelivery ? 'تحديد سريع' : 'موعد مخصص...'}
+                    </button>
+                  </div>
+                </div>
               </div>
             </Card>
           </div>
@@ -629,29 +673,29 @@ export default function NewOrder() {
                         checked={paymentMethod === 'electronic'}
                         onChange={() => setPaymentMethod('electronic')}
                         className="sr-only"
-                    />
-                    إلكتروني (شبكة)
-                  </label>
+                      />
+                      إلكتروني (شبكة)
+                    </label>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="submit-actions mt-md">
-              <Button
-                variant="primary"
-                size="large"
-                className="w-full btn-save-order"
-                onClick={handleSubmitOrder}
-                disabled={isSubmitting}
-              >
-                <Save size={18} style={{ marginLeft: '8px' }} />
-                {isSubmitting ? 'جاري الحفظ...' : 'حفظ الطلب وتوليد الفاتورة'}
-              </Button>
-            </div>
-          </Card>
+              <div className="submit-actions mt-md">
+                <Button
+                  variant="primary"
+                  size="large"
+                  className="w-full btn-save-order"
+                  onClick={handleSubmitOrder}
+                  disabled={isSubmitting}
+                >
+                  <Save size={18} style={{ marginLeft: '8px' }} />
+                  {isSubmitting ? 'جاري الحفظ...' : 'حفظ الطلب وتوليد الفاتورة'}
+                </Button>
+              </div>
+            </Card>
+          </div>
         </div>
       </div>
-    </div>
 
       {/* مودال إضافة عميل جديد */}
       <Modal

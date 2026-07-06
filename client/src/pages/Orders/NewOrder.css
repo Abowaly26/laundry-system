@@ -90,10 +90,9 @@
 /* Compact Scheduler layout: side by side inputs and presets */
 .scheduler-fields-grid {
   display: grid;
-  grid-template-columns: 1fr 1.1fr;
+  grid-template-columns: 1.25fr 1fr;
   gap: 16px;
   align-items: center;
-  margin-bottom: 8px;
 }
 
 .schedule-presets-grid {
@@ -127,6 +126,25 @@
   color: white;
   border-color: var(--primary);
   box-shadow: 0 2px 6px rgba(79, 70, 229, 0.2);
+}
+
+/* Standout style for rush/urgent preset buttons */
+.preset-pill-rush {
+  border-color: rgba(245, 158, 11, 0.3);
+  color: #b45309;
+}
+
+.preset-pill-rush:hover {
+  background: rgba(245, 158, 11, 0.08);
+  color: #b45309;
+  border-color: rgba(245, 158, 11, 0.5);
+}
+
+.preset-pill-rush.active {
+  background: #f59e0b;
+  border-color: #f59e0b;
+  color: white;
+  box-shadow: 0 2px 6px rgba(245, 158, 11, 0.3);
 }
 
 .customer-selector {
@@ -267,7 +285,7 @@
 /* Compact computed date output badge */
 .p-xs-compact {
   padding: 6px 10px;
-  margin-top: 6px;
+  margin-top: 4px;
   font-size: 0.85rem;
 }
 
@@ -595,21 +613,21 @@
   }
 }
 
+/* Chart Styles as Day Selectors */
 .weekly-workload-mini-chart {
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 10px;
-  margin-top: 10px;
+  margin-bottom: 12px;
 }
 
-/* Compact Workload Capsule Height */
 .mini-chart-bars-container {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  height: 60px;
-  margin-top: 8px;
+  height: 52px;
+  margin-top: 6px;
   gap: 6px;
 }
 
@@ -629,7 +647,7 @@
 
 .mini-bar-wrapper {
   width: 100%;
-  height: 42px;
+  height: 34px;
   display: flex;
   align-items: flex-end;
   background: var(--bg-hover);
@@ -638,14 +656,15 @@
   border: 1.5px solid var(--border);
 }
 
+/* Glow selection for the selected day bar */
 .mini-chart-bar-col.selected .mini-bar-wrapper {
   border-color: var(--primary);
-  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.12);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.22);
 }
 
 .mini-bar-fill {
   width: 100%;
-  background: linear-gradient(180deg, #818cf8 0%, #4f46e5 100%);
+  background: linear-gradient(180deg, #a5b4fc 0%, #818cf8 100%);
   border-radius: 10px;
   display: flex;
   align-items: flex-start;
@@ -655,7 +674,7 @@
 }
 
 .mini-chart-bar-col.selected .mini-bar-fill {
-  background: linear-gradient(180deg, #3b82f6 0%, #1d4ed8 100%);
+  background: linear-gradient(180deg, #6366f1 0%, #4f46e5 100%);
 }
 
 .mini-bar-tooltip {
