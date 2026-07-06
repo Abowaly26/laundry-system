@@ -307,303 +307,344 @@ export default function NewOrder() {
         </Button>
       </div>
 
-      <div className="new-order-grid">
-        {/* العمود الأيمن (الرئيسي): إضافة القطع */}
-        <div className="new-order-main">
-          <Card title="قطع الملابس / السجاد المضافة للطلب">
-            <div className="items-table-container">
-              <table className="new-order-items-table">
-                <thead>
-                  <tr>
-                    <th>نوع القطعة</th>
-                    <th>الخدمة المطلوبة</th>
-                    <th style={{ width: '100px' }}>السعر</th>
-                    <th>ملاحظات على القطعة</th>
-                    <th style={{ width: '50px' }}>إجراء</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {items.map((item, index) => (
-                    <tr key={index}>
-                      <td>
-                        <select
-                          className="form-select"
-                          value={item.item_type}
-                          onChange={(e) => handleItemTypeChange(index, e.target.value)}
-                        >
-                          {COMMON_ITEMS.map(opt => (
-                            <option key={opt.value} value={opt.value}>{opt.label}</option>
-                          ))}
-                        </select>
-                      </td>
-                      <td>
-                        <select
-                          className="form-select"
-                          value={item.service_id}
-                          onChange={(e) => handleServiceChange(index, e.target.value)}
-                        >
-                          <option value="">اختر الخدمة...</option>
-                          {services.map(s => (
-                            <option key={s.id} value={s.id}>
-                              {s.name_ar} ({s.price} {settings.currency})
-                            </option>
-                          ))}
-                        </select>
-                      </td>
-                      <td>
-                        <input
-                          type="number"
-                          className="form-input"
-                          value={item.price}
-                          onChange={(e) => handlePriceChange(index, e.target.value)}
-                          min="0"
-                          step="0.5"
-                        />
-                      </td>
-                      <td>
-                        <input
-                          type="text"
-                          className="form-input"
-                          value={item.notes}
-                          onChange={(e) => handleNotesChange(index, e.target.value)}
-                          placeholder="مثال: بقعة زيت، تلف بالكم..."
-                        />
-                      </td>
-                      <td>
-                        <button
-                          type="button"
-                          className="btn-remove-row text-error"
-                          onClick={() => removeItemRow(index)}
-                          disabled={items.length === 1}
-                        >
-                          <Trash2 size={18} />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+      <div className="new-order-layout">
+        {/* الصف العلوي: العميل والجدولة */}
+        <div className="new-order-top-row">
+          <div className="layout-card-wrapper">
+            <Card title="بيانات العميل">
+              {!selectedCustomer ? (
+                <div className="customer-selector">
+                  <div className="search-box">
+                    <input
+                      type="text"
+                      className="form-input"
+                      placeholder="ابحث بالاسم أو رقم الهاتف..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                    <Search size={18} className="search-icon" />
+                  </div>
 
-            <button type="button" className="btn-add-item-dashed mt-md" onClick={addItemRow}>
-              <Plus size={16} style={{ marginLeft: '6px' }} />
-              إضافة قطعة جديدة للطلب
-            </button>
-          </Card>
-        </div>
+                  {searchResults.length > 0 && (
+                    <ul className="search-results-list">
+                      {searchResults.map(c => (
+                        <li key={c.id} onClick={() => {
+                          setSelectedCustomer(c);
+                          setSearchResults([]);
+                          setSearchQuery('');
+                        }}>
+                          <span className="customer-name">{c.name}</span>
+                          <span className="customer-phone">{c.phone}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
 
-        {/* العمود الأيسر (الجانبي): اختيار العميل، الجدولة، والمالية */}
-        <div className="new-order-sidebar">
-          <Card title="بيانات العميل" className="mb-md">
-            {!selectedCustomer ? (
-              <div className="customer-selector">
-                <div className="search-box">
-                  <input
-                    type="text"
-                    className="form-input"
-                    placeholder="ابحث بالاسم أو رقم الهاتف..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                  <Search size={18} className="search-icon" />
+                  <div className="divider-or"><span>أو</span></div>
+
+                  <Button variant="secondary" className="w-full" onClick={() => setShowAddCustomerModal(true)}>
+                    <UserPlus size={18} style={{ marginLeft: '8px' }} />
+                    إضافة عميل جديد
+                  </Button>
                 </div>
-
-                {searchResults.length > 0 && (
-                  <ul className="search-results-list">
-                    {searchResults.map(c => (
-                      <li key={c.id} onClick={() => {
-                        setSelectedCustomer(c);
-                        setSearchResults([]);
-                        setSearchQuery('');
-                      }}>
-                        <span className="customer-name">{c.name}</span>
-                        <span className="customer-phone">{c.phone}</span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-
-                <div className="divider-or"><span>أو</span></div>
-
-                <Button variant="secondary" className="w-full" onClick={() => setShowAddCustomerModal(true)}>
-                  <UserPlus size={18} style={{ marginLeft: '8px' }} />
-                  إضافة عميل جديد
-                </Button>
-              </div>
-            ) : (
-              <div className="selected-customer-card">
-                <div className="customer-info-detail">
-                  <h3>{selectedCustomer.name}</h3>
-                  <p>رقم الهاتف: {selectedCustomer.phone}</p>
-                  {selectedCustomer.address && <p>العنوان: {selectedCustomer.address}</p>}
-                </div>
-                <Button variant="ghost" className="text-error mt-sm w-full" onClick={() => setSelectedCustomer(null)}>
-                  تغيير العميل
-                </Button>
-              </div>
-            )}
-          </Card>
-
-          <Card title="تفاصيل التسليم والجدولة" className="mb-md">
-            <div className="form-group">
-              <label className="form-label">وقت التسليم المتوقع (بالأيام والساعات)</label>
-              <div className="flex gap-sm mb-xs">
-                <div style={{ flex: 1 }}>
-                  <span className="help-text">الأيام</span>
-                  <input
-                    type="number"
-                    className="form-input"
-                    value={daysOffset}
-                    onChange={(e) => setDaysOffset(parseInt(e.target.value) || 0)}
-                    min="0"
-                  />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <span className="help-text">الساعات الإضافية</span>
-                  <input
-                    type="number"
-                    className="form-input"
-                    value={hoursOffset}
-                    onChange={(e) => setHoursOffset(parseInt(e.target.value) || 0)}
-                    min="0"
-                    max="23"
-                  />
-                </div>
-              </div>
-
-              {deliveryDate && deliveryTime && (
-                <div className="mt-sm p-sm" style={{ background: 'var(--bg-hover)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)' }}>
-                  <span className="help-text-label font-bold" style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '4px' }}>موعد التسليم الناتج:</span>
-                  <span className="text-primary font-bold" style={{ fontSize: '0.9rem' }}>
-                    {new Date(`${deliveryDate}T${deliveryTime}`).toLocaleString('ar-EG', {
-                      weekday: 'long',
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
-                  </span>
+              ) : (
+                <div className="selected-customer-card">
+                  <div className="customer-info-detail">
+                    <h3>{selectedCustomer.name}</h3>
+                    <p>رقم الهاتف: {selectedCustomer.phone}</p>
+                    {selectedCustomer.address && <p>العنوان: {selectedCustomer.address}</p>}
+                  </div>
+                  <Button variant="ghost" className="text-error mt-sm w-full" onClick={() => setSelectedCustomer(null)}>
+                    تغيير العميل
+                  </Button>
                 </div>
               )}
+            </Card>
+          </div>
 
-              {weeklyWorkload && weeklyWorkload.length > 0 && (
-                <div className="weekly-workload-mini-chart mt-md">
-                  <span className="help-text-label font-bold mb-xs" style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                    مقياس ضغط العمل (القطع المجدولة للـ 7 أيام القادمة):
-                  </span>
-                  <div className="mini-chart-bars-container">
-                    {weeklyWorkload.map((day, idx) => {
-                      const maxCount = Math.max(...weeklyWorkload.map(d => d.count), 1);
-                      const barHeightPercent = Math.min(100, (day.count / maxCount) * 70 + 10);
-                      const isSelected = daysOffset === idx;
-                      
-                      return (
-                        <div 
-                          key={day.date} 
-                          className={`mini-chart-bar-col ${isSelected ? 'selected' : ''}`}
-                          onClick={() => setDaysOffset(idx)}
-                          title={`${day.dayName}: ${day.count} قطعة`}
-                        >
-                          <div className="mini-bar-wrapper">
-                            <div 
-                              className="mini-bar-fill" 
-                              style={{ height: `${day.count === 0 ? 4 : barHeightPercent}%` }}
-                            >
-                              {day.count > 0 && <span className="mini-bar-tooltip">{day.count}</span>}
-                            </div>
-                          </div>
-                          <span className="mini-bar-label">{day.dayName}</span>
-                        </div>
-                      );
-                    })}
+          <div className="layout-card-wrapper">
+            <Card title="تفاصيل التسليم والجدولة">
+              <div className="form-group">
+                <label className="form-label">وقت التسليم المتوقع (بالأيام والساعات)</label>
+                
+                {/* أزرار الاختيار السريع المضافة باحترافية */}
+                <div className="schedule-presets mb-sm">
+                  <button 
+                    type="button" 
+                    className={`preset-pill ${(daysOffset === 0 && hoursOffset === 6) ? 'active' : ''}`}
+                    onClick={() => { setDaysOffset(0); setHoursOffset(6); }}
+                  >
+                    اليوم (+6س)
+                  </button>
+                  <button 
+                    type="button" 
+                    className={`preset-pill ${(daysOffset === 1 && hoursOffset === 0) ? 'active' : ''}`}
+                    onClick={() => { setDaysOffset(1); setHoursOffset(0); }}
+                  >
+                    غداً
+                  </button>
+                  <button 
+                    type="button" 
+                    className={`preset-pill ${(daysOffset === 2 && hoursOffset === 0) ? 'active' : ''}`}
+                    onClick={() => { setDaysOffset(2); setHoursOffset(0); }}
+                  >
+                    بعد يومين
+                  </button>
+                  <button 
+                    type="button" 
+                    className={`preset-pill ${(daysOffset === 0 && hoursOffset === 3) ? 'active' : ''}`}
+                    onClick={() => { setDaysOffset(0); setHoursOffset(3); }}
+                  >
+                    مستعجل (+3س)
+                  </button>
+                </div>
+
+                <div className="flex gap-sm mb-xs">
+                  <div style={{ flex: 1 }}>
+                    <span className="help-text">الأيام</span>
+                    <input
+                      type="number"
+                      className="form-input"
+                      value={daysOffset}
+                      onChange={(e) => setDaysOffset(parseInt(e.target.value) || 0)}
+                      min="0"
+                    />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <span className="help-text">الساعات الإضافية</span>
+                    <input
+                      type="number"
+                      className="form-input"
+                      value={hoursOffset}
+                      onChange={(e) => setHoursOffset(parseInt(e.target.value) || 0)}
+                      min="0"
+                      max="23"
+                    />
                   </div>
                 </div>
-              )}
-            </div>
 
-            <div className="form-group mt-md">
-              <label className="form-label">ملاحظات الطلب</label>
-              <textarea
-                className="form-textarea"
-                value={orderNotes}
-                onChange={(e) => setOrderNotes(e.target.value)}
-                placeholder="ملاحظات عامة حول الطلب..."
-              />
-            </div>
-          </Card>
+                {deliveryDate && deliveryTime && (
+                  <div className="mt-sm p-sm" style={{ background: 'var(--bg-hover)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)' }}>
+                    <span className="help-text-label font-bold" style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '4px' }}>موعد التسليم الناتج:</span>
+                    <span className="text-primary font-bold" style={{ fontSize: '0.9rem' }}>
+                      {new Date(`${deliveryDate}T${deliveryTime}`).toLocaleString('ar-EG', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </span>
+                  </div>
+                )}
 
-          {/* تفاصيل التكلفة والدفع */}
-          <Card title="تفاصيل الفاتورة والدفع">
-            <div className="financials-summary-box">
-              <div className="financial-row">
-                <span>إجمالي الطلب:</span>
-                <span className="amount-val-total">{totalAmount.toFixed(2)} {settings.currency}</span>
+                {weeklyWorkload && weeklyWorkload.length > 0 && (
+                  <div className="weekly-workload-mini-chart mt-md">
+                    <span className="help-text-label font-bold mb-xs" style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                      مقياس ضغط العمل (القطع المجدولة للـ 7 أيام القادمة):
+                    </span>
+                    <div className="mini-chart-bars-container">
+                      {weeklyWorkload.map((day, idx) => {
+                        const maxCount = Math.max(...weeklyWorkload.map(d => d.count), 1);
+                        const barHeightPercent = Math.min(100, (day.count / maxCount) * 70 + 10);
+                        const isSelected = daysOffset === idx;
+                        
+                        return (
+                          <div 
+                            key={day.date} 
+                            className={`mini-chart-bar-col ${isSelected ? 'selected' : ''}`}
+                            onClick={() => setDaysOffset(idx)}
+                            title={`${day.dayName}: ${day.count} قطعة`}
+                          >
+                            <div className="mini-bar-wrapper">
+                              <div 
+                                className="mini-bar-fill" 
+                                style={{ height: `${day.count === 0 ? 4 : barHeightPercent}%` }}
+                              >
+                                {day.count > 0 && <span className="mini-bar-tooltip">{day.count}</span>}
+                              </div>
+                            </div>
+                            <span className="mini-bar-label">{day.dayName}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
-              <div className="financial-row">
-                <span>المبلغ المدفوع (مقدم):</span>
-                <div className="input-with-suffix">
-                  <input
-                    type="number"
-                    className="form-input inline-input"
-                    value={paidAmount}
-                    onChange={(e) => setPaidAmount(parseFloat(e.target.value) || 0)}
-                    max={totalAmount}
-                    min="0"
-                    step="0.5"
-                  />
-                  <span className="suffix">{settings.currency}</span>
+
+              <div className="form-group mt-md">
+                <label className="form-label">ملاحظات الطلب</label>
+                <textarea
+                  className="form-textarea"
+                  value={orderNotes}
+                  onChange={(e) => setOrderNotes(e.target.value)}
+                  placeholder="ملاحظات عامة حول الطلب..."
+                />
+              </div>
+            </Card>
+          </div>
+        </div>
+
+        {/* الصف السفلي: قطع الملابس والملخص المالي */}
+        <div className="new-order-bottom-row">
+          <div className="bottom-items-wrapper">
+            <Card title="قطع الملابس / السجاد المضافة للطلب">
+              <div className="items-table-container">
+                <table className="new-order-items-table">
+                  <thead>
+                    <tr>
+                      <th>نوع القطعة</th>
+                      <th>الخدمة المطلوبة</th>
+                      <th style={{ width: '100px' }}>السعر</th>
+                      <th>ملاحظات على القطعة</th>
+                      <th style={{ width: '50px' }}>إجراء</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {items.map((item, index) => (
+                      <tr key={index}>
+                        <td>
+                          <select
+                            className="form-select"
+                            value={item.item_type}
+                            onChange={(e) => handleItemTypeChange(index, e.target.value)}
+                          >
+                            {COMMON_ITEMS.map(opt => (
+                              <option key={opt.value} value={opt.value}>{opt.label}</option>
+                            ))}
+                          </select>
+                        </td>
+                        <td>
+                          <select
+                            className="form-select"
+                            value={item.service_id}
+                            onChange={(e) => handleServiceChange(index, e.target.value)}
+                          >
+                            <option value="">اختر الخدمة...</option>
+                            {services.map(s => (
+                              <option key={s.id} value={s.id}>
+                                {s.name_ar} ({s.price} {settings.currency})
+                              </option>
+                            ))}
+                          </select>
+                        </td>
+                        <td>
+                          <input
+                            type="number"
+                            className="form-input"
+                            value={item.price}
+                            onChange={(e) => handlePriceChange(index, e.target.value)}
+                            min="0"
+                            step="0.5"
+                          />
+                        </td>
+                        <td>
+                          <input
+                            type="text"
+                            className="form-input"
+                            value={item.notes}
+                            onChange={(e) => handleNotesChange(index, e.target.value)}
+                            placeholder="مثال: بقعة زيت، تلف بالكم..."
+                          />
+                        </td>
+                        <td>
+                          <button
+                            type="button"
+                            className="btn-remove-row text-error"
+                            onClick={() => removeItemRow(index)}
+                            disabled={items.length === 1}
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <button type="button" className="btn-add-item-dashed mt-md" onClick={addItemRow}>
+                <Plus size={16} style={{ marginLeft: '6px' }} />
+                إضافة قطعة جديدة للطلب
+              </button>
+            </Card>
+          </div>
+
+          <div className="bottom-checkout-wrapper">
+            {/* تفاصيل التكلفة والدفع */}
+            <Card title="تفاصيل الفاتورة والدفع">
+              <div className="financials-summary-box">
+                <div className="financial-row">
+                  <span>إجمالي الطلب:</span>
+                  <span className="amount-val-total">{totalAmount.toFixed(2)} {settings.currency}</span>
+                </div>
+                <div className="financial-row">
+                  <span>المبلغ المدفوع (مقدم):</span>
+                  <div className="input-with-suffix">
+                    <input
+                      type="number"
+                      className="form-input inline-input"
+                      value={paidAmount}
+                      onChange={(e) => setPaidAmount(parseFloat(e.target.value) || 0)}
+                      max={totalAmount}
+                      min="0"
+                      step="0.5"
+                    />
+                    <span className="suffix">{settings.currency}</span>
+                  </div>
+                </div>
+                <div className="financial-row">
+                  <span>المتبقي عند التسليم:</span>
+                  <span className={`amount-badge ${remainingAmount > 0 ? 'unpaid' : 'paid'}`}>
+                    {remainingAmount.toFixed(2)} {settings.currency}
+                  </span>
+                </div>
+
+                <div className="financial-row">
+                  <span>طريقة الدفع:</span>
+                  <div className="payment-method-toggle">
+                    <label className={`method-option ${paymentMethod === 'cash' ? 'active' : ''}`}>
+                      <input
+                        type="radio"
+                        name="payment_method"
+                        value="cash"
+                        checked={paymentMethod === 'cash'}
+                        onChange={() => setPaymentMethod('cash')}
+                        className="sr-only"
+                      />
+                      نقدي (كاش)
+                    </label>
+                    <label className={`method-option ${paymentMethod === 'electronic' ? 'active' : ''}`}>
+                      <input
+                        type="radio"
+                        name="payment_method"
+                        value="electronic"
+                        checked={paymentMethod === 'electronic'}
+                        onChange={() => setPaymentMethod('electronic')}
+                        className="sr-only"
+                      />
+                      إلكتروني (شبكة)
+                    </label>
+                  </div>
                 </div>
               </div>
-              <div className="financial-row">
-                <span>المتبقي عند التسليم:</span>
-                <span className={`amount-badge ${remainingAmount > 0 ? 'unpaid' : 'paid'}`}>
-                  {remainingAmount.toFixed(2)} {settings.currency}
-                </span>
-              </div>
 
-              <div className="financial-row">
-                <span>طريقة الدفع:</span>
-                <div className="payment-method-toggle">
-                  <label className={`method-option ${paymentMethod === 'cash' ? 'active' : ''}`}>
-                    <input
-                      type="radio"
-                      name="payment_method"
-                      value="cash"
-                      checked={paymentMethod === 'cash'}
-                      onChange={() => setPaymentMethod('cash')}
-                      className="sr-only"
-                    />
-                    نقدي (كاش)
-                  </label>
-                  <label className={`method-option ${paymentMethod === 'electronic' ? 'active' : ''}`}>
-                    <input
-                      type="radio"
-                      name="payment_method"
-                      value="electronic"
-                      checked={paymentMethod === 'electronic'}
-                      onChange={() => setPaymentMethod('electronic')}
-                      className="sr-only"
-                    />
-                    إلكتروني (شبكة)
-                  </label>
-                </div>
+              <div className="submit-actions mt-md">
+                <Button
+                  variant="primary"
+                  size="large"
+                  className="w-full btn-save-order"
+                  onClick={handleSubmitOrder}
+                  disabled={isSubmitting}
+                >
+                  <Save size={18} style={{ marginLeft: '8px' }} />
+                  {isSubmitting ? 'جاري الحفظ...' : 'حفظ الطلب وتوليد الفاتورة'}
+                </Button>
               </div>
-            </div>
-
-            <div className="submit-actions mt-md">
-              <Button
-                variant="primary"
-                size="large"
-                className="w-full btn-save-order"
-                onClick={handleSubmitOrder}
-                disabled={isSubmitting}
-              >
-                <Save size={18} style={{ marginLeft: '8px' }} />
-                {isSubmitting ? 'جاري الحفظ...' : 'حفظ الطلب وتوليد الفاتورة'}
-              </Button>
-            </div>
-          </Card>
+            </Card>
+          </div>
         </div>
       </div>
 
