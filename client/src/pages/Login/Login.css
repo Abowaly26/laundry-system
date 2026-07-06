@@ -73,30 +73,26 @@
 }
 
 .login-logo-container {
-  width: 130px;
-  height: 130px;
+  width: 200px;
+  height: 200px;
   margin: 0 auto 24px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #ffffff;
-  border-radius: 50%;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-  padding: 8px;
+  background: transparent;
   transform: translateY(0);
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .login-logo-container:hover {
   transform: translateY(-5px) scale(1.05);
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
 }
 
 .login-logo-image {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  border-radius: 50%;
+  filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.15));
 }
 
 .login-title {
