@@ -267,7 +267,7 @@ export default function Users() {
             required
             value={formData.email}
             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            placeholder="name@laundry.com"
+            placeholder="مثال: name@laundry.com"
           />
 
           <Input

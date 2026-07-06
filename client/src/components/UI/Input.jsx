@@ -20,7 +20,7 @@ export default function Input({
           {label}
         </label>
       )}
-      <div className="input-wrapper" style={{ position: 'relative' }}>
+      <div className="input-wrapper" style={{ position: 'relative', width: '100%', display: 'block' }}>
         <input
           id={id}
           type={inputType}
@@ -35,17 +35,18 @@ export default function Input({
             onClick={() => setShowPassword(!showPassword)}
             style={{
               position: 'absolute',
-              left: '10px',
+              left: '12px',
               top: '50%',
               transform: 'translateY(-50%)',
-              background: 'none',
+              background: 'transparent',
               border: 'none',
               cursor: 'pointer',
               color: '#6b7280',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              padding: 0
+              padding: '4px',
+              zIndex: 10
             }}
             aria-label={showPassword ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور'}
           >
