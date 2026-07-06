@@ -879,50 +879,76 @@
   background: rgba(255, 255, 255, 0.99);
   backdrop-filter: blur(12px);
   border: 1px solid var(--border);
-  border-radius: 10px;
-  display: flex;
-  overflow-x: auto;
-  gap: 8px;
-  padding: 8px;
+  border-radius: 12px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  padding: 10px;
   margin-top: 4px;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
   z-index: 120;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(79, 70, 229, 0.2) transparent;
-  white-space: nowrap;
-}
-
-.time-select-dropdown::-webkit-scrollbar {
-  height: 4px;
-}
-
-.time-select-dropdown::-webkit-scrollbar-thumb {
-  background: rgba(79, 70, 229, 0.15);
-  border-radius: 4px;
+  max-height: 180px;
+  overflow-y: auto;
 }
 
 .time-select-item {
-  flex: 0 0 auto;
-  padding: 6px 12px;
+  padding: 6px 4px;
   font-size: 0.8rem;
   font-weight: 700;
   color: var(--text-secondary);
-  background: var(--bg-hover);
+  background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 20px;
+  border-radius: 8px;
   cursor: pointer;
   transition: all 0.15s ease;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .time-select-item:hover {
   background: rgba(79, 70, 229, 0.04);
+  border-color: rgba(79, 70, 229, 0.2);
   color: var(--primary);
 }
 
 .time-select-item.selected {
   background: var(--primary);
-  color: white;
+  border-color: var(--primary);
+  color: white !important;
+}
+
+.time-select-item.selected * {
+  color: white !important;
+}
+
+/* Flex time label inside triggers and pills */
+.time-label-flex {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  direction: ltr; /* digits left, period right */
+}
+
+.time-label-digits {
+  font-family: monospace, sans-serif;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.time-label-period {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--text-secondary);
+}
+
+.time-select-trigger .time-label-digits {
+  font-size: 0.88rem;
+}
+
+.time-select-trigger .time-label-period {
+  font-size: 0.75rem;
 }
 
 /* Custom Calendar Date Select styling */

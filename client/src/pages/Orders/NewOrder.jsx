@@ -630,7 +630,7 @@ export default function NewOrder() {
                             className="time-select-trigger"
                             onClick={() => setShowQuickTimeDropdown(!showQuickTimeDropdown)}
                           >
-                            {getTimeLabel(deliveryTime)}
+                            {renderTimeLabel(deliveryTime)}
                           </button>
                           {showQuickTimeDropdown && (
                             <div className="time-select-dropdown">
@@ -644,7 +644,7 @@ export default function NewOrder() {
                                     setShowQuickTimeDropdown(false);
                                   }}
                                 >
-                                  {opt.label}
+                                  {renderTimeLabel(opt.value)}
                                 </div>
                               ))}
                             </div>
@@ -715,7 +715,7 @@ export default function NewOrder() {
                               className="time-select-trigger"
                               onClick={() => setShowCustomTimeDropdown(!showCustomTimeDropdown)}
                             >
-                              {getTimeLabel(deliveryTime)}
+                              {renderTimeLabel(deliveryTime)}
                             </button>
                             {showCustomTimeDropdown && (
                               <div className="time-select-dropdown">
@@ -728,7 +728,7 @@ export default function NewOrder() {
                                       setShowCustomTimeDropdown(false);
                                     }}
                                   >
-                                    {opt.label}
+                                    {renderTimeLabel(opt.value)}
                                   </div>
                                 ))}
                               </div>
