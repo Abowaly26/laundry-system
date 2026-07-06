@@ -301,7 +301,7 @@ export default function NewOrder() {
         <div className="new-order-top-row">
           <div className="layout-card-wrapper">
             <Card 
-              title="بيانات العميل" 
+              title="بيانات العميل"
               actions={
                 <button 
                   type="button" 
@@ -360,74 +360,88 @@ export default function NewOrder() {
                   </Button>
                 </div>
               )}
+
+              <div className="form-group mt-sm">
+                <label className="form-label label-compact">ملاحظات الطلب</label>
+                <textarea
+                  className="form-textarea form-textarea-compact"
+                  value={orderNotes}
+                  onChange={(e) => setOrderNotes(e.target.value)}
+                  placeholder="ملاحظات عامة حول الطلب..."
+                  rows={2}
+                />
+              </div>
             </Card>
           </div>
 
           <div className="layout-card-wrapper">
             <Card title="تفاصيل التسليم والجدولة">
               <div className="form-group">
-                <label className="form-label">وقت التسليم المتوقع (بالأيام والساعات)</label>
+                <label className="form-label label-compact">وقت التسليم المتوقع</label>
                 
-                {/* أزرار الاختيار السريع المضافة باحترافية */}
-                <div className="schedule-presets mb-sm">
-                  <button 
-                    type="button" 
-                    className={`preset-pill ${(daysOffset === 0 && hoursOffset === 6) ? 'active' : ''}`}
-                    onClick={() => { setDaysOffset(0); setHoursOffset(6); }}
-                  >
-                    اليوم (+6س)
-                  </button>
-                  <button 
-                    type="button" 
-                    className={`preset-pill ${(daysOffset === 1 && hoursOffset === 0) ? 'active' : ''}`}
-                    onClick={() => { setDaysOffset(1); setHoursOffset(0); }}
-                  >
-                    غداً
-                  </button>
-                  <button 
-                    type="button" 
-                    className={`preset-pill ${(daysOffset === 2 && hoursOffset === 0) ? 'active' : ''}`}
-                    onClick={() => { setDaysOffset(2); setHoursOffset(0); }}
-                  >
-                    بعد يومين
-                  </button>
-                  <button 
-                    type="button" 
-                    className={`preset-pill ${(daysOffset === 0 && hoursOffset === 3) ? 'active' : ''}`}
-                    onClick={() => { setDaysOffset(0); setHoursOffset(3); }}
-                  >
-                    مستعجل (+3س)
-                  </button>
-                </div>
-
-                <div className="flex gap-sm mb-xs">
-                  <div style={{ flex: 1 }}>
-                    <span className="help-text">الأيام</span>
-                    <input
-                      type="number"
-                      className="form-input"
-                      value={daysOffset}
-                      onChange={(e) => setDaysOffset(parseInt(e.target.value) || 0)}
-                      min="0"
-                    />
+                <div className="scheduler-fields-grid">
+                  {/* حقول الأيام والساعات */}
+                  <div className="flex gap-sm">
+                    <div style={{ flex: 1 }}>
+                      <span className="help-text">الأيام</span>
+                      <input
+                        type="number"
+                        className="form-input form-input-compact"
+                        value={daysOffset}
+                        onChange={(e) => setDaysOffset(parseInt(e.target.value) || 0)}
+                        min="0"
+                      />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <span className="help-text">الساعات الإضافية</span>
+                      <input
+                        type="number"
+                        className="form-input form-input-compact"
+                        value={hoursOffset}
+                        onChange={(e) => setHoursOffset(parseInt(e.target.value) || 0)}
+                        min="0"
+                        max="23"
+                      />
+                    </div>
                   </div>
-                  <div style={{ flex: 1 }}>
-                    <span className="help-text">الساعات الإضافية</span>
-                    <input
-                      type="number"
-                      className="form-input"
-                      value={hoursOffset}
-                      onChange={(e) => setHoursOffset(parseInt(e.target.value) || 0)}
-                      min="0"
-                      max="23"
-                    />
+
+                  {/* أزرار الاختيار السريع المضافة باحترافية */}
+                  <div className="schedule-presets-grid">
+                    <button 
+                      type="button" 
+                      className={`preset-pill ${(daysOffset === 0 && hoursOffset === 6) ? 'active' : ''}`}
+                      onClick={() => { setDaysOffset(0); setHoursOffset(6); }}
+                    >
+                      اليوم (+6س)
+                    </button>
+                    <button 
+                      type="button" 
+                      className={`preset-pill ${(daysOffset === 1 && hoursOffset === 0) ? 'active' : ''}`}
+                      onClick={() => { setDaysOffset(1); setHoursOffset(0); }}
+                    >
+                      غداً
+                    </button>
+                    <button 
+                      type="button" 
+                      className={`preset-pill ${(daysOffset === 2 && hoursOffset === 0) ? 'active' : ''}`}
+                      onClick={() => { setDaysOffset(2); setHoursOffset(0); }}
+                    >
+                      بعد يومين
+                    </button>
+                    <button 
+                      type="button" 
+                      className={`preset-pill ${(daysOffset === 0 && hoursOffset === 3) ? 'active' : ''}`}
+                      onClick={() => { setDaysOffset(0); setHoursOffset(3); }}
+                    >
+                      مستعجل (+3س)
+                    </button>
                   </div>
                 </div>
 
                 {deliveryDate && deliveryTime && (
-                  <div className="mt-sm p-sm" style={{ background: 'var(--bg-hover)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)' }}>
-                    <span className="help-text-label font-bold" style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '4px' }}>موعد التسليم الناتج:</span>
-                    <span className="text-primary font-bold" style={{ fontSize: '0.9rem' }}>
+                  <div className="mt-xs p-xs-compact" style={{ background: 'var(--bg-hover)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)' }}>
+                    <span className="help-text-label font-bold" style={{ display: 'inline-block', fontSize: '0.8rem', color: 'var(--text-secondary)', marginLeft: '6px' }}>موعد التسليم الناتج:</span>
+                    <span className="text-primary font-bold" style={{ fontSize: '0.85rem' }}>
                       {new Date(`${deliveryDate}T${deliveryTime}`).toLocaleString('ar-EG', {
                         weekday: 'long',
                         year: 'numeric',
@@ -441,8 +455,8 @@ export default function NewOrder() {
                 )}
 
                 {weeklyWorkload && weeklyWorkload.length > 0 && (
-                  <div className="weekly-workload-mini-chart mt-md">
-                    <span className="help-text-label font-bold mb-xs" style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                  <div className="weekly-workload-mini-chart mt-sm">
+                    <span className="help-text-label font-bold mb-xs" style={{ display: 'block', fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
                       مقياس ضغط العمل (القطع المجدولة للـ 7 أيام القادمة):
                     </span>
                     <div className="mini-chart-bars-container">
@@ -474,16 +488,6 @@ export default function NewOrder() {
                   </div>
                 )}
               </div>
-
-              <div className="form-group mt-md">
-                <label className="form-label">ملاحظات الطلب</label>
-                <textarea
-                  className="form-textarea"
-                  value={orderNotes}
-                  onChange={(e) => setOrderNotes(e.target.value)}
-                  placeholder="ملاحظات عامة حول الطلب..."
-                />
-              </div>
             </Card>
           </div>
         </div>
@@ -508,7 +512,7 @@ export default function NewOrder() {
                       <tr key={index}>
                         <td>
                           <select
-                            className="form-select"
+                            className="form-select select-compact"
                             value={item.item_type}
                             onChange={(e) => handleItemTypeChange(index, e.target.value)}
                           >
@@ -519,7 +523,7 @@ export default function NewOrder() {
                         </td>
                         <td>
                           <select
-                            className="form-select"
+                            className="form-select select-compact"
                             value={item.service_id}
                             onChange={(e) => handleServiceChange(index, e.target.value)}
                           >
@@ -534,7 +538,7 @@ export default function NewOrder() {
                         <td>
                           <input
                             type="number"
-                            className="form-input"
+                            className="form-input form-input-compact"
                             value={item.price}
                             onChange={(e) => handlePriceChange(index, e.target.value)}
                             min="0"
@@ -544,7 +548,7 @@ export default function NewOrder() {
                         <td>
                           <input
                             type="text"
-                            className="form-input"
+                            className="form-input form-input-compact"
                             value={item.notes}
                             onChange={(e) => handleNotesChange(index, e.target.value)}
                             placeholder="مثال: بقعة زيت، تلف بالكم..."
@@ -625,29 +629,29 @@ export default function NewOrder() {
                         checked={paymentMethod === 'electronic'}
                         onChange={() => setPaymentMethod('electronic')}
                         className="sr-only"
-                      />
-                      إلكتروني (شبكة)
-                    </label>
-                  </div>
+                    />
+                    إلكتروني (شبكة)
+                  </label>
                 </div>
               </div>
+            </div>
 
-              <div className="submit-actions mt-md">
-                <Button
-                  variant="primary"
-                  size="large"
-                  className="w-full btn-save-order"
-                  onClick={handleSubmitOrder}
-                  disabled={isSubmitting}
-                >
-                  <Save size={18} style={{ marginLeft: '8px' }} />
-                  {isSubmitting ? 'جاري الحفظ...' : 'حفظ الطلب وتوليد الفاتورة'}
-                </Button>
-              </div>
-            </Card>
-          </div>
+            <div className="submit-actions mt-md">
+              <Button
+                variant="primary"
+                size="large"
+                className="w-full btn-save-order"
+                onClick={handleSubmitOrder}
+                disabled={isSubmitting}
+              >
+                <Save size={18} style={{ marginLeft: '8px' }} />
+                {isSubmitting ? 'جاري الحفظ...' : 'حفظ الطلب وتوليد الفاتورة'}
+              </Button>
+            </div>
+          </Card>
         </div>
       </div>
+    </div>
 
       {/* مودال إضافة عميل جديد */}
       <Modal
