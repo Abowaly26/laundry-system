@@ -17,6 +17,9 @@ export default function Services() {
   // Tabs State: 'services' | 'itemTypes'
   const [activeTab, setActiveTab] = useState('services');
   
+  // Filter State for services
+  const [serviceFilter, setServiceFilter] = useState('all'); // 'all', 'active', 'inactive'
+  
   // General Services State
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -148,24 +151,33 @@ export default function Services() {
     }
   };
 
-  const handleDelete = async (id) => {
+  const handleToggleActive = async (service) => {
     if (!isAdmin) {
       showToast('عذراً، هذا الإجراء يتطلب صلاحيات مدير النظام', 'error');
       return;
     }
-    if (!window.confirm('هل أنت متأكد من رغبتك في تعطيل هذه الخدمة؟')) {
+
+    const newStatus = service.is_active ? 0 : 1;
+    const actionText = newStatus === 1 ? 'تفعيل' : 'تعطيل';
+    
+    if (!window.confirm(`هل أنت متأكد من رغبتك في ${actionText} هذه الخدمة؟`)) {
       return;
     }
+
     try {
-      const res = await servicesAPI.delete(id);
+      const res = await servicesAPI.update(service.id, {
+        ...service,
+        is_active: newStatus
+      });
+
       if (res.success) {
-        showToast('تم تعطيل الخدمة بنجاح', 'success');
+        showToast(`تم ${actionText} الخدمة بنجاح`, 'success');
         loadServices();
       } else {
-        showToast(res.message || 'فشل في تعطيل الخدمة', 'error');
+        showToast(res.message || `فشل في ${actionText} الخدمة`, 'error');
       }
     } catch (err) {
-      showToast(err.message || 'خطأ أثناء تعطيل الخدمة', 'error');
+      showToast(err.message || `خطأ أثناء ${actionText} الخدمة`, 'error');
     }
   };
 
@@ -368,7 +380,33 @@ export default function Services() {
       </div>
 
       {activeTab === 'services' ? (
-        loading ? (
+        <>
+          {/* Filter Buttons */}
+          <div className="filter-buttons-container" style={{ marginBottom: '16px', display: 'flex', gap: '8px' }}>
+            <Button 
+              variant={serviceFilter === 'all' ? 'primary' : 'secondary'} 
+              size="small"
+              onClick={() => setServiceFilter('all')}
+            >
+              جميع الخدمات
+            </Button>
+            <Button 
+              variant={serviceFilter === 'active' ? 'primary' : 'secondary'} 
+              size="small"
+              onClick={() => setServiceFilter('active')}
+            >
+              النشطة فقط
+            </Button>
+            <Button 
+              variant={serviceFilter === 'inactive' ? 'primary' : 'secondary'} 
+              size="small"
+              onClick={() => setServiceFilter('inactive')}
+            >
+              المعطلة فقط
+            </Button>
+          </div>
+
+          {loading ? (
           <div className="flex justify-center items-center" style={{ height: '200px' }}>
             <LoadingSpinner />
           </div>
@@ -377,9 +415,22 @@ export default function Services() {
             title="لا توجد خدمات" 
             message="لم نجد أي خدمات مسجلة بالنظام حالياً."
           />
-        ) : (
-          <div className="services-grid mt-md">
-            {services.map((service) => (
+        ) : (() => {
+          // Apply filter
+          const filteredServices = services.filter(service => {
+            if (serviceFilter === 'active') return service.is_active;
+            if (serviceFilter === 'inactive') return !service.is_active;
+            return true; // 'all'
+          });
+
+          return filteredServices.length === 0 ? (
+            <EmptyState 
+              title="لا توجد نتائج" 
+              message={`لا توجد خدمات ${serviceFilter === 'active' ? 'نشطة' : 'معطلة'} حالياً.`}
+            />
+          ) : (
+            <div className="services-grid mt-md">
+              {filteredServices.map((service) => (
               <Card 
                 key={service.id} 
                 className={`service-card ${!service.is_active ? 'inactive' : ''}`}
@@ -410,16 +461,31 @@ export default function Services() {
                       <Edit2 size={14} style={{ marginLeft: '4px' }} />
                       تعديل
                     </Button>
-                    <Button variant="danger" size="small" onClick={() => handleDelete(service.id)}>
-                      <Trash2 size={14} style={{ marginLeft: '4px' }} />
-                      تعطيل
+                    <Button 
+                      variant={service.is_active ? "danger" : "success"} 
+                      size="small" 
+                      onClick={() => handleToggleActive(service)}
+                    >
+                      {service.is_active ? (
+                        <>
+                          <Trash2 size={14} style={{ marginLeft: '4px' }} />
+                          تعطيل
+                        </>
+                      ) : (
+                        <>
+                          <Plus size={14} style={{ marginLeft: '4px' }} />
+                          إعادة تفعيل
+                        </>
+                      )}
                     </Button>
                   </div>
                 )}
               </Card>
             ))}
           </div>
-        )
+          );
+        })()
+        }</>
       ) : (
         /* Tab 2: Item Types & Sizes Pricing Matrix management */
         loadingItemTypes ? (

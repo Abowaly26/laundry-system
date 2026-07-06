@@ -288,3 +288,13 @@
   border-radius: 6px !important;
   text-align: center;
 }
+
+/* Filter Buttons Container */
+.filter-buttons-container {
+  display: flex;
+  gap: var(--space-xs);
+  padding: var(--space-sm);
+  background: var(--bg-hover);
+  border-radius: var(--radius-md);
+  align-self: flex-start;
+}
