@@ -622,92 +622,104 @@
   margin-bottom: 12px;
 }
 
-.mini-chart-bars-container {
-  display: flex;
-  justify-content: space-around;
-  align-items: flex-end;
-  height: 88px;
-  margin-top: 6px;
-  gap: 6px;
+.weekly-workload-cards-section {
+  margin-bottom: 12px;
 }
 
-.mini-chart-bar-col {
-  flex: 1;
+.workload-days-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.workload-day-card {
+  background: var(--bg-hover);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 4px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  height: 100%;
+  gap: 4px;
   cursor: pointer;
-  transition: transform 0.2s;
+  transition: all 0.2s ease;
 }
 
-.mini-chart-bar-col:hover {
-  transform: translateY(-2px);
+.workload-day-card:hover {
+  border-color: rgba(79, 70, 229, 0.2);
+  transform: translateY(-1px);
+  background: var(--bg-card);
 }
 
-.mini-bar-wrapper {
-  width: 18px;
-  height: 60px;
-  display: flex;
-  align-items: flex-end;
-  background: var(--bg-hover);
-  border-radius: 10px;
-  overflow: hidden;
-  border: 1.5px solid var(--border);
-}
-
-/* Glow selection for the selected day bar */
-.mini-chart-bar-col.selected .mini-bar-wrapper {
+.workload-day-card.selected {
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.22);
+  background: rgba(79, 70, 229, 0.02);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
 }
 
-.mini-bar-fill {
-  width: 100%;
-  background: linear-gradient(180deg, #a5b4fc 0%, #818cf8 100%);
-  border-radius: 8px;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  position: relative;
-  transition: height 0.5s ease;
-}
-
-.mini-chart-bar-col.selected .mini-bar-fill {
-  background: linear-gradient(180deg, #6366f1 0%, #4f46e5 100%);
-}
-
-.mini-bar-tooltip {
-  position: absolute;
-  top: -22px;
-  font-size: 0.68rem;
-  font-weight: 700;
-  background: var(--text);
-  color: var(--bg-card);
-  padding: 1px 4px;
-  border-radius: 3px;
-  opacity: 0;
-  pointer-events: none;
-  white-space: nowrap;
-  z-index: 10;
-}
-
-.mini-chart-bar-col:hover .mini-bar-tooltip {
-  opacity: 1;
-}
-
-.mini-bar-label {
-  font-size: 0.72rem;
-  color: var(--text-secondary);
-  margin-top: 6px;
-  text-align: center;
-  white-space: nowrap;
-  font-weight: 700;
-}
-
-.mini-chart-bar-col.selected .mini-bar-label {
-  color: var(--primary);
+.workload-day-card .day-name {
+  font-size: 0.76rem;
   font-weight: 800;
+  color: var(--text);
+}
+
+.workload-day-card.selected .day-name {
+  color: var(--primary);
+}
+
+.workload-day-card .day-date {
+  font-size: 0.68rem;
+  color: var(--text-secondary);
+  font-weight: bold;
+}
+
+.workload-status-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  border-radius: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+}
+
+.workload-status-badge .status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.workload-status-badge .status-count {
+  font-size: 0.62rem;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+/* Color logic for workload levels */
+.workload-low .status-dot {
+  background-color: #10b981;
+}
+.workload-low {
+  border-color: rgba(16, 185, 129, 0.2);
+  color: #047857;
+}
+
+.workload-medium .status-dot {
+  background-color: #f59e0b;
+}
+.workload-medium {
+  border-color: rgba(245, 158, 11, 0.2);
+  color: #b45309;
+}
+
+.workload-high .status-dot {
+  background-color: #ef4444;
+}
+.workload-high {
+  border-color: rgba(239, 68, 68, 0.2);
+  color: #b91c1c;
 }
 
 /* Card header back button */

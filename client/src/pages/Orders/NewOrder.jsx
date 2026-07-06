@@ -29,6 +29,21 @@ export default function NewOrder() {
   const { settings } = useSettings();
   const [services, setServices] = useState([]);
   
+  const getFormattedDayDate = (dateStr) => {
+    if (!dateStr) return '';
+    const parts = dateStr.split('-');
+    if (parts.length < 3) return dateStr;
+    const month = parseInt(parts[1]);
+    const day = parseInt(parts[2]);
+    return `${day}/${month}`;
+  };
+
+  const getWorkloadLevel = (count) => {
+    if (count < 10) return { className: 'workload-low', text: 'خفيف' };
+    if (count <= 25) return { className: 'workload-medium', text: 'متوسط' };
+    return { className: 'workload-high', text: 'مزدحم' };
+  };
+
   // بيانات العميل
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
@@ -399,32 +414,27 @@ export default function NewOrder() {
             <Card title="تفاصيل التسليم والجدولة">
               <div className="form-group">
                 {weeklyWorkload && weeklyWorkload.length > 0 && (
-                  <div className="weekly-workload-mini-chart">
+                  <div className="weekly-workload-cards-section">
                     <span className="help-text-label font-bold mb-xs" style={{ display: 'block', fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
                       اختر يوم التسليم (مقياس ضغط العمل للـ 7 أيام القادمة):
                     </span>
-                    <div className="mini-chart-bars-container">
+                    <div className="workload-days-grid">
                       {weeklyWorkload.map((day) => {
-                        const maxCount = Math.max(...weeklyWorkload.map(d => d.count), 1);
-                        const barHeightPercent = Math.min(100, (day.count / maxCount) * 70 + 10);
                         const isSelected = deliveryDate === day.date;
+                        const level = getWorkloadLevel(day.count);
                         
                         return (
                           <div 
                             key={day.date} 
-                            className={`mini-chart-bar-col ${isSelected ? 'selected' : ''}`}
+                            className={`workload-day-card ${isSelected ? 'selected' : ''}`}
                             onClick={() => setDeliveryDate(day.date)}
-                            title={`${day.dayName}: ${day.count} قطعة`}
                           >
-                            <div className="mini-bar-wrapper">
-                              <div 
-                                className="mini-bar-fill" 
-                                style={{ height: `${day.count === 0 ? 4 : barHeightPercent}%` }}
-                              >
-                                {day.count > 0 && <span className="mini-bar-tooltip">{day.count}</span>}
-                              </div>
+                            <span className="day-name">{day.dayName}</span>
+                            <span className="day-date">{getFormattedDayDate(day.date)}</span>
+                            <div className={`workload-status-badge ${level.className}`}>
+                              <span className="status-dot"></span>
+                              <span className="status-count">{day.count} قطعة</span>
                             </div>
-                            <span className="mini-bar-label">{day.dayName}</span>
                           </div>
                         );
                       })}
