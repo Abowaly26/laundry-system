@@ -167,6 +167,23 @@ export default function NewOrder() {
     setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1));
   };
 
+  const getSafeDeliveryDateObject = () => {
+    if (!deliveryDate || !deliveryTime) return new Date();
+    try {
+      const dateParts = deliveryDate.split('-');
+      const timeParts = deliveryTime.split(':');
+      if (dateParts.length < 3 || timeParts.length < 2) return new Date();
+      const year = parseInt(dateParts[0]);
+      const month = parseInt(dateParts[1]) - 1;
+      const day = parseInt(dateParts[2]);
+      const hours = parseInt(timeParts[0]);
+      const minutes = parseInt(timeParts[1]);
+      return new Date(year, month, day, hours, minutes);
+    } catch (err) {
+      return new Date();
+    }
+  };
+
   const WEEKDAYS = ['أح', 'اث', 'ثلا', 'أر', 'خم', 'جم', 'سب'];
 
   // بيانات العميل
@@ -359,7 +376,7 @@ export default function NewOrder() {
     setIsSubmitting(true);
     try {
       // وقت التسليم المتوقع المحدد يدوياً
-      const expectedDate = new Date(`${deliveryDate}T${deliveryTime}`);
+      const expectedDate = getSafeDeliveryDateObject();
 
       const orderData = {
         customer_id: selectedCustomer.id,
@@ -744,7 +761,7 @@ export default function NewOrder() {
                       <div className="scheduler-result-text">
                         <span className="result-label">الموعد المحدد:</span>
                         <span className="result-value">
-                          {new Date(`${deliveryDate}T${deliveryTime}`).toLocaleString('ar-EG', {
+                          {getSafeDeliveryDateObject().toLocaleString('ar-EG', {
                             weekday: 'long',
                             year: 'numeric',
                             month: 'short',
