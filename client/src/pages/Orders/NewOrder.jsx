@@ -507,6 +507,10 @@ export default function NewOrder() {
                             setDeliveryTime(e.target.value);
                             setActiveTimePreset('custom');
                           }}
+                          onClick={(e) => {
+                            try { e.target.showPicker(); } catch (err) {}
+                          }}
+                          style={{ cursor: 'pointer' }}
                         />
                       </div>
                     </div>
@@ -520,6 +524,10 @@ export default function NewOrder() {
                             className="form-input form-input-compact"
                             value={deliveryDate}
                             onChange={(e) => setDeliveryDate(e.target.value)}
+                            onClick={(e) => {
+                              try { e.target.showPicker(); } catch (err) {}
+                            }}
+                            style={{ cursor: 'pointer' }}
                           />
                         </div>
                         <div style={{ flex: 1 }}>
@@ -529,6 +537,10 @@ export default function NewOrder() {
                             className="form-input form-input-compact"
                             value={deliveryTime}
                             onChange={(e) => setDeliveryTime(e.target.value)}
+                            onClick={(e) => {
+                              try { e.target.showPicker(); } catch (err) {}
+                            }}
+                            style={{ cursor: 'pointer' }}
                           />
                         </div>
                       </div>
