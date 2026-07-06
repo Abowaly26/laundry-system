@@ -26,14 +26,13 @@
 .sidebar-brand .brand-icon {
   width: 40px;
   height: 40px;
-  background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%); /* Glowing gradient icon box */
-  border-radius: var(--radius-sm);
+  background: #FFFFFF; /* White background badge */
+  border-radius: 50%; /* Circle shape */
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #FFFFFF;
   flex-shrink: 0;
-  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.3);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); /* Shadow for contrast on dark sidebar */
 }
 
 .sidebar-brand .brand-text {
