@@ -627,13 +627,30 @@
 }
 
 .workload-days-grid {
-  display: grid;
-  grid-template-columns: repeat(8, 1fr);
-  gap: 6px;
+  display: flex;
+  overflow-x: auto;
+  gap: 8px;
   margin-top: 6px;
+  padding: 4px 2px 8px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(79, 70, 229, 0.2) transparent;
+}
+
+.workload-days-grid::-webkit-scrollbar {
+  height: 4px;
+}
+
+.workload-days-grid::-webkit-scrollbar-thumb {
+  background: rgba(79, 70, 229, 0.15);
+  border-radius: 4px;
+}
+
+.workload-days-grid::-webkit-scrollbar-thumb:hover {
+  background: rgba(79, 70, 229, 0.3);
 }
 
 .workload-day-card {
+  flex: 0 0 94px;
   background: var(--bg-hover);
   border: 1.5px solid var(--border);
   border-radius: 8px;
@@ -720,38 +737,6 @@
 .workload-high {
   border-color: rgba(239, 68, 68, 0.2);
   color: #b91c1c;
-}
-
-/* Custom Date Card dashed styling */
-.workload-day-card.custom-date-card {
-  border-style: dashed;
-  border-color: rgba(79, 70, 229, 0.35);
-  background: rgba(79, 70, 229, 0.01);
-}
-
-.workload-day-card.custom-date-card.selected {
-  border-style: solid;
-  border-color: var(--primary);
-  background: rgba(79, 70, 229, 0.04);
-}
-
-.workload-custom-badge .status-dot {
-  background-color: var(--primary);
-}
-
-.workload-custom-badge {
-  border-color: rgba(79, 70, 229, 0.15);
-  color: var(--primary);
-}
-
-/* Inline date picker styling */
-.custom-date-picker-inline {
-  background: rgba(79, 70, 229, 0.02);
-  border: 1px solid rgba(79, 70, 229, 0.06);
-  border-radius: 8px;
-  padding: 8px 12px;
-  margin-top: 10px;
-  animation: slideDownFade 0.2s ease-out;
 }
 
 /* Card header back button */

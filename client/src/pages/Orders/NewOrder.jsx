@@ -67,6 +67,7 @@ export default function NewOrder() {
   const [deliveryDate, setDeliveryDate] = useState(getTomorrowDate());
   const [deliveryTime, setDeliveryTime] = useState('16:00'); // الساعة 4:00 عصراً افتراضي
   const [activeTimePreset, setActiveTimePreset] = useState('afternoon');
+  const [isCustomDelivery, setIsCustomDelivery] = useState(false);
   const [orderNotes, setOrderNotes] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('cash');
   const [paidAmount, setPaidAmount] = useState(0);
@@ -413,60 +414,107 @@ export default function NewOrder() {
           <div className="layout-card-wrapper">
             <Card title="تفاصيل التسليم والجدولة">
               <div className="form-group">
-                {weeklyWorkload && weeklyWorkload.length > 0 && (() => {
-                  const isPresetDay = weeklyWorkload.some(day => day.date === deliveryDate);
-                  return (
-                    <div className="weekly-workload-cards-section">
-                      <span className="help-text-label font-bold mb-xs" style={{ display: 'block', fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
-                        اختر يوم التسليم (مقياس ضغط العمل للـ 7 أيام القادمة):
-                      </span>
-                      <div className="workload-days-grid">
-                        {weeklyWorkload.map((day) => {
-                          const isSelected = deliveryDate === day.date;
-                          const level = getWorkloadLevel(day.count);
-                          
-                          return (
-                            <div 
-                              key={day.date} 
-                              className={`workload-day-card ${isSelected ? 'selected' : ''}`}
-                              onClick={() => {
-                                setDeliveryDate(day.date);
-                                if (activeTimePreset === 'rush3') {
-                                  setActiveTimePreset('custom');
-                                }
-                              }}
-                            >
-                              <span className="day-name">{day.dayName}</span>
-                              <span className="day-date">{getFormattedDayDate(day.date)}</span>
-                              <div className={`workload-status-badge ${level.className}`}>
-                                <span className="status-dot"></span>
-                                <span className="status-count">{day.count} قطعة</span>
-                              </div>
+                {weeklyWorkload && weeklyWorkload.length > 0 && (
+                  <div className="weekly-workload-cards-section">
+                    <span className="help-text-label font-bold mb-xs" style={{ display: 'block', fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+                      اختر يوم التسليم (مقياس ضغط العمل للـ 14 يوماً القادمة):
+                    </span>
+                    <div className="workload-days-grid">
+                      {weeklyWorkload.map((day) => {
+                        const isSelected = deliveryDate === day.date;
+                        const level = getWorkloadLevel(day.count);
+                        
+                        return (
+                          <div 
+                            key={day.date} 
+                            className={`workload-day-card ${isSelected ? 'selected' : ''}`}
+                            onClick={() => {
+                              setDeliveryDate(day.date);
+                              if (activeTimePreset === 'rush3') {
+                                setActiveTimePreset('custom');
+                              }
+                            }}
+                          >
+                            <span className="day-name">{day.dayName}</span>
+                            <span className="day-date">{getFormattedDayDate(day.date)}</span>
+                            <div className={`workload-status-badge ${level.className}`}>
+                              <span className="status-dot"></span>
+                              <span className="status-count">{day.count} قطعة</span>
                             </div>
-                          );
-                        })}
-
-                        <div 
-                          className={`workload-day-card custom-date-card ${!isPresetDay ? 'selected' : ''}`}
-                          onClick={() => {
-                            if (isPresetDay) {
-                              setDeliveryDate(getTomorrowDate());
-                              setActiveTimePreset('custom');
-                            }
-                          }}
-                        >
-                          <span className="day-name">تاريخ آخر</span>
-                          <span className="day-date">مخصص</span>
-                          <div className="workload-status-badge workload-custom-badge">
-                            <span className="status-dot"></span>
-                            <span className="status-count">اختر تاريخ</span>
                           </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                <div className="scheduler-ux-bottom mt-sm">
+                  {!isCustomDelivery ? (
+                    <div className="scheduler-fields-grid">
+                      {/* أزرار الفترات الزمنية السريعة */}
+                      <div>
+                        <span className="help-text">فترة التسليم</span>
+                        <div className="schedule-presets-grid">
+                          <button 
+                            type="button" 
+                            className={`preset-pill ${(activeTimePreset === 'morning') ? 'active' : ''}`}
+                            onClick={() => applyTimePreset('morning')}
+                          >
+                            صباحاً (10 ص)
+                          </button>
+                          <button 
+                            type="button" 
+                            className={`preset-pill ${(activeTimePreset === 'afternoon') ? 'active' : ''}`}
+                            onClick={() => applyTimePreset('afternoon')}
+                          >
+                            عصراً (4 م)
+                          </button>
+                          <button 
+                            type="button" 
+                            className={`preset-pill ${(activeTimePreset === 'evening') ? 'active' : ''}`}
+                            onClick={() => applyTimePreset('evening')}
+                          >
+                            مساءً (8 م)
+                          </button>
+                          {activeTimePreset === 'custom' ? (
+                            <button 
+                              type="button" 
+                              className="preset-pill active"
+                              onClick={() => applyTimePreset('rush3')}
+                            >
+                              آخر
+                            </button>
+                          ) : (
+                            <button 
+                              type="button" 
+                              className={`preset-pill preset-pill-rush ${(activeTimePreset === 'rush3') ? 'active' : ''}`}
+                              onClick={() => applyTimePreset('rush3')}
+                            >
+                              مستعجل (3س)
+                            </button>
+                          )}
                         </div>
                       </div>
 
-                      {!isPresetDay && (
-                        <div className="custom-date-picker-inline mt-sm">
-                          <label className="form-label label-compact font-bold text-primary">تحديد التاريخ المخصص:</label>
+                      {/* ساعة التسليم الدقيقة */}
+                      <div>
+                        <span className="help-text">ساعة التسليم</span>
+                        <input
+                          type="time"
+                          className="form-input form-input-compact"
+                          value={deliveryTime}
+                          onChange={(e) => {
+                            setDeliveryTime(e.target.value);
+                            setActiveTimePreset('custom');
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="custom-datetime-container">
+                      <div className="flex gap-sm">
+                        <div style={{ flex: 1 }}>
+                          <span className="help-text">تاريخ التسليم</span>
                           <input
                             type="date"
                             className="form-input form-input-compact"
@@ -474,72 +522,18 @@ export default function NewOrder() {
                             onChange={(e) => setDeliveryDate(e.target.value)}
                           />
                         </div>
-                      )}
-                    </div>
-                  );
-                })()}
-
-                <div className="scheduler-ux-bottom mt-sm">
-                  <div className="scheduler-fields-grid">
-                    {/* أزرار الفترات الزمنية السريعة */}
-                    <div>
-                      <span className="help-text">فترة التسليم</span>
-                      <div className="schedule-presets-grid">
-                        <button 
-                          type="button" 
-                          className={`preset-pill ${(activeTimePreset === 'morning') ? 'active' : ''}`}
-                          onClick={() => applyTimePreset('morning')}
-                        >
-                          صباحاً (10 ص)
-                        </button>
-                        <button 
-                          type="button" 
-                          className={`preset-pill ${(activeTimePreset === 'afternoon') ? 'active' : ''}`}
-                          onClick={() => applyTimePreset('afternoon')}
-                        >
-                          عصراً (4 م)
-                        </button>
-                        <button 
-                          type="button" 
-                          className={`preset-pill ${(activeTimePreset === 'evening') ? 'active' : ''}`}
-                          onClick={() => applyTimePreset('evening')}
-                        >
-                          مساءً (8 م)
-                        </button>
-                        {activeTimePreset === 'custom' ? (
-                          <button 
-                            type="button" 
-                            className="preset-pill active"
-                            onClick={() => applyTimePreset('rush3')}
-                          >
-                            آخر
-                          </button>
-                        ) : (
-                          <button 
-                            type="button" 
-                            className={`preset-pill preset-pill-rush ${(activeTimePreset === 'rush3') ? 'active' : ''}`}
-                            onClick={() => applyTimePreset('rush3')}
-                          >
-                            مستعجل (3س)
-                          </button>
-                        )}
+                        <div style={{ flex: 1 }}>
+                          <span className="help-text">وقت التسليم</span>
+                          <input
+                            type="time"
+                            className="form-input form-input-compact"
+                            value={deliveryTime}
+                            onChange={(e) => setDeliveryTime(e.target.value)}
+                          />
+                        </div>
                       </div>
                     </div>
-
-                    {/* ساعة التسليم الدقيقة */}
-                    <div>
-                      <span className="help-text">ساعة التسليم</span>
-                      <input
-                        type="time"
-                        className="form-input form-input-compact"
-                        value={deliveryTime}
-                        onChange={(e) => {
-                          setDeliveryTime(e.target.value);
-                          setActiveTimePreset('custom');
-                        }}
-                      />
-                    </div>
-                  </div>
+                  )}
 
                   <div className="scheduler-result-bar">
                     {deliveryDate && deliveryTime && (
@@ -557,6 +551,13 @@ export default function NewOrder() {
                         </span>
                       </div>
                     )}
+                    <button 
+                      type="button" 
+                      className="btn-custom-date-toggle"
+                      onClick={() => setIsCustomDelivery(!isCustomDelivery)}
+                    >
+                      {isCustomDelivery ? 'تحديد سريع' : 'موعد مخصص'}
+                    </button>
                   </div>
                 </div>
               </div>
