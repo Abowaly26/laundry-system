@@ -731,3 +731,29 @@
   color: var(--primary);
   font-weight: 800;
 }
+
+/* Card header back button */
+.btn-card-back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-card-back:hover {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+  transform: scale(1.05);
+}
+
+.btn-card-back:active {
+  transform: scale(0.95);
+}

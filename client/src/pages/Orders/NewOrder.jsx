@@ -305,27 +305,11 @@ export default function NewOrder() {
               actions={
                 <button 
                   type="button" 
-                  className="btn-back-tiny" 
-                  onClick={() => navigate('/orders')}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    background: 'none',
-                    border: 'none',
-                    color: 'var(--text-secondary)',
-                    fontSize: '0.8rem',
-                    fontWeight: 'bold',
-                    cursor: 'pointer',
-                    padding: '4px 8px',
-                    borderRadius: '6px',
-                    transition: 'all 0.2s'
-                  }}
-                  onMouseOver={(e) => { e.currentTarget.style.color = 'var(--primary)'; e.currentTarget.style.background = 'rgba(79, 70, 229, 0.05)'; }}
-                  onMouseOut={(e) => { e.currentTarget.style.color = 'var(--text-secondary)'; e.currentTarget.style.background = 'none'; }}
+                  className="btn-card-back" 
+                  onClick={() => navigate('/orders')} 
+                  title="العودة للطلبات"
                 >
-                  <ArrowRight size={14} style={{ marginLeft: '4px' }} />
-                  العودة للطلبات
+                  <ArrowRight size={18} />
                 </button>
               }
             >
