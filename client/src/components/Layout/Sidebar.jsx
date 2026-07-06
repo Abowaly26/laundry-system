@@ -63,8 +63,8 @@ export default function Sidebar({ isOpen, onClose }) {
             <img src="/favicon.png" alt="logo" className="sidebar-logo-image" />
           </div>
           <div className="brand-text">
-            <span className="brand-name">{settings.laundryName || 'المغسلة الذكية'}</span>
-            <span className="brand-subtitle">نظام إدارة المغاسل</span>
+            <span className="brand-name">المغسلة</span>
+            <span className="brand-subtitle">نظام إدارة المغسلة</span>
           </div>
         </div>
 
