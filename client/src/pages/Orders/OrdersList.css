@@ -135,18 +135,18 @@
 }
 
 /* Custom Calendar Styling */
-.date-range-picker {
+.orders-filters-toolbar .date-range-picker {
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
-.custom-date-select-container {
+.orders-filters-toolbar .custom-date-select-container {
   position: relative;
   width: 140px;
 }
 
-.custom-date-select-container .date-select-trigger {
+.orders-filters-toolbar .custom-date-select-container .date-select-trigger {
   width: 100%;
   padding: 6px 14px;
   background: var(--bg-card);
@@ -165,7 +165,7 @@
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
 }
 
-.custom-date-select-container .date-select-trigger::after {
+.orders-filters-toolbar .custom-date-select-container .date-select-trigger::after {
   content: '';
   width: 5px;
   height: 5px;
@@ -176,12 +176,12 @@
   margin-left: 2px;
 }
 
-.custom-date-select-container .date-select-trigger:hover {
+.orders-filters-toolbar .custom-date-select-container .date-select-trigger:hover {
   border-color: rgba(99, 102, 241, 0.25);
   background: var(--bg-hover);
 }
 
-.custom-date-select-container .date-select-dropdown {
+.orders-filters-toolbar .custom-date-select-container .date-select-dropdown {
   position: absolute;
   top: 100%;
   left: 0;
