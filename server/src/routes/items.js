@@ -33,40 +33,39 @@ async function syncOrderStatus(orderId, client = null) {
   if (itemsResult.rows.length === 0) return;
 
   const items = itemsResult.rows;
-  const allReady = items.every(i => i.status === 'ready' || i.status === 'delivered');
   const allDelivered = items.every(i => i.status === 'delivered');
+  const allReady = items.every(i => i.status === 'ready' || i.status === 'delivered');
+  const allReceived = items.every(i => i.status === 'received');
 
+  let targetStatus = 'processing';
   if (allDelivered) {
-    await (client
-      ? client.query(
-          "UPDATE orders SET status = 'delivered', delivered_at = CURRENT_TIMESTAMP WHERE id = $1 AND status != 'delivered'",
-          [orderId]
-        )
-      : query(
-          "UPDATE orders SET status = 'delivered', delivered_at = CURRENT_TIMESTAMP WHERE id = $1 AND status != 'delivered'",
-          [orderId]
-        )
-    );
+    targetStatus = 'delivered';
   } else if (allReady) {
+    targetStatus = 'ready';
+  } else if (allReceived) {
+    targetStatus = 'pending';
+  }
+
+  if (targetStatus === 'delivered') {
     await (client
       ? client.query(
-          "UPDATE orders SET status = 'ready' WHERE id = $1 AND status NOT IN ('ready', 'delivered')",
-          [orderId]
+          "UPDATE orders SET status = $1, delivered_at = CURRENT_TIMESTAMP WHERE id = $2 AND status != $1",
+          [targetStatus, orderId]
         )
       : query(
-          "UPDATE orders SET status = 'ready' WHERE id = $1 AND status NOT IN ('ready', 'delivered')",
-          [orderId]
+          "UPDATE orders SET status = $1, delivered_at = CURRENT_TIMESTAMP WHERE id = $2 AND status != $1",
+          [targetStatus, orderId]
         )
     );
   } else {
     await (client
       ? client.query(
-          "UPDATE orders SET status = 'processing' WHERE id = $1 AND status = 'pending'",
-          [orderId]
+          "UPDATE orders SET status = $1, delivered_at = NULL WHERE id = $2 AND status != $1",
+          [targetStatus, orderId]
         )
       : query(
-          "UPDATE orders SET status = 'processing' WHERE id = $1 AND status = 'pending'",
-          [orderId]
+          "UPDATE orders SET status = $1, delivered_at = NULL WHERE id = $2 AND status != $1",
+          [targetStatus, orderId]
         )
     );
   }
