@@ -358,9 +358,9 @@
 
 .price-input-wrapper .price-input {
   width: 100%;
-  padding-left: 36px !important; /* Space for suffix in RTL */
-  padding-right: 8px !important;
-  text-align: center;
+  padding-left: 28px !important; /* Space for suffix in RTL */
+  padding-right: 12px !important;
+  text-align: right;
   font-weight: 700;
   color: var(--primary) !important;
   border-radius: 8px;
@@ -374,6 +374,12 @@
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
   background: var(--bg-card);
   outline: none;
+}
+
+/* Ensure price column has enough width */
+.new-order-items-table th:nth-child(4),
+.new-order-items-table td:nth-child(4) {
+  min-width: 95px !important;
 }
 
 .price-suffix {
