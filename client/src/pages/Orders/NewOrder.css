@@ -379,7 +379,18 @@
 /* Ensure price column has enough width */
 .new-order-items-table th:nth-child(4),
 .new-order-items-table td:nth-child(4) {
-  min-width: 95px !important;
+  min-width: 110px !important;
+}
+
+/* Hide default browser number spin buttons */
+.new-order-page input[type="number"]::-webkit-inner-spin-button,
+.new-order-page input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.new-order-page input[type="number"] {
+  -moz-appearance: textfield; /* Firefox */
 }
 
 .price-suffix {
