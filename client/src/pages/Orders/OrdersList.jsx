@@ -400,7 +400,7 @@ export default function OrdersList() {
                 <th>إجمالي المبلغ</th>
                 <th>المتبقي</th>
                 <th>الحالة</th>
-                <th>تاريخ التسليم المتوقع</th>
+                <th>تاريخ التسليم</th>
               </tr>
             </thead>
             <tbody>
