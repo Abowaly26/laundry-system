@@ -487,7 +487,7 @@ router.post('/', authMiddleware, async (req, res) => {
 
           const itemResult = await client.query(`
             INSERT INTO order_items (order_id, service_id, item_type, size_id, qr_code, status, notes, price)
-            VALUES ($1, $2, $3, $4, $5, 'received', $6, $7)
+            VALUES ($1, $2, $3, $4, $5, 'pending', $6, $7)
             RETURNING id
           `, [orderId, item.service_id, item.item_type || item.service.name, sizeId, qrCode, item.notes || '', item.price]);
 
@@ -496,7 +496,7 @@ router.post('/', authMiddleware, async (req, res) => {
           // تسجيل الحالة الأولية
           await client.query(`
             INSERT INTO item_status_log (item_id, old_status, new_status, updated_by)
-            VALUES ($1, NULL, 'received', $2)
+            VALUES ($1, NULL, 'pending', $2)
           `, [itemId, req.user.id]);
 
           createdItems.push({
@@ -505,7 +505,7 @@ router.post('/', authMiddleware, async (req, res) => {
             item_type: item.item_type || item.service.name,
             size_name: item.size_name || '',
             service_name: item.service.name_ar,
-            status: 'received',
+            status: 'pending',
             price: item.price,
             qr_data: JSON.stringify({
               itemId: itemId,

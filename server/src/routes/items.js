@@ -35,14 +35,14 @@ async function syncOrderStatus(orderId, client = null) {
   const items = itemsResult.rows;
   const allDelivered = items.every(i => i.status === 'delivered');
   const allReady = items.every(i => i.status === 'ready' || i.status === 'delivered');
-  const allReceived = items.every(i => i.status === 'received');
+  const allPending = items.every(i => i.status === 'pending');
 
   let targetStatus = 'processing';
   if (allDelivered) {
     targetStatus = 'delivered';
   } else if (allReady) {
     targetStatus = 'ready';
-  } else if (allReceived) {
+  } else if (allPending) {
     targetStatus = 'pending';
   }
 
