@@ -568,22 +568,22 @@ export default function NewOrder() {
                       onChange={(e) => setSearchQuery(e.target.value)}
                     />
                     <Search size={18} className="search-icon" />
-                  </div>
 
-                  {searchResults.length > 0 && (
-                    <ul className="search-results-list">
-                      {searchResults.map(c => (
-                        <li key={c.id} onClick={() => {
-                          setSelectedCustomer(c);
-                          setSearchResults([]);
-                          setSearchQuery('');
-                        }}>
-                          <span className="customer-name">{c.name}</span>
-                          <span className="customer-phone">{c.phone}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
+                    {searchResults.length > 0 && (
+                      <ul className="search-results-list">
+                        {searchResults.map(c => (
+                          <li key={c.id} onClick={() => {
+                            setSelectedCustomer(c);
+                            setSearchResults([]);
+                            setSearchQuery('');
+                          }}>
+                            <span className="customer-name">{c.name}</span>
+                            <span className="customer-phone">{c.phone}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
 
                   <div className="divider-or"><span>أو</span></div>
 
