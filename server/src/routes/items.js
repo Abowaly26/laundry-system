@@ -263,7 +263,12 @@ router.put('/:id/status', authMiddleware, async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
 
-    const itemResult = await query('SELECT * FROM order_items WHERE id = $1', [id]);
+    const itemResult = await query(`
+      SELECT oi.*, o.remaining_amount 
+      FROM order_items oi
+      JOIN orders o ON oi.order_id = o.id
+      WHERE oi.id = $1
+    `, [id]);
     if (itemResult.rows.length === 0) {
       return res.status(404).json({
         success: false,
@@ -282,6 +287,13 @@ router.put('/:id/status', authMiddleware, async (req, res) => {
           message: 'القطعة في آخر مرحلة بالفعل'
         });
       }
+    }
+
+    if (newStatus === 'delivered' && parseFloat(item.remaining_amount) > 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'لا يمكن تسليم القطعة لوجود مبلغ متبقي غير مدفوع على الطلب'
+      });
     }
 
     if (!STATUS_FLOW.includes(newStatus)) {
@@ -340,10 +352,12 @@ router.put('/:id/advance', authMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
 
-    const itemResult = await query(
-      'SELECT * FROM order_items WHERE id = $1',
-      [id]
-    );
+    const itemResult = await query(`
+      SELECT oi.*, o.remaining_amount 
+      FROM order_items oi
+      JOIN orders o ON oi.order_id = o.id
+      WHERE oi.id = $1
+    `, [id]);
 
     if (itemResult.rows.length === 0) {
       return res.status(404).json({
@@ -358,6 +372,13 @@ router.put('/:id/advance', authMiddleware, async (req, res) => {
       return res.status(400).json({
         success: false,
         message: 'القطعة في آخر مرحلة بالفعل'
+      });
+    }
+
+    if (nextStatus === 'delivered' && parseFloat(item.remaining_amount) > 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'لا يمكن تسليم القطعة لوجود مبلغ متبقي غير مدفوع على الطلب'
       });
     }
 

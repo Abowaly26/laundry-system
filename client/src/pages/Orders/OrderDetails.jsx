@@ -497,16 +497,22 @@ export default function OrderDetails() {
                           </button>
                           {openItemStatusDropdownId === item.id && (
                             <div className="table-select-dropdown" style={{ right: 0, left: 'auto', minWidth: '130px' }}>
-                              {ITEM_STATUS_OPTIONS.map((opt) => (
-                                <button
-                                  key={opt.value}
-                                  type="button"
-                                  className={`table-select-item ${item.status === opt.value ? 'selected' : ''}`}
-                                  onClick={() => handleUpdateItemStatus(item.id, opt.value)}
-                                >
-                                  {opt.label}
-                                </button>
-                              ))}
+                              {ITEM_STATUS_OPTIONS.map((opt) => {
+                                const isDisabled = opt.value === 'delivered' && parseFloat(order.remaining_amount) > 0;
+                                return (
+                                  <button
+                                    key={opt.value}
+                                    type="button"
+                                    className={`table-select-item ${item.status === opt.value ? 'selected' : ''} ${isDisabled ? 'disabled' : ''}`}
+                                    onClick={() => !isDisabled && handleUpdateItemStatus(item.id, opt.value)}
+                                    disabled={isDisabled}
+                                    style={isDisabled ? { opacity: 0.5, cursor: 'not-allowed', color: 'var(--text-muted)' } : {}}
+                                    title={isDisabled ? 'لا يمكن تسليم القطعة قبل سداد المبلغ المتبقي' : ''}
+                                  >
+                                    {opt.label}
+                                  </button>
+                                );
+                              })}
                             </div>
                           )}
                         </div>
