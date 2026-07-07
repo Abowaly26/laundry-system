@@ -4,7 +4,7 @@
   left: 0;
   right: var(--sidebar-width);
   height: var(--header-height);
-  background: var(--bg-card);
+  background: var(--bg-white);
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
