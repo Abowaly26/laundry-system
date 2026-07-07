@@ -369,11 +369,13 @@
   transition: all 0.2s ease;
 }
 
-.price-input-wrapper .price-input:focus {
+.price-input-wrapper .price-input:focus,
+.new-order-items-table input:focus,
+.new-order-items-table select:focus,
+.new-order-items-table .table-select-trigger:focus {
   border-color: var(--primary) !important;
   box-shadow: none !important;
   transform: none !important;
-  background: var(--bg-card);
   outline: none !important;
 }
 
