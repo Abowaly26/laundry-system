@@ -570,8 +570,8 @@ export default function OrderDetails() {
               value={paymentAmount}
               onChange={(e) => setPaymentAmount(parseFloat(e.target.value) || 0)}
               max={order?.remaining_amount}
-              min="0.1"
-              step="0.5"
+              min="0.01"
+              step="any"
               required
             />
             <span className="help-text">الحد الأقصى المتبقي: {order?.remaining_amount} {settings.currency}</span>
