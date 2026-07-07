@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Printer, Wallet, ArrowRight, CheckCircle2, User, Calendar, CreditCard, Clock, FileText, MessageSquare } from 'lucide-react';
+import { Printer, Wallet, ArrowRight, CheckCircle2, User, Calendar, CreditCard, Clock, FileText, MessageSquare, Copy, QrCode } from 'lucide-react';
+import { QRCodeCanvas } from 'qrcode.react';
 import { ordersAPI, paymentsAPI, itemsAPI } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import { useSettings } from '../../context/SettingsContext';
@@ -31,6 +32,7 @@ export default function OrderDetails() {
   // حالة لتسليم الطلب
   const [delivering, setDelivering] = useState(false);
   const [openItemStatusDropdownId, setOpenItemStatusDropdownId] = useState(null);
+  const [qrModalItem, setQrModalItem] = useState(null);
 
   const ITEM_STATUS_OPTIONS = [
     { value: 'received', label: 'تم الاستلام' },
@@ -58,6 +60,11 @@ export default function OrderDetails() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCopyText = (text) => {
+    navigator.clipboard.writeText(text);
+    showToast('تم نسخ كود القطعة بنجاح! 📋', 'success');
   };
 
   useEffect(() => {
@@ -442,7 +449,29 @@ export default function OrderDetails() {
                 <tbody>
                   {order.items?.map((item) => (
                     <tr key={item.id}>
-                      <td><strong>{item.qr_code}</strong></td>
+                      <td>
+                        <div className="qr-code-cell-wrapper" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <strong>{item.qr_code}</strong>
+                          <button
+                            type="button"
+                            className="qr-action-btn"
+                            title="نسخ الكود"
+                            style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', padding: '2px', display: 'flex', alignItems: 'center', transition: 'color 0.2s' }}
+                            onClick={() => handleCopyText(item.qr_code)}
+                          >
+                            <Copy size={13} />
+                          </button>
+                          <button
+                            type="button"
+                            className="qr-action-btn"
+                            title="عرض الـ QR"
+                            style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--primary)', padding: '2px', display: 'flex', alignItems: 'center', transition: 'color 0.2s' }}
+                            onClick={() => setQrModalItem(item)}
+                          >
+                            <QrCode size={14} />
+                          </button>
+                        </div>
+                      </td>
                       <td>{getItemTypeAr(item.item_type)}{item.size_name ? <span style={{ color: 'var(--text-secondary)', fontSize: '0.85em', marginRight: '4px' }}> ({item.size_name})</span> : ''}</td>
                       <td>{item.service_name_ar || item.service?.name_ar}</td>
                       <td>{item.notes || '-'}</td>
@@ -578,6 +607,33 @@ export default function OrderDetails() {
             </Button>
           </div>
         </form>
+      </Modal>
+
+      {/* مودال عرض رمز QR للقطعة */}
+      <Modal
+        isOpen={!!qrModalItem}
+        onClose={() => setQrModalItem(null)}
+        title={`رمز QR للقطعة - ${qrModalItem?.qr_code || ''}`}
+      >
+        {qrModalItem && (
+          <div className="flex flex-col items-center justify-center py-md text-center" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
+            <div style={{ background: 'white', padding: '16px', borderRadius: '12px', border: '1.5px solid var(--border)', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', display: 'inline-block', marginBottom: '16px' }}>
+              <QRCodeCanvas
+                value={qrModalItem.qr_code}
+                size={200}
+                level="H"
+                includeMargin={false}
+              />
+            </div>
+            <p className="font-bold text-lg mb-xs" style={{ fontWeight: 'bold', fontSize: '1.1rem', marginBottom: '4px' }}>{qrModalItem.qr_code}</p>
+            <p className="text-secondary mb-md" style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', marginBottom: '16px' }}>
+              نوع القطعة: {getItemTypeAr(qrModalItem.item_type)} {qrModalItem.size_name ? `(${qrModalItem.size_name})` : ''} | الخدمة: {qrModalItem.service_name_ar || qrModalItem.service?.name_ar}
+            </p>
+            <Button variant="secondary" onClick={() => setQrModalItem(null)}>
+              إغلاق
+            </Button>
+          </div>
+        )}
       </Modal>
 
       {/* عناصر الطباعة غير المرئية على الشاشة */}
