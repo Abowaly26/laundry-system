@@ -72,7 +72,12 @@ export default function Services() {
     try {
       const res = await itemTypesAPI.getAll();
       if (res.success) {
-        setItemTypes(res.data);
+        // ترتيب الأحجام بشكل منطقي
+        const sortedData = (res.data || []).map(itemType => ({
+          ...itemType,
+          sizes: sortSizes(itemType.sizes)
+        }));
+        setItemTypes(sortedData);
       } else {
         setItemTypes([]);
       }
@@ -82,6 +87,38 @@ export default function Services() {
     } finally {
       setLoadingItemTypes(false);
     }
+  };
+
+  // دالة ترتيب الأحجام
+  const sortSizes = (sizes) => {
+    if (!sizes || !Array.isArray(sizes)) return [];
+    
+    const sizeOrder = {
+      'صغير': 1,
+      'small': 1,
+      'وسط': 2,
+      'medium': 2,
+      'عادي': 3,
+      'regular': 3,
+      'كبير': 4,
+      'large': 4,
+      'كبير جداً': 5,
+      'x-large': 5,
+      'xlarge': 5
+    };
+
+    return [...sizes].sort((a, b) => {
+      const aName = (a?.size_name || '').toLowerCase();
+      const bName = (b?.size_name || '').toLowerCase();
+      const aOrder = sizeOrder[aName] || 999;
+      const bOrder = sizeOrder[bName] || 999;
+      
+      if (aOrder === 999 && bOrder === 999) {
+        return (a?.size_name || '').localeCompare(b?.size_name || '', 'ar');
+      }
+      
+      return aOrder - bOrder;
+    });
   };
 
   useEffect(() => {
@@ -207,9 +244,9 @@ export default function Services() {
     
     // Map existing nested prices into formData prices state structure
     const mappedPrices = {};
-    itemType.sizes.forEach(sz => {
+    (itemType.sizes || []).forEach(sz => {
       mappedPrices[sz.size_name] = {};
-      sz.prices.forEach(pr => {
+      (sz.prices || []).forEach(pr => {
         mappedPrices[sz.size_name][pr.service_id] = pr.price;
       });
       
@@ -224,7 +261,7 @@ export default function Services() {
     setItemTypeFormData({
       name_ar: itemType.name_ar,
       name_en: itemType.name_en || '',
-      sizes: itemType.sizes.map(sz => sz.size_name),
+      sizes: (itemType.sizes || []).map(sz => sz.size_name),
       prices: mappedPrices
     });
     setNewSizeInput('');
@@ -514,7 +551,7 @@ export default function Services() {
                   <div className="item-sizes-list-badge mt-sm">
                     <span className="meta-label">الأحجام المتوفرة:</span>
                     <div className="size-badges-container">
-                      {itemType.sizes.map(sz => (
+                      {(itemType.sizes || []).map(sz => (
                         <span key={sz.id} className="size-pill-badge">{sz.size_name}</span>
                       ))}
                     </div>
@@ -525,29 +562,27 @@ export default function Services() {
                     <table className="price-preview-table">
                       <thead>
                         <tr>
-                          <th>الحجم</th>
-                          <th>الخدمة</th>
-                          <th>السعر</th>
+                          <th style={{ minWidth: '80px' }}>الحجم</th>
+                          {services.filter(s => s.is_active).map(svc => (
+                            <th key={svc.id} style={{ minWidth: '100px', textAlign: 'center' }}>{svc.name_ar}</th>
+                          ))}
                         </tr>
                       </thead>
                       <tbody>
-                        {itemType.sizes.map(sz => 
-                          sz.prices.map((pr, index) => {
-                            const svc = services.find(s => s.id === pr.service_id);
-                            if (!svc) return null;
-                            return (
-                              <tr key={`${sz.id}-${pr.service_id}`}>
-                                {index === 0 ? (
-                                  <td rowSpan={sz.prices.length} className="size-group-cell">
-                                    {sz.size_name}
-                                  </td>
-                                ) : null}
-                                <td>{svc.name_ar}</td>
-                                <td className="text-primary font-bold">{pr.price.toFixed(2)} ر.س</td>
-                              </tr>
-                            );
-                          })
-                        )}
+                        {(itemType.sizes || []).map(sz => (
+                          <tr key={sz.id}>
+                            <td className="size-group-cell">{sz.size_name}</td>
+                            {services.filter(s => s.is_active).map(svc => {
+                              const priceObj = (sz.prices || []).find(p => p.service_id === svc.id);
+                              const price = priceObj ? priceObj.price : 0;
+                              return (
+                                <td key={svc.id} className="text-primary font-bold" style={{ textAlign: 'center' }}>
+                                  {parseFloat(price).toFixed(2)} ر.س
+                                </td>
+                              );
+                            })}
+                          </tr>
+                        ))}
                       </tbody>
                     </table>
                   </div>

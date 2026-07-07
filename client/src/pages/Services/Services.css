@@ -4,6 +4,17 @@
   gap: var(--space-md);
 }
 
+/* للبطاقات الخاصة بأنواع القطع، نحتاج مساحة أكبر */
+.item-type-card {
+  min-width: 350px;
+}
+
+@media (min-width: 768px) {
+  .services-grid:has(.item-type-card) {
+    grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+  }
+}
+
 .service-card {
   display: flex;
   flex-direction: column;
@@ -154,28 +165,34 @@
   border-radius: 8px;
   border: 1px solid var(--border);
   padding: 8px;
-  max-height: 150px;
-  overflow-y: auto;
+  max-height: 300px;
+  overflow: auto;
 }
 
 .price-preview-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.8rem;
+  min-width: 400px;
 }
 
 .price-preview-table th {
-  text-align: right;
+  text-align: center;
   color: var(--text-secondary);
   font-weight: 700;
-  padding: 4px 6px;
-  border-bottom: 1px solid var(--border);
+  padding: 8px 6px;
+  border-bottom: 2px solid var(--border);
+  background: var(--bg-card);
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 
 .price-preview-table td {
-  padding: 6px;
+  padding: 8px 6px;
   color: var(--text);
-  border-bottom: 1px dashed rgba(0, 0, 0, 0.04);
+  border-bottom: 1px solid var(--border);
+  border-right: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .price-preview-table tr:last-child td {
@@ -185,8 +202,12 @@
 .size-group-cell {
   font-weight: 700;
   color: var(--primary);
-  border-left: 1px solid var(--border);
+  background: rgba(99, 102, 241, 0.05);
   vertical-align: middle;
+  text-align: right !important;
+  position: sticky;
+  right: 0;
+  z-index: 1;
 }
 
 /* Dynamic Chips Input Container */
@@ -248,6 +269,8 @@
   border-radius: 8px;
   background: var(--bg-hover);
   padding: 12px;
+  max-height: 400px;
+  overflow: auto;
 }
 
 .matrix-scroll-wrapper {
@@ -259,34 +282,62 @@
   width: 100%;
   border-collapse: collapse;
   font-size: 0.85rem;
+  min-width: 500px;
 }
 
 .pricing-matrix-table th {
-  padding: 8px 12px;
-  text-align: right;
+  padding: 10px 12px;
+  text-align: center;
   color: var(--text-secondary);
+  background: var(--bg-card);
   border-bottom: 2px solid var(--border);
+  border-right: 1px solid var(--border);
   min-width: 100px;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.pricing-matrix-table th:first-child {
+  text-align: right;
+  min-width: 120px;
 }
 
 .pricing-matrix-table td {
   padding: 8px 12px;
   border-bottom: 1px solid var(--border);
+  border-right: 1px solid var(--border);
   vertical-align: middle;
+}
+
+.pricing-matrix-table tr:hover {
+  background: rgba(99, 102, 241, 0.03);
 }
 
 .size-name-col {
   color: var(--primary);
-  border-left: 1px solid var(--border);
+  background: rgba(99, 102, 241, 0.05);
+  font-weight: 700;
+  position: sticky;
+  right: 0;
+  z-index: 1;
 }
 
 .matrix-price-input {
-  width: 90px;
+  width: 100%;
+  max-width: 100px;
   padding: 6px 10px !important;
-  height: 32px !important;
+  height: 36px !important;
   font-size: 0.85rem !important;
   border-radius: 6px !important;
   text-align: center;
+  border: 1.5px solid var(--border) !important;
+}
+
+.matrix-price-input:focus {
+  border-color: var(--primary) !important;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
 /* Filter Buttons Container */

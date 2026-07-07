@@ -254,9 +254,9 @@ export default function NewOrder() {
         if (res.success) {
           setItemTypes(res.data);
           // تهيئة السطر الأول بالقيمة الافتراضية لأول نوع قطعة متوفر
-          if (res.data.length > 0) {
+          if (res.data && res.data.length > 0) {
             const firstType = res.data[0];
-            const defaultSize = firstType.sizes.length > 0 ? firstType.sizes[0].size_name : 'عادي';
+            const defaultSize = firstType.sizes && firstType.sizes.length > 0 ? firstType.sizes[0].size_name : 'عادي';
             setItems([
               { item_type: firstType.name_ar, size_name: defaultSize, service_id: '', price: 0, notes: '' }
             ]);
@@ -302,7 +302,7 @@ export default function NewOrder() {
   // إدارة عناصر الفاتورة
   const addItemRow = () => {
     const defaultType = itemTypes.length > 0 ? itemTypes[0].name_ar : '';
-    const defaultSize = itemTypes.length > 0 && itemTypes[0].sizes.length > 0 ? itemTypes[0].sizes[0].size_name : 'عادي';
+    const defaultSize = itemTypes.length > 0 && itemTypes[0].sizes && itemTypes[0].sizes.length > 0 ? itemTypes[0].sizes[0].size_name : 'عادي';
     setItems([...items, { item_type: defaultType, size_name: defaultSize, service_id: '', price: 0, notes: '' }]);
   };
 
@@ -319,11 +319,11 @@ export default function NewOrder() {
     const foundType = itemTypes.find(t => t.name_ar === item.item_type);
     
     if (foundType && item.service_id) {
-      const foundSize = foundType.sizes.find(s => s.size_name === item.size_name) 
-        || (foundType.sizes.length > 0 ? foundType.sizes[0] : null);
+      const foundSize = (foundType.sizes || []).find(s => s.size_name === item.size_name) 
+        || (foundType.sizes && foundType.sizes.length > 0 ? foundType.sizes[0] : null);
         
       if (foundSize) {
-        const foundPrice = foundSize.prices.find(p => p.service_id === parseInt(item.service_id));
+        const foundPrice = (foundSize.prices || []).find(p => p.service_id === parseInt(item.service_id));
         if (foundPrice) {
           item.price = foundPrice.price;
           return;
@@ -346,7 +346,7 @@ export default function NewOrder() {
     
     // تحديد الحجم الافتراضي الأول للقطعة الجديدة
     const foundType = itemTypes.find(t => t.name_ar === value);
-    if (foundType && foundType.sizes.length > 0) {
+    if (foundType && foundType.sizes && foundType.sizes.length > 0) {
       newItems[index].size_name = foundType.sizes[0].size_name;
     } else {
       newItems[index].size_name = 'عادي';
@@ -556,16 +556,6 @@ export default function NewOrder() {
           <div className="layout-card-wrapper">
             <Card 
               title="بيانات العميل"
-              actions={
-                <button 
-                  type="button" 
-                  className="btn-card-back" 
-                  onClick={() => navigate('/orders')} 
-                  title="العودة للطلبات"
-                >
-                  <ArrowRight size={18} />
-                </button>
-              }
             >
               {!selectedCustomer ? (
                 <div className="customer-selector">
