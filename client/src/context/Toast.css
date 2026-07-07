@@ -16,14 +16,14 @@
   align-items: center;
   gap: 12px;
   padding: 14px 20px;
-  background: var(--bg-white);
+  background: #0F172A; /* Deep premium slate matching the sidebar */
   border-radius: var(--radius);
-  border: var(--glass-border);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: var(--shadow-lg);
   font-family: 'Cairo', sans-serif;
   font-size: 0.9rem;
   font-weight: 600;
-  color: var(--text);
+  color: #FFFFFF; /* Bright white text */
   pointer-events: auto;
   animation: toastSlideIn 0.35s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   transition: all var(--transition-fast);
