@@ -19,6 +19,23 @@ export default function OrdersList() {
     startDate: '',
     endDate: ''
   });
+  const [searchText, setSearchText] = useState('');
+
+  // Sync search input state when filters are reset
+  useEffect(() => {
+    setSearchText(filters.search);
+  }, [filters.search]);
+
+  // Debounce search input changes
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setFilters(prev => {
+        if (prev.search === searchText) return prev;
+        return { ...prev, search: searchText };
+      });
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [searchText]);
 
   const loadOrders = async () => {
     setLoading(true);
@@ -34,14 +51,10 @@ export default function OrdersList() {
     }
   };
 
+  // Reload orders on any filter update
   useEffect(() => {
     loadOrders();
-  }, [filters.status, filters.startDate, filters.endDate]); // إعادة التحميل عند تغيير الفلاتر المباشرة
-
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    loadOrders();
-  };
+  }, [filters.status, filters.startDate, filters.endDate, filters.search]);
 
   const handleResetFilters = () => {
     setFilters({
@@ -62,6 +75,8 @@ export default function OrdersList() {
     });
   };
 
+  const hasActiveFilters = filters.status || filters.startDate || filters.endDate || searchText;
+
   return (
     <div className="page orders-list-page">
       <div className="page-header">
@@ -75,74 +90,64 @@ export default function OrdersList() {
         </Button>
       </div>
 
-      {/* شريط الفلاتر والبحث */}
-      <Card className="mb-md">
-        <form onSubmit={handleSearchSubmit} className="filters-form">
-          <div className="filters-grid">
-            <div className="form-group">
-              <label className="form-label">بحث سريع</label>
-              <div className="search-input-wrapper">
-                <input
-                  type="text"
-                  className="form-input"
-                  placeholder="ابحث برقم الطلب، اسم العميل، الجوال..."
-                  value={filters.search}
-                  onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-                />
-                <button type="submit" className="search-btn">
-                  <Search size={18} />
-                </button>
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label className="form-label">حالة الطلب</label>
-              <select
-                className="form-select"
-                value={filters.status}
-                onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-              >
-                <option value="">كل الحالات</option>
-                <option value="pending">قيد الانتظار (جديد)</option>
-                <option value="processing">قيد التنفيذ (غسيل/كي)</option>
-                <option value="ready">جاهز للاستلام</option>
-                <option value="delivered">تم التسليم للعميل</option>
-                <option value="cancelled">ملغي</option>
-              </select>
-            </div>
-
-            <div className="form-group">
-              <label className="form-label">من تاريخ</label>
-              <input
-                type="date"
-                className="form-input"
-                value={filters.startDate}
-                onChange={(e) => setFilters({ ...filters, startDate: e.target.value })}
-              />
-            </div>
-
-            <div className="form-group">
-              <label className="form-label">إلى تاريخ</label>
-              <input
-                type="date"
-                className="form-input"
-                value={filters.endDate}
-                onChange={(e) => setFilters({ ...filters, endDate: e.target.value })}
-              />
-            </div>
+      {/* شريط الفلاتر والبحث المدمج الاحترافي */}
+      <div className="orders-filters-toolbar mb-md">
+        <div className="filter-item search-grow">
+          <div className="search-input-wrapper">
+            <input
+              type="text"
+              className="form-input form-input-compact"
+              placeholder="ابحث برقم الطلب، اسم العميل، الجوال..."
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+            />
+            <Search size={16} className="search-icon-inside" />
           </div>
+        </div>
 
-          <div className="filters-actions mt-sm flex justify-between">
-            <Button variant="ghost" type="button" className="text-secondary" onClick={handleResetFilters}>
-              إعادة تعيين الفلاتر
-            </Button>
-            <Button variant="secondary" type="submit">
-              <Filter size={16} style={{ marginLeft: '6px' }} />
-              تطبيق تصفية البحث
-            </Button>
-          </div>
-        </form>
-      </Card>
+        <div className="filter-item">
+          <select
+            className="form-select form-select-compact"
+            value={filters.status}
+            onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+          >
+            <option value="">كل الحالات</option>
+            <option value="pending">قيد الانتظار (جديد)</option>
+            <option value="processing">قيد التنفيذ (غسيل/كي)</option>
+            <option value="ready">جاهز للاستلام</option>
+            <option value="delivered">تم التسليم</option>
+            <option value="cancelled">ملغي</option>
+          </select>
+        </div>
+
+        <div className="filter-item date-range-picker">
+          <input
+            type="date"
+            className="form-input form-input-compact"
+            value={filters.startDate}
+            onChange={(e) => setFilters({ ...filters, startDate: e.target.value })}
+            title="من تاريخ"
+          />
+          <span className="date-range-separator">إلى</span>
+          <input
+            type="date"
+            className="form-input form-input-compact"
+            value={filters.endDate}
+            onChange={(e) => setFilters({ ...filters, endDate: e.target.value })}
+            title="إلى تاريخ"
+          />
+        </div>
+
+        {hasActiveFilters && (
+          <button 
+            type="button"
+            className="btn-clear-filters text-error" 
+            onClick={handleResetFilters}
+          >
+            إعادة تعيين
+          </button>
+        )}
+      </div>
 
       {/* جدول عرض الطلبات */}
       {loading ? (
@@ -185,14 +190,23 @@ export default function OrdersList() {
                     className="clickable"
                     onClick={() => navigate(`/orders/${order.id}`)}
                   >
-                    <td><strong>#{order.id}</strong></td>
+                    <td><span className="order-id-badge">#{order.id}</span></td>
                     <td>{order.customer_name || 'عميل عام'}</td>
                     <td>{order.customer_phone || '-'}</td>
                     <td>{formatDate(order.created_at)}</td>
                     <td className="text-center font-semibold">{order.items_count || 0}</td>
                     <td>{parseFloat(order.total_amount || 0).toFixed(2)} ر.س</td>
-                    <td className={parseFloat(order.remaining_amount || 0) > 0 ? 'text-warning font-semibold' : 'text-success font-semibold'}>
-                      {parseFloat(order.remaining_amount || 0).toFixed(2)} ر.س
+                    <td>
+                      {(() => {
+                        const remaining = parseFloat(order.remaining_amount || 0);
+                        if (remaining > 0) {
+                          return <span className="text-error font-semibold">{remaining.toFixed(2)} ر.س</span>;
+                        } else if (remaining < 0) {
+                          return <span className="status-badge-credit">رصيد: {Math.abs(remaining).toFixed(2)} ر.س</span>;
+                        } else {
+                          return <span className="status-badge-paid">مدفوع</span>;
+                        }
+                      })()}
                     </td>
                     <td>
                       <StatusBadge status={order.status} type="order" />
@@ -202,8 +216,15 @@ export default function OrdersList() {
                       {isOverdue && <span className="overdue-tag"> (متأخر)</span>}
                     </td>
                     <td className="text-center">
-                      <button className="btn-view-details">
-                        <Eye size={18} />
+                      <button 
+                        type="button"
+                        className="btn-view-details"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/orders/${order.id}`);
+                        }}
+                      >
+                        <Eye size={16} />
                       </button>
                     </td>
                   </tr>
