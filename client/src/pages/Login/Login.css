@@ -6,7 +6,7 @@
   background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #4c1d95 100%);
   position: relative;
   overflow: hidden;
-  padding: var(--space-md);
+  padding: 24px 16px;
 }
 
 .login-page::before,
@@ -45,12 +45,12 @@
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-radius: 28px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  border-radius: 24px;
+  box-shadow: 0 24px 50px -18px rgba(0, 0, 0, 0.48);
   border: 1px solid rgba(255, 255, 255, 0.4);
   width: 100%;
-  max-width: 440px;
-  padding: 48px 40px;
+  max-width: 430px;
+  padding: 34px 36px 38px;
   animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   position: relative;
   z-index: 1;
@@ -69,12 +69,12 @@
 
 .login-header {
   text-align: center;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .login-logo-container {
-  width: 200px;
-  height: 200px;
+  width: 170px;
+  height: 170px;
   margin: 0 auto;
   display: flex;
   align-items: center;
@@ -106,22 +106,25 @@
 .login-form {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 18px;
 }
 
 .login-card .form-label {
   color: #334155;
   font-weight: 700;
-  margin-bottom: 8px;
-  font-size: 0.95rem;
+  margin-bottom: 7px;
+  font-size: 0.9rem;
+  line-height: 1.4;
 }
 
 .login-card .form-input {
   background: #f8fafc;
   border: 2px solid #e2e8f0;
-  border-radius: 14px;
-  padding: 14px 16px;
-  font-size: 1rem;
+  border-radius: 13px;
+  padding: 12px 15px;
+  min-height: 52px;
+  font-size: 0.95rem;
+  font-weight: 600;
   transition: all 0.2s ease;
   color: #0f172a;
 }
@@ -135,6 +138,7 @@
 
 .login-card .form-input::placeholder {
   color: #94a3b8;
+  font-weight: 500;
 }
 
 .login-error {
@@ -154,14 +158,15 @@
 }
 
 .login-submit {
-  margin-top: 16px;
+  margin-top: 12px;
 }
 
 .login-submit .btn {
   width: 100%;
-  padding: 16px;
-  font-size: 1.1rem;
-  font-weight: 700;
+  min-height: 56px;
+  padding: 13px 18px;
+  font-size: 1rem;
+  font-weight: 800;
   border-radius: 14px;
   background: linear-gradient(135deg, var(--primary) 0%, #4338ca 100%);
   box-shadow: 0 8px 20px rgba(79, 70, 229, 0.3);
@@ -178,4 +183,35 @@
 .login-submit .btn:active {
   transform: translateY(0);
   box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+}
+
+@media (max-width: 520px) {
+  .login-card {
+    max-width: 100%;
+    padding: 28px 22px 30px;
+    border-radius: 22px;
+  }
+
+  .login-logo-container {
+    width: 140px;
+    height: 140px;
+  }
+
+  .login-header {
+    margin-bottom: 16px;
+  }
+
+  .login-form {
+    gap: 16px;
+  }
+
+  .login-card .form-input {
+    min-height: 50px;
+    font-size: 0.92rem;
+  }
+
+  .login-submit .btn {
+    min-height: 52px;
+    font-size: 0.96rem;
+  }
 }
