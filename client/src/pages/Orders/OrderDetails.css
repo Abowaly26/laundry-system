@@ -199,7 +199,7 @@
   border-radius: 10px;
   margin-top: 6px;
   box-shadow: 0 12px 30px -4px rgba(0, 0, 0, 0.08);
-  z-index: 150;
+  z-index: 9999 !important; /* Display on top of cards and containers */
   padding: 6px;
   display: flex;
   flex-direction: column;
@@ -229,4 +229,15 @@
 .table-select-item.selected {
   background: var(--primary);
   color: white;
+}
+
+/* Prevent dropdown clipping in the items tracking card and table */
+.details-main,
+.details-main .card,
+.details-main .card-body,
+.details-main .table-container,
+.items-tracking-table,
+.items-tracking-table tr,
+.items-tracking-table td {
+  overflow: visible !important;
 }
