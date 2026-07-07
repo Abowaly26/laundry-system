@@ -125,7 +125,7 @@ export default function Settings() {
                     onChange={handleChange}
                     min="0"
                     max="100"
-                    step="0.5"
+                    step="any"
                     required
                   />
                 </div>

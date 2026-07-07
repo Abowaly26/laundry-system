@@ -990,7 +990,7 @@ export default function NewOrder() {
                               value={item.price === 0 ? '' : item.price}
                               onChange={(e) => handlePriceChange(index, e.target.value)}
                               min="0"
-                              step="0.5"
+                              step="any"
                               placeholder="0"
                             />
                             <span className="price-suffix">ر.س</span>
@@ -1046,7 +1046,7 @@ export default function NewOrder() {
                       onChange={(e) => setPaidAmount(parseFloat(e.target.value) || 0)}
                       max={totalAmount}
                       min="0"
-                      step="0.5"
+                      step="any"
                       placeholder="0"
                     />
                     <span className="suffix">{settings.currency}</span>

@@ -646,7 +646,7 @@ export default function Services() {
                 value={formData.price}
                 onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                 min="0"
-                step="0.5"
+                step="any"
               />
             </div>
             <div className="form-group">
@@ -790,7 +790,7 @@ export default function Services() {
                                   type="number"
                                   className="form-input matrix-price-input"
                                   min="0"
-                                  step="0.5"
+                                  step="any"
                                   value={currentVal}
                                   onChange={(e) => handlePriceMatrixChange(sizeName, svc.id, e.target.value)}
                                   placeholder="0.00"
