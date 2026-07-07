@@ -46,40 +46,26 @@ export default function QRScanner({ onScanSuccess, onScanFailure }) {
   useEffect(() => {
     // ترجمة نصوص مكتبة html5-qrcode إلى العربية بشكل ديناميكي وقوي
     const translateScanner = () => {
-      // ترجمة الأزرار
-      const buttons = document.querySelectorAll('#qr-reader button');
-      buttons.forEach(btn => {
-        const text = btn.innerText;
-        if (text.includes('Request Camera') || text.includes('permission') || text.includes('Permission')) {
-          btn.innerText = 'السماح بالوصول للكاميرا';
-          btn.style.fontFamily = "'Cairo', sans-serif";
-        } else if (text.includes('Start Scanning') || text.includes('Start')) {
-          btn.innerText = 'بدء المسح';
-          btn.style.fontFamily = "'Cairo', sans-serif";
-        } else if (text.includes('Stop Scanning') || text.includes('Stop')) {
-          btn.innerText = 'إيقاف المسح';
-          btn.style.fontFamily = "'Cairo', sans-serif";
-        }
-      });
-
-      // ترجمة الروابط
-      const links = document.querySelectorAll('#qr-reader a');
-      links.forEach(link => {
-        const text = link.innerText;
-        if (text.includes('Scan an Image') || text.includes('Image File') || text.includes('file')) {
-          link.innerText = 'مسح من ملف صورة';
-          link.style.fontFamily = "'Cairo', sans-serif";
-        } else if (text.includes('Use camera') || text.includes('camera directly')) {
-          link.innerText = 'استخدام الكاميرا مباشرة';
-          link.style.fontFamily = "'Cairo', sans-serif";
-        }
-      });
-
-      // ترجمة خيارات قائمة اختيار الكاميرا
-      const options = document.querySelectorAll('#qr-reader select option');
-      options.forEach(opt => {
-        if (opt.value === '' && (opt.innerText.includes('Choose') || opt.innerText.includes('Select'))) {
-          opt.innerText = 'اختر الكاميرا';
+      const allElems = document.querySelectorAll('#qr-reader *');
+      allElems.forEach(el => {
+        if (el.children.length === 0 && el.innerText) {
+          const text = el.innerText.trim();
+          if (text === 'Scan an Image File' || text.includes('Scan an Image')) {
+            el.innerText = 'مسح من ملف صورة';
+            el.style.fontFamily = "'Cairo', sans-serif";
+          } else if (text === 'Request Camera Permissions' || text.includes('Request Camera')) {
+            el.innerText = 'السماح بالوصول للكاميرا';
+            el.style.fontFamily = "'Cairo', sans-serif";
+          } else if (text === 'Start Scanning' || text.includes('Start')) {
+            el.innerText = 'بدء المسح';
+            el.style.fontFamily = "'Cairo', sans-serif";
+          } else if (text === 'Stop Scanning' || text.includes('Stop')) {
+            el.innerText = 'إيقاف المسح';
+            el.style.fontFamily = "'Cairo', sans-serif";
+          } else if (text.includes('Choose Camera') || text.includes('Select Camera')) {
+            el.innerText = 'اختر الكاميرا';
+            el.style.fontFamily = "'Cairo', sans-serif";
+          }
         }
       });
     };
