@@ -437,7 +437,8 @@ export default function OrderDetails() {
               <table className="items-tracking-table">
                 <thead>
                   <tr>
-                    <th>كود القطعة QR</th>
+                    <th>كود القطعة</th>
+                    <th style={{ textAlign: 'center' }}>رمز QR</th>
                     <th>نوع القطعة</th>
                     <th>الخدمة المطلوبة</th>
                     <th>ملاحظات</th>
@@ -450,7 +451,7 @@ export default function OrderDetails() {
                   {order.items?.map((item) => (
                     <tr key={item.id}>
                       <td>
-                        <div className="qr-code-cell-wrapper" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div className="qr-code-cell-wrapper" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                           <strong>{item.qr_code}</strong>
                           <button
                             type="button"
@@ -459,18 +460,22 @@ export default function OrderDetails() {
                             style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', padding: '2px', display: 'flex', alignItems: 'center', transition: 'color 0.2s' }}
                             onClick={() => handleCopyText(item.qr_code)}
                           >
-                            <Copy size={13} />
-                          </button>
-                          <button
-                            type="button"
-                            className="qr-action-btn"
-                            title="عرض الـ QR"
-                            style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--primary)', padding: '2px', display: 'flex', alignItems: 'center', transition: 'color 0.2s' }}
-                            onClick={() => setQrModalItem(item)}
-                          >
-                            <QrCode size={14} />
+                            <Copy size={16} />
                           </button>
                         </div>
+                      </td>
+                      <td className="text-center">
+                        <button
+                          type="button"
+                          className="qr-action-btn"
+                          title="عرض الـ QR"
+                          style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--primary)', padding: '4px', display: 'inline-flex', alignItems: 'center', transition: 'transform 0.2s', margin: '0 auto' }}
+                          onClick={() => setQrModalItem(item)}
+                          onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.15)'}
+                          onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                        >
+                          <QrCode size={20} />
+                        </button>
                       </td>
                       <td>{getItemTypeAr(item.item_type)}{item.size_name ? <span style={{ color: 'var(--text-secondary)', fontSize: '0.85em', marginRight: '4px' }}> ({item.size_name})</span> : ''}</td>
                       <td>{item.service_name_ar || item.service?.name_ar}</td>
