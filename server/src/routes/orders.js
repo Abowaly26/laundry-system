@@ -593,7 +593,31 @@ router.put('/:id', authMiddleware, async (req, res) => {
     }
 
     updateParams.push(id);
-    await query(`UPDATE orders SET ${updateFields.join(', ')} WHERE id = $${paramCount}`, updateParams);
+    
+    await transaction(async (client) => {
+      await client.query(`UPDATE orders SET ${updateFields.join(', ')} WHERE id = $${paramCount}`, updateParams);
+
+      if (status === 'delivered') {
+        // جلب جميع قطع الطلب
+        const itemsResult = await client.query('SELECT id, status FROM order_items WHERE order_id = $1', [id]);
+        
+        // تحديث جميع القطع إلى حالة "تم التسليم"
+        await client.query(
+          "UPDATE order_items SET status = 'delivered', updated_at = CURRENT_TIMESTAMP WHERE order_id = $1", 
+          [id]
+        );
+
+        // تسجيل تغيير الحالة لكل قطعة في السجل
+        for (const item of itemsResult.rows) {
+          if (item.status !== 'delivered') {
+            await client.query(
+              'INSERT INTO item_status_log (item_id, old_status, new_status, updated_by) VALUES ($1, $2, $3, $4)',
+              [item.id, item.status, 'delivered', req.user.id]
+            );
+          }
+        }
+      }
+    });
 
     const orderResult = await query(`
       SELECT o.*, c.name as customer_name, c.phone as customer_phone
