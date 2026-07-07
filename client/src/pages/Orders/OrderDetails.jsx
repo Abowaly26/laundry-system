@@ -382,7 +382,7 @@ export default function OrderDetails() {
               </Button>
             )}
 
-            {order.status !== 'delivered' && order.status !== 'cancelled' && (
+            {order.status !== 'delivered' && order.status !== 'cancelled' && parseFloat(order.remaining_amount) <= 0 && (
               <Button 
                 variant="success" 
                 className="w-full mt-sm"
