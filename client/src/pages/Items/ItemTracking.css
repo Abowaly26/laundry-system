@@ -391,3 +391,87 @@
     margin-top: 0;
   }
 }
+
+/* ===== HTML5 QR Scanner Styling Customization ===== */
+#qr-reader {
+  border: none !important;
+  background: #f8fafc !important;
+  padding: 24px !important;
+}
+
+#qr-reader img[alt="Info icon"] {
+  display: none !important;
+}
+
+#qr-reader img[alt="Camera icon"] {
+  width: 54px !important;
+  height: 54px !important;
+  margin-bottom: 16px !important;
+  opacity: 0.65;
+}
+
+#qr-reader button {
+  background-color: var(--primary) !important;
+  color: white !important;
+  border: none !important;
+  padding: 12px 24px !important;
+  font-size: 0.9rem !important;
+  font-weight: 700 !important;
+  border-radius: 10px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.18) !important;
+  font-family: 'Cairo', sans-serif !important;
+  margin-top: 10px !important;
+}
+
+#qr-reader button:hover {
+  background-color: var(--primary-hover) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 18px rgba(79, 70, 229, 0.22) !important;
+}
+
+#qr-reader a {
+  color: var(--primary) !important;
+  font-weight: 700 !important;
+  text-decoration: none !important;
+  font-size: 0.85rem !important;
+  transition: all 0.2s ease !important;
+  display: inline-block !important;
+  margin-top: 14px !important;
+}
+
+#qr-reader a:hover {
+  color: var(--primary-dark) !important;
+  text-decoration: underline !important;
+}
+
+#qr-reader__scan_region {
+  background: #ffffff !important;
+  border-radius: 14px !important;
+  border: 2px dashed #cbd5e1 !important;
+  padding: 10px !important;
+}
+
+#qr-reader__camera_selection {
+  padding: 10px 14px !important;
+  border-radius: 8px !important;
+  border: 1px solid #cbd5e1 !important;
+  font-family: 'Cairo', sans-serif !important;
+  font-size: 0.85rem !important;
+  color: #0f172a !important;
+  outline: none !important;
+  margin: 10px 0 !important;
+  background: #ffffff !important;
+  min-width: 200px !important;
+}
+
+/* Adjust page spacing and general margins */
+.item-tracking-page {
+  padding-top: var(--space-md) !important;
+  padding-bottom: var(--space-xl) !important;
+}
+
+.tracking-grid {
+  margin-top: var(--space-lg) !important;
+}

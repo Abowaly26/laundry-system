@@ -43,6 +43,43 @@ export default function QRScanner({ onScanSuccess, onScanFailure }) {
     };
   }, [onScanSuccess, onScanFailure]);
 
+  useEffect(() => {
+    // ترجمة نصوص مكتبة html5-qrcode إلى العربية بشكل ديناميكي
+    const translateScanner = () => {
+      const permissionBtn = document.getElementById('qr-reader__camera_permission_button');
+      if (permissionBtn && permissionBtn.innerText !== 'السماح بالوصول للكاميرا') {
+        permissionBtn.innerText = 'السماح بالوصول للكاميرا';
+        permissionBtn.style.fontFamily = "'Cairo', sans-serif";
+      }
+
+      const swapLink = document.getElementById('qr-reader__dashboard_section_swaplink');
+      if (swapLink && swapLink.innerText !== 'مسح من ملف صورة') {
+        swapLink.innerText = 'مسح من ملف صورة';
+        swapLink.style.fontFamily = "'Cairo', sans-serif";
+      }
+
+      const chooseCameraLabel = document.querySelector('#qr-reader__camera_selection option[value=""]');
+      if (chooseCameraLabel && chooseCameraLabel.innerText !== 'اختر الكاميرا') {
+        chooseCameraLabel.innerText = 'اختر الكاميرا';
+      }
+      
+      const scanRegion = document.getElementById('qr-reader__dashboard_section');
+      if (scanRegion) {
+        const buttons = scanRegion.querySelectorAll('button');
+        buttons.forEach(btn => {
+          if (btn.innerText.includes('Start Scanning')) {
+            btn.innerText = 'بدء المسح';
+          } else if (btn.innerText.includes('Stop Scanning')) {
+            btn.innerText = 'إيقاف المسح';
+          }
+        });
+      }
+    };
+
+    const interval = setInterval(translateScanner, 300);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div style={{ width: '100%', maxWidth: '500px', margin: '0 auto' }}>
       <div id="qr-reader" style={{ border: 'none', borderRadius: '10px', overflow: 'hidden' }}></div>
