@@ -33,9 +33,11 @@ export default function OrderDetails() {
   const [openItemStatusDropdownId, setOpenItemStatusDropdownId] = useState(null);
 
   const ITEM_STATUS_OPTIONS = [
-    { value: 'pending', label: 'قيد الانتظار' },
-    { value: 'processing', label: 'قيد التنفيذ' },
-    { value: 'ready', label: 'جاهز للاستلام' },
+    { value: 'received', label: 'تم الاستلام' },
+    { value: 'washing', label: 'غسيل' },
+    { value: 'drying', label: 'تجفيف' },
+    { value: 'ironing', label: 'كي' },
+    { value: 'ready', label: 'جاهز' },
     { value: 'delivered', label: 'تم التسليم' }
   ];
 
