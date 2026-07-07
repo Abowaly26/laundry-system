@@ -100,8 +100,8 @@ export default function ItemTracking() {
     <div className="page item-tracking-page">
       <div className="page-header">
         <div>
-          <h1 className="page-title">تتبع وتحديث حالة القطع</h1>
-          <p className="page-subtitle">مسح كود QR لتتبع القطعة وتحديث حالتها التشغيلية</p>
+          <h1 className="page-title">تتبع القطع</h1>
+          <p className="page-subtitle">امسح رمز الـ QR أو أدخل كود القطعة يدوياً لتحديث حالتها التشغيلية فوراً</p>
         </div>
       </div>
 
@@ -147,18 +147,18 @@ export default function ItemTracking() {
                   }}
                 />
                 <p className="scanner-instruction text-secondary mt-sm">
-                  وجه الكاميرا نحو ملصق QR الخاص بالقطعة لمسحها تلقائياً
+                  وجه الكاميرا نحو رمز الـ QR الخاص بالقطعة
                 </p>
               </div>
             ) : (
               <form onSubmit={handleManualSearch} className="manual-scan-form">
                 <div className="form-group">
-                  <label className="form-label">أدخل كود القطعة (مثال: SHIRT-0001)</label>
+                  <label className="form-label">كود القطعة</label>
                   <div className="manual-input-row">
                     <input
                       type="text"
                       className="form-input"
-                      placeholder="SHIRT-XXXX"
+                      placeholder="أدخل الكود هنا... (مثال: SHIRT-0001)"
                       value={manualCode}
                       onChange={(e) => setManualCode(e.target.value)}
                     />
@@ -195,7 +195,7 @@ export default function ItemTracking() {
                 {currentItem.notes && (
                   <div className="info-row note-row">
                     <span>ملاحظات القطعة:</span>
-                    <span className="text-warning">{currentItem.notes}</span>
+                    <span className="note-text">{currentItem.notes}</span>
                   </div>
                 )}
               </div>
@@ -203,7 +203,7 @@ export default function ItemTracking() {
               {/* سجل تتبع الحالات */}
               {currentItem.status_log && currentItem.status_log.length > 0 && (
                 <div className="status-log-timeline mt-md mb-md">
-                  <h4 className="timeline-title mb-sm">سجل حركة القطعة والعمليات:</h4>
+                  <h4 className="timeline-title mb-sm">سجل حركة العمليات:</h4>
                   <div className="timeline-items">
                     {currentItem.status_log.map((log, index) => (
                       <div className="timeline-item" key={log.id || index}>
@@ -269,7 +269,7 @@ export default function ItemTracking() {
                 </div>
               ) : (
                 <div className="completion-message text-success text-center">
-                  <CheckCircle2 size={32} style={{ marginBottom: '8px' }} />
+                  <CheckCircle2 size={32} style={{ marginBottom: '8px', color: '#0ca678' }} />
                   <h3>القطعة مكتملة ومسلمة بالكامل ✓</h3>
                 </div>
               )}
@@ -277,9 +277,11 @@ export default function ItemTracking() {
           ) : (
             <Card className="flex flex-col justify-center items-center" style={{ minHeight: '300px' }}>
               <div className="empty-scan-state text-center text-secondary">
-                <Scan size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
+                <div className="empty-icon-container">
+                  <Scan size={36} />
+                </div>
                 <h3>في انتظار مسح قطعة</h3>
-                <p>امسح ملصق QR أو أدخل الرمز يدوياً لعرض التفاصيل وتحديث مرحلة الغسيل/الكي</p>
+                <p>امسح رمز الـ QR الخاص بالقطعة أو أدخل الكود يدوياً لعرض التفاصيل وتحديث الحالة</p>
               </div>
             </Card>
           )}
