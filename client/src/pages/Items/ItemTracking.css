@@ -431,27 +431,19 @@
   box-shadow: 0 6px 18px rgba(79, 70, 229, 0.22) !important;
 }
 
-#qr-reader a {
-  background-color: #f1f5f9 !important;
-  color: #475569 !important;
-  border: 1px solid #cbd5e1 !important;
-  padding: 10px 20px !important;
-  font-size: 0.85rem !important;
-  font-weight: 700 !important;
-  border-radius: 10px !important;
-  cursor: pointer !important;
-  transition: all 0.2s ease !important;
-  display: inline-block !important;
-  margin-top: 14px !important;
-  text-decoration: none !important;
-  font-family: 'Cairo', sans-serif !important;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02) !important;
-}
-
-#qr-reader a:hover {
-  background-color: #e2e8f0 !important;
-  color: #0f172a !important;
-  text-decoration: none !important;
+#qr-reader a,
+#qr-reader a:link,
+#qr-reader a:visited,
+#qr-reader a:hover,
+#qr-reader a:active,
+[id^="qr-reader"] a {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  overflow: hidden !important;
+  opacity: 0 !important;
 }
 
 #qr-reader__scan_region {
