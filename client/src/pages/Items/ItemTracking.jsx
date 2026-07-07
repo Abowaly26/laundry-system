@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Scan, Keyboard, Search, CheckCircle2, ArrowRight } from 'lucide-react';
-import { itemsAPI } from '../../services/api';
+import { itemsAPI, ordersAPI } from '../../services/api';
+import { useToast } from '../../context/ToastContext';
 import QRScanner from '../../components/QR/QRScanner';
 import Button from '../../components/UI/Button';
 import Card from '../../components/UI/Card';
+import StatusBadge from '../../components/UI/StatusBadge';
 import './ItemTracking.css';
 
 const STATUS_STEPS = [
@@ -16,10 +18,12 @@ const STATUS_STEPS = [
 
 export default function ItemTracking() {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [scanMode, setScanMode] = useState('camera'); // 'camera' or 'manual'
   const [manualCode, setManualCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [currentItem, setCurrentItem] = useState(null);
+  const [scannedOrder, setScannedOrder] = useState(null);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
@@ -32,10 +36,25 @@ export default function ItemTracking() {
     if (trimmedCode.startsWith('ORD-') || (trimmedCode.startsWith('#') && !isNaN(trimmedCode.replace('#', '')))) {
       const orderId = trimmedCode.replace(/[^0-9]/g, '');
       if (orderId) {
-        setSuccessMsg(`هذا كود طلب. جاري الانتقال لصفحة تفاصيل الطلب #${orderId}...`);
-        setTimeout(() => {
-          navigate(`/orders/${orderId}`);
-        }, 1200);
+        setLoading(true);
+        setErrorMsg('');
+        setSuccessMsg('');
+        try {
+          const res = await ordersAPI.getById(orderId);
+          if (res.success) {
+            setScannedOrder(res.data);
+            setCurrentItem(null); // مسح تفاصيل القطعة المفردة
+            setSuccessMsg(`تم تحميل طلب العميل #${orderId} بنجاح!`);
+          } else {
+            setErrorMsg('الطلب غير موجود أو كود غير صالح');
+            setScannedOrder(null);
+          }
+        } catch (err) {
+          setErrorMsg(err.message || 'خطأ أثناء تحميل تفاصيل الطلب');
+          setScannedOrder(null);
+        } finally {
+          setLoading(false);
+        }
         return;
       }
     }
@@ -47,6 +66,7 @@ export default function ItemTracking() {
       const res = await itemsAPI.scanQR(trimmedCode);
       if (res.success) {
         setCurrentItem(res.data);
+        setScannedOrder(null); // مسح تفاصيل الطلب المفرد
       } else {
         setErrorMsg('القطعة غير موجودة أو كود غير صالح');
         setCurrentItem(null);
@@ -65,7 +85,32 @@ export default function ItemTracking() {
     handleItemScan(manualCode.trim());
   };
 
-  // ترقية حالة القطعة
+  // ترقية حالة قطعة فردية داخل الطلب الممسوح
+  const handleAdvanceItemInOrder = async (itemId) => {
+    setLoading(true);
+    setErrorMsg('');
+    try {
+      const res = await itemsAPI.advanceStatus(itemId);
+      if (res.success) {
+        showToast('تم تحديث حالة القطعة بنجاح', 'success');
+        // تحديث بيانات الطلب لإظهار الحالة الجديدة في القائمة
+        if (scannedOrder) {
+          const orderRes = await ordersAPI.getById(scannedOrder.id);
+          if (orderRes.success) {
+            setScannedOrder(orderRes.data);
+          }
+        }
+      } else {
+        showToast(res.message || 'فشل في تحديث حالة القطعة', 'error');
+      }
+    } catch (err) {
+      showToast(err.message || 'خطأ أثناء تحديث حالة القطعة', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ترقية حالة القطعة المفردة الممسوحة
   const handleAdvanceStatus = async () => {
     if (!currentItem) return;
     setLoading(true);
@@ -289,6 +334,78 @@ export default function ItemTracking() {
                   <h3>القطعة مكتملة ومسلمة بالكامل ✓</h3>
                 </div>
               )}
+            </Card>
+          ) : scannedOrder ? (
+            <Card title={`تفاصيل الطلب: ORD-${String(scannedOrder.id).padStart(4, '0')}`}>
+              <div className="item-meta-info" style={{ marginBottom: '15px' }}>
+                <div className="info-row">
+                  <span>العميل:</span>
+                  <strong>{scannedOrder.customer_name || 'عميل عام'} ({scannedOrder.customer_phone || '-'})</strong>
+                </div>
+                <div className="info-row">
+                  <span>إجمالي المبلغ:</span>
+                  <strong>{parseFloat(scannedOrder.total_amount || 0).toFixed(2)} ر.س</strong>
+                </div>
+                <div className="info-row">
+                  <span>المتبقي:</span>
+                  <strong style={{ color: parseFloat(scannedOrder.remaining_amount) > 0 ? '#ef4444' : '#10b981' }}>
+                    {parseFloat(scannedOrder.remaining_amount || 0).toFixed(2)} ر.س
+                  </strong>
+                </div>
+              </div>
+
+              <h4 style={{ fontSize: '0.9rem', fontWeight: '700', color: '#475569', marginBottom: '12px' }}>
+                قطع الملابس داخل الطلب:
+              </h4>
+
+              <div className="scanned-order-items-list" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {scannedOrder.items?.map((item) => {
+                  const nextStatus = getNextStatusLabel(item.status);
+                  const isDeliveredBlock = nextStatus === 'تم التسليم' && parseFloat(scannedOrder.remaining_amount) > 0;
+                  
+                  return (
+                    <div 
+                      key={item.id} 
+                      className="order-item-row" 
+                      style={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between', 
+                        alignItems: 'center', 
+                        padding: '12px 14px', 
+                        background: '#f8fafc',
+                        borderRadius: '10px',
+                        border: '1px solid #e2e8f0',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                        <strong style={{ fontSize: '0.85rem', color: '#0f172a' }}>{item.qr_code}</strong>
+                        <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                          {getItemTypeAr(item.item_type)} - {item.service_name_ar || item.service?.name_ar}
+                        </span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <StatusBadge status={item.status} type="item" />
+                        
+                        {nextStatus ? (
+                          <Button 
+                            variant="secondary" 
+                            size="small" 
+                            onClick={() => handleAdvanceItemInOrder(item.id)}
+                            disabled={loading || isDeliveredBlock}
+                            style={{ fontSize: '0.72rem', padding: '6px 10px', minWidth: '78px', fontWeight: '700' }}
+                            title={isDeliveredBlock ? 'لا يمكن التسليم لوجود مبلغ متبقي' : `تحديث إلى: ${nextStatus}`}
+                          >
+                            {nextStatus}
+                          </Button>
+                        ) : (
+                          <span style={{ fontSize: '0.75rem', color: '#0ca678', fontWeight: 'bold', padding: '4px 6px' }}>مكتمل ✓</span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </Card>
           ) : (
             <Card className="flex flex-col justify-center items-center" style={{ minHeight: '300px' }}>
