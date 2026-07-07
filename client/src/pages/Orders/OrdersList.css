@@ -184,7 +184,8 @@
 .custom-date-select-container .date-select-dropdown {
   position: absolute;
   top: 100%;
-  right: 0;
+  left: 0;
+  right: auto;
   background: rgba(255, 255, 255, 0.99);
   backdrop-filter: blur(12px);
   border: 1.5px solid var(--border);
