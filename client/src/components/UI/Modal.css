@@ -14,7 +14,7 @@
 }
 
 .modal {
-  background: var(--bg-card);
+  background: #ffffff; /* Solid opaque white background to prevent transparency */
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
   width: 100%;
