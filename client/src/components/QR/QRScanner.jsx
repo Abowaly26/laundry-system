@@ -1,18 +1,22 @@
-import { useEffect, useRef } from 'react';
-import { Html5QrcodeScanner, Html5Qrcode } from 'html5-qrcode';
+import { useEffect, useId, useRef } from 'react';
+import { Html5QrcodeScanner, Html5Qrcode, Html5QrcodeScanType } from 'html5-qrcode';
 import { ImageIcon } from 'lucide-react';
 
 export default function QRScanner({ onScanSuccess, onScanFailure }) {
   const scannerRef = useRef(null);
+  const readerId = useId().replace(/:/g, '');
+  const imageReaderId = `${readerId}-image-reader`;
+  const uploadId = `${readerId}-image-upload`;
 
   useEffect(() => {
     const scanner = new Html5QrcodeScanner(
-      'qr-reader',
+      readerId,
       {
         fps: 10,
         qrbox: { width: 250, height: 250 },
         rememberLastUsedCamera: true,
         showTorchButtonIfSupported: false,
+        supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA],
       },
       false
     );
@@ -33,12 +37,12 @@ export default function QRScanner({ onScanSuccess, onScanFailure }) {
         scannerRef.current.clear().catch(() => {});
       }
     };
-  }, [onScanSuccess, onScanFailure]);
+  }, [onScanSuccess, onScanFailure, readerId]);
 
-  // ترجمة نصوص المكتبة ديناميكياً وإخفاء رابط الصورة الافتراضي
+  // تخصيص نصوص مكتبة السكانر وإخفاء العناصر غير المستخدمة في الواجهة.
   useEffect(() => {
     const patch = () => {
-      document.querySelectorAll('#qr-reader *').forEach(el => {
+      document.querySelectorAll(`#${readerId} *`).forEach(el => {
         if (el.children.length === 0 && el.innerText) {
           const t = el.innerText.trim();
           if (t.includes('Request Camera') || t === 'Request Camera Permissions') {
@@ -54,22 +58,21 @@ export default function QRScanner({ onScanSuccess, onScanFailure }) {
         }
       });
 
-      // إخفاء رابط "Scan an Image File" الافتراضي بالكامل
-      document.querySelectorAll('#qr-reader a').forEach(a => {
-        a.style.display = 'none';
+      document.querySelectorAll(`#${readerId} a, #${readerId}__dashboard_section_swaplink`).forEach(el => {
+        el.style.display = 'none';
       });
     };
 
     const interval = setInterval(patch, 200);
     return () => clearInterval(interval);
-  }, []);
+  }, [readerId]);
 
   // فتح ملف صورة وقراءة QR منه
   const handleImageUpload = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const html5Qrcode = new Html5Qrcode('qr-image-reader-hidden');
+    const html5Qrcode = new Html5Qrcode(imageReaderId);
     html5Qrcode
       .scanFile(file, true)
       .then(decodedText => {
@@ -86,53 +89,20 @@ export default function QRScanner({ onScanSuccess, onScanFailure }) {
   };
 
   return (
-    <div style={{ width: '100%', maxWidth: '520px', margin: '0 auto' }}>
-      {/* الماسح الافتراضي للكاميرا */}
-      <div id="qr-reader" style={{ border: 'none', borderRadius: '10px', overflow: 'hidden' }}></div>
+    <div className="qr-scanner-shell">
+      <div id={readerId} className="qr-reader"></div>
 
-      {/* عنصر مخفي لقراءة QR من الصورة */}
-      <div id="qr-image-reader-hidden" style={{ display: 'none' }}></div>
+      <div id={imageReaderId} style={{ display: 'none' }}></div>
 
-      {/* زر رفع الصورة المخصص */}
       <label
-        htmlFor="qr-image-upload"
-        style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '8px',
-          marginTop: '12px',
-          padding: '10px 22px',
-          background: '#f1f5f9',
-          border: '1.5px solid #e2e8f0',
-          borderRadius: '10px',
-          color: '#475569',
-          fontSize: '0.88rem',
-          fontWeight: '700',
-          fontFamily: "'Cairo', sans-serif",
-          cursor: 'pointer',
-          transition: 'all 0.2s ease',
-          width: '100%',
-          boxSizing: 'border-box',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
-          userSelect: 'none',
-        }}
-        onMouseEnter={e => {
-          e.currentTarget.style.background = '#e8edf3';
-          e.currentTarget.style.borderColor = '#cbd5e1';
-          e.currentTarget.style.color = '#1e293b';
-        }}
-        onMouseLeave={e => {
-          e.currentTarget.style.background = '#f1f5f9';
-          e.currentTarget.style.borderColor = '#e2e8f0';
-          e.currentTarget.style.color = '#475569';
-        }}
+        htmlFor={uploadId}
+        className="qr-image-upload-btn"
       >
         <ImageIcon size={16} />
         رفع صورة تحتوي على QR
       </label>
       <input
-        id="qr-image-upload"
+        id={uploadId}
         type="file"
         accept="image/*"
         style={{ display: 'none' }}

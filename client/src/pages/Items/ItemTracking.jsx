@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Scan, Keyboard, Search, CheckCircle2, ArrowRight } from 'lucide-react';
 import { itemsAPI, ordersAPI } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
@@ -17,7 +16,6 @@ const STATUS_STEPS = [
 ];
 
 export default function ItemTracking() {
-  const navigate = useNavigate();
   const { showToast } = useToast();
   const [scanMode, setScanMode] = useState('camera'); // 'camera' or 'manual'
   const [manualCode, setManualCode] = useState('');
