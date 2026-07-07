@@ -4,6 +4,13 @@
   grid-template-columns: 1.1fr 0.9fr;
   gap: var(--space-lg);
   align-items: start;
+  transition: all 0.3s ease;
+}
+
+.tracking-grid.single-column {
+  grid-template-columns: 1fr;
+  max-width: 600px;
+  margin: 0 auto;
 }
 
 /* ===== Card Customizations ===== */
