@@ -296,50 +296,93 @@
   margin-top: 6px;
 }
 
+/* Modern Items Billing Rows */
+.items-table-container {
+  margin-top: 6px;
+}
+
 .new-order-items-table {
   width: 100%;
   border-collapse: separate;
-  border-spacing: 0 10px;
+  border-spacing: 0 12px;
 }
 
 .new-order-items-table th {
   text-align: right;
-  padding: 4px 10px;
+  padding: 8px 12px;
   color: var(--text-secondary);
   font-weight: 700;
-  font-size: 0.78rem;
-  border: none;
+  font-size: 0.82rem;
+  border-bottom: 2px solid var(--border);
 }
 
 .new-order-items-table td {
-  background: var(--bg-hover);
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  padding: 8px 6px;
+  background: var(--bg-card);
+  border-top: 1.5px solid var(--border);
+  border-bottom: 1.5px solid var(--border);
+  padding: 12px 8px;
   vertical-align: middle;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .new-order-items-table tr td:first-child {
-  border-radius: 0 8px 8px 0;
-  border-right: 1px solid var(--border);
-  padding-right: 12px;
+  border-radius: 0 10px 10px 0;
+  border-right: 1.5px solid var(--border);
+  padding-right: 16px;
 }
 
 .new-order-items-table tr td:last-child {
-  border-radius: 8px 0 0 8px;
-  border-left: 1px solid var(--border);
-  padding-left: 12px;
+  border-radius: 10px 0 0 10px;
+  border-left: 1.5px solid var(--border);
+  padding-left: 16px;
 }
 
 .new-order-items-table tr:hover td {
-  background: rgba(79, 70, 229, 0.01);
-  border-color: rgba(79, 70, 229, 0.1);
+  background: rgba(99, 102, 241, 0.01);
+  border-color: rgba(99, 102, 241, 0.15);
 }
 
 .new-order-items-table .form-input-compact,
 .new-order-items-table .table-select-trigger {
-  height: 36px !important;
+  height: 38px !important;
   box-sizing: border-box;
+}
+
+/* Price Input with Suffix */
+.price-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.price-input-wrapper .price-input {
+  width: 100%;
+  padding-left: 36px !important; /* Space for suffix in RTL */
+  padding-right: 8px !important;
+  text-align: center;
+  font-weight: 700;
+  color: var(--primary) !important;
+  border-radius: 8px;
+  border: 1.5px solid var(--border);
+  background: var(--bg-card);
+  transition: all 0.2s ease;
+}
+
+.price-input-wrapper .price-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  background: var(--bg-card);
+  outline: none;
+}
+
+.price-suffix {
+  position: absolute;
+  left: 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  pointer-events: none;
 }
 
 /* Remove row button */
@@ -347,22 +390,27 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 6px;
-  background: transparent;
-  border: 1px solid transparent;
-  color: var(--text-secondary);
-  transition: all 0.2s ease;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: rgba(239, 68, 68, 0.02);
+  border: 1.5px solid rgba(239, 68, 68, 0.08);
+  color: var(--error);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
 }
 
 .btn-remove-row:hover:not(:disabled) {
-  background-color: rgba(239, 68, 68, 0.08);
-  color: var(--error);
+  background-color: var(--error);
+  border-color: var(--error);
+  color: white;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+  transform: scale(1.05);
 }
 
 .btn-remove-row:disabled {
-  opacity: 0.2;
+  opacity: 0.15;
+  cursor: not-allowed;
 }
 
 /* Custom Dashed Add Row Button */
@@ -370,23 +418,29 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
   width: 100%;
-  padding: 10px;
-  border: 1.5px dashed rgba(79, 70, 229, 0.2);
-  background: transparent;
+  padding: 12px;
+  border: 2px dashed rgba(99, 102, 241, 0.25);
+  background: rgba(99, 102, 241, 0.01);
   color: var(--primary);
-  border-radius: 8px;
+  border-radius: 10px;
   font-weight: 700;
-  font-size: 0.85rem;
+  font-size: 0.88rem;
   cursor: pointer;
-  transition: all 0.2s ease;
-  margin-top: 10px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-top: 12px;
 }
 
 .btn-add-item-dashed:hover {
   border-color: var(--primary);
-  background: rgba(79, 70, 229, 0.02);
-  transform: translateY(-1px);
+  background: rgba(99, 102, 241, 0.06);
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.08);
+  transform: translateY(-2px);
+}
+
+.btn-add-item-dashed:active {
+  transform: translateY(0);
 }
 
 /* Premium Form Inputs */
@@ -1118,36 +1172,44 @@
 
 .table-select-trigger {
   width: 100%;
-  padding: 6px 12px;
+  padding: 6px 14px;
   background: var(--bg-card);
   border: 1.5px solid var(--border);
   border-radius: 8px;
-  font-size: 0.85rem;
+  font-size: 0.86rem;
   font-weight: 700;
   color: var(--text);
   text-align: right;
   cursor: pointer;
-  transition: all 0.2s ease;
-  height: 36px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  height: 38px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
 }
 
 .table-select-trigger::after {
   content: '';
-  width: 5px;
-  height: 5px;
-  border-left: 1.5px solid var(--text-secondary);
-  border-bottom: 1.5px solid var(--text-secondary);
+  width: 6px;
+  height: 6px;
+  border-left: 2px solid var(--text-secondary);
+  border-bottom: 2px solid var(--text-secondary);
   transform: rotate(-45deg);
   margin-right: auto;
-  margin-left: 4px;
+  margin-left: 2px;
+  transition: transform 0.2s ease, border-color 0.2s ease;
 }
 
 .table-select-trigger:hover {
-  border-color: rgba(79, 70, 229, 0.2);
+  border-color: rgba(99, 102, 241, 0.25);
   background: var(--bg-hover);
+}
+
+.table-select-trigger:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  outline: none;
 }
 
 .table-select-dropdown {
@@ -1155,21 +1217,22 @@
   top: 100%;
   left: 0;
   right: 0;
-  background: rgba(255, 255, 255, 0.99);
-  backdrop-filter: blur(12px);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  margin-top: 4px;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(20px);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  margin-top: 6px;
+  box-shadow: 0 12px 30px -4px rgba(0, 0, 0, 0.08), 0 4px 12px -2px rgba(99, 102, 241, 0.04);
   z-index: 150;
-  max-height: 200px;
+  max-height: 220px;
   overflow-y: auto;
-  padding: 4px;
+  padding: 6px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
   scrollbar-width: thin;
-  scrollbar-color: rgba(79, 70, 229, 0.2) transparent;
+  scrollbar-color: rgba(99, 102, 241, 0.2) transparent;
+  animation: slideDownFade 0.18s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .table-select-dropdown::-webkit-scrollbar {
@@ -1177,27 +1240,31 @@
 }
 
 .table-select-dropdown::-webkit-scrollbar-thumb {
-  background: rgba(79, 70, 229, 0.15);
+  background: rgba(99, 102, 241, 0.15);
   border-radius: 4px;
 }
 
 .table-select-item {
   width: 100%;
-  padding: 8px 12px;
-  font-size: 0.82rem;
+  padding: 10px 14px;
+  font-size: 0.84rem;
   font-weight: 700;
   color: var(--text-secondary);
   background: transparent;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   text-align: right;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .table-select-item:hover {
-  background: rgba(79, 70, 229, 0.04);
+  background: rgba(99, 102, 241, 0.05);
   color: var(--primary);
+  padding-right: 18px;
 }
 
 .table-select-item.selected {

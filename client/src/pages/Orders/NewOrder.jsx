@@ -983,14 +983,17 @@ export default function NewOrder() {
                           </div>
                         </td>
                         <td>
-                          <input
-                            type="number"
-                            className="form-input form-input-compact"
-                            value={item.price}
-                            onChange={(e) => handlePriceChange(index, e.target.value)}
-                            min="0"
-                            step="0.5"
-                          />
+                          <div className="price-input-wrapper">
+                            <input
+                              type="number"
+                              className="form-input form-input-compact price-input"
+                              value={item.price}
+                              onChange={(e) => handlePriceChange(index, e.target.value)}
+                              min="0"
+                              step="0.5"
+                            />
+                            <span className="price-suffix">ر.س</span>
+                          </div>
                         </td>
                         <td>
                           <input
