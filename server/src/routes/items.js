@@ -6,7 +6,7 @@ const authMiddleware = require('../middleware/auth');
 const router = express.Router();
 
 // تسلسل حالات القطعة - Status workflow
-const STATUS_FLOW = ['received', 'washing', 'drying', 'ironing', 'ready', 'delivered'];
+const STATUS_FLOW = ['pending', 'processing', 'ready', 'delivered'];
 
 /**
  * الحصول على الحالة التالية في التسلسل

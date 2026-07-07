@@ -3,8 +3,8 @@ import Badge from './Badge';
 const statusConfig = {
   // Order statuses
   pending: { label: 'قيد الانتظار', variant: 'warning' },
-  processing: { label: 'قيد المعالجة', variant: 'info' },
-  ready: { label: 'جاهز', variant: 'success' },
+  processing: { label: 'قيد التنفيذ', variant: 'info' },
+  ready: { label: 'جاهز للاستلام', variant: 'success' },
   delivered: { label: 'تم التسليم', variant: 'default' },
   cancelled: { label: 'ملغي', variant: 'error' },
 
