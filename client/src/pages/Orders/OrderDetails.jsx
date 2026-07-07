@@ -182,8 +182,8 @@ export default function OrderDetails() {
 
   const handleShareWhatsApp = () => {
     if (!order) return;
-    const customerName = order.customer?.name || 'عميل';
-    const customerPhone = order.customer?.phone || '';
+    const customerName = order.customer_name || order.customer?.name || 'عميل';
+    const customerPhone = order.customer_phone || order.customer?.phone || '';
     const orderId = order.id;
     const itemsCount = order.items?.length || 0;
     const totalAmount = parseFloat(order.total_amount).toFixed(2);
@@ -287,22 +287,22 @@ export default function OrderDetails() {
                 <User size={16} className="detail-icon" />
                 <span className="detail-label">الاسم:</span>
               </div>
-              <span className="detail-value">{order.customer?.name || 'عميل عام'}</span>
+              <span className="detail-value">{order.customer_name || order.customer?.name || 'عميل عام'}</span>
             </div>
             <div className="detail-item">
               <div className="detail-item-left">
                 <CreditCard size={16} className="detail-icon" />
                 <span className="detail-label">رقم الهاتف:</span>
               </div>
-              <span className="detail-value">{order.customer?.phone || '-'}</span>
+              <span className="detail-value">{order.customer_phone || order.customer?.phone || '-'}</span>
             </div>
-            {order.customer?.address && (
+            {(order.customer_address || order.customer?.address) && (
               <div className="detail-item">
                 <div className="detail-item-left">
                   <Clock size={16} className="detail-icon" />
                   <span className="detail-label">العنوان:</span>
                 </div>
-                <span className="detail-value">{order.customer?.address}</span>
+                <span className="detail-value">{order.customer_address || order.customer?.address}</span>
               </div>
             )}
           </Card>
