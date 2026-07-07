@@ -426,9 +426,11 @@ export default function OrdersList() {
                           className="copy-btn-compact"
                           title="نسخ الكود"
                           onClick={(e) => handleCopyText(e, orderCode)}
-                          style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', padding: '2px', color: '#94a3b8' }}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', padding: '4px', color: '#64748b', transition: 'color 0.2s' }}
+                          onMouseEnter={(e) => e.currentTarget.style.color = '#0f172a'}
+                          onMouseLeave={(e) => e.currentTarget.style.color = '#64748b'}
                         >
-                          <Copy size={13} />
+                          <Copy size={16} />
                         </button>
                       </div>
                     </td>
