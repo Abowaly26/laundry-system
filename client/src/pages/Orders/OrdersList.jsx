@@ -401,7 +401,6 @@ export default function OrdersList() {
                 <th>المتبقي</th>
                 <th>الحالة</th>
                 <th>تاريخ التسليم المتوقع</th>
-                <th style={{ width: '80px', textAlign: 'center' }}>تفاصيل</th>
               </tr>
             </thead>
             <tbody>
@@ -467,18 +466,6 @@ export default function OrdersList() {
                     <td className={isOverdue ? 'text-error font-semibold' : ''}>
                       {formatDate(order.expected_delivery_at)}
                       {isOverdue && <span className="overdue-tag"> (متأخر)</span>}
-                    </td>
-                    <td className="text-center">
-                      <button 
-                        type="button"
-                        className="btn-view-details"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(`/orders/${order.id}`);
-                        }}
-                      >
-                        <Eye size={16} />
-                      </button>
                     </td>
                   </tr>
                 );
