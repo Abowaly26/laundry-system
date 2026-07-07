@@ -37,8 +37,8 @@ export default function OrdersList() {
 
   const STATUS_OPTIONS = [
     { value: '', label: 'كل الحالات' },
-    { value: 'pending', label: 'قيد الانتظار (جديد)' },
-    { value: 'processing', label: 'قيد التنفيذ (غسيل/كي)' },
+    { value: 'pending', label: 'قيد الانتظار' },
+    { value: 'processing', label: 'قيد التنفيذ' },
     { value: 'ready', label: 'جاهز للاستلام' },
     { value: 'delivered', label: 'تم التسليم' },
     { value: 'cancelled', label: 'ملغي' }
