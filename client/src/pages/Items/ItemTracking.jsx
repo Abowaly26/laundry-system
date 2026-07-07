@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Scan, Keyboard, Search, CheckCircle2, ArrowRight } from 'lucide-react';
 import { itemsAPI } from '../../services/api';
 import QRScanner from '../../components/QR/QRScanner';
@@ -14,6 +15,7 @@ const STATUS_STEPS = [
 ];
 
 export default function ItemTracking() {
+  const navigate = useNavigate();
   const [scanMode, setScanMode] = useState('camera'); // 'camera' or 'manual'
   const [manualCode, setManualCode] = useState('');
   const [loading, setLoading] = useState(false);
@@ -24,11 +26,25 @@ export default function ItemTracking() {
   // معالجة البحث عن الكود (سواء من الكاميرا أو كتابة يدوية)
   const handleItemScan = async (code) => {
     if (!code) return;
+    const trimmedCode = code.trim().toUpperCase();
+
+    // التحقق مما إذا كان الكود هو كود طلب (يبدأ بـ ORD- أو #)
+    if (trimmedCode.startsWith('ORD-') || (trimmedCode.startsWith('#') && !isNaN(trimmedCode.replace('#', '')))) {
+      const orderId = trimmedCode.replace(/[^0-9]/g, '');
+      if (orderId) {
+        setSuccessMsg(`هذا كود طلب. جاري الانتقال لصفحة تفاصيل الطلب #${orderId}...`);
+        setTimeout(() => {
+          navigate(`/orders/${orderId}`);
+        }, 1200);
+        return;
+      }
+    }
+
     setLoading(true);
     setErrorMsg('');
     setSuccessMsg('');
     try {
-      const res = await itemsAPI.scanQR(code);
+      const res = await itemsAPI.scanQR(trimmedCode);
       if (res.success) {
         setCurrentItem(res.data);
       } else {
@@ -46,7 +62,7 @@ export default function ItemTracking() {
   const handleManualSearch = (e) => {
     e.preventDefault();
     if (!manualCode.trim()) return;
-    handleItemScan(manualCode.trim().toUpperCase());
+    handleItemScan(manualCode.trim());
   };
 
   // ترقية حالة القطعة
