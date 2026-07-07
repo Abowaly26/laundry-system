@@ -209,7 +209,7 @@ router.get('/workload/status', authMiddleware, async (req, res) => {
     const itemsResult = await query(`
       SELECT status, COUNT(*) as count 
       FROM order_items 
-      WHERE status IN ('received', 'washing', 'drying', 'ironing')
+      WHERE status IN ('pending', 'processing')
       GROUP BY status
     `);
 
@@ -220,10 +220,8 @@ router.get('/workload/status', authMiddleware, async (req, res) => {
     `);
 
     const stats = {
-      received: 0,
-      washing: 0,
-      drying: 0,
-      ironing: 0,
+      pending: 0,
+      processing: 0,
       total_active_items: 0,
       active_orders: parseInt(activeOrdersResult.rows[0].count) || 0
     };

@@ -177,24 +177,16 @@ export default function WorkloadDashboard() {
             </Card>
 
             {/* تفاصيل مراحل الغسيل */}
-            <Card title="حالة الغسيل الحالية بالتفصيل" className="mb-md">
+            <Card title="تفاصيل حالة القطع الحالية" className="mb-md">
               {statusStats && (
                 <div className="queue-status-list">
                   <div className="queue-status-item">
-                    <span className="status-label text-secondary">بانتظار الغسيل (مستلمة)</span>
-                    <span className="status-count badge-blue">{statusStats.received} قطع</span>
+                    <span className="status-label text-secondary">قيد الانتظار</span>
+                    <span className="status-count badge-warning">{statusStats.pending || 0} قطع</span>
                   </div>
                   <div className="queue-status-item">
-                    <span className="status-label text-secondary">تحت الغسيل</span>
-                    <span className="status-count badge-indigo">{statusStats.washing} قطع</span>
-                  </div>
-                  <div className="queue-status-item">
-                    <span className="status-label text-secondary">قيد التجفيف</span>
-                    <span className="status-count badge-warning">{statusStats.drying} قطع</span>
-                  </div>
-                  <div className="queue-status-item">
-                    <span className="status-label text-secondary">قيد الكي</span>
-                    <span className="status-count badge-purple">{statusStats.ironing} قطع</span>
+                    <span className="status-label text-secondary">قيد التنفيذ</span>
+                    <span className="status-count badge-indigo">{statusStats.processing || 0} قطع</span>
                   </div>
                 </div>
               )}

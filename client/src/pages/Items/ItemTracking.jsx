@@ -7,10 +7,8 @@ import Card from '../../components/UI/Card';
 import './ItemTracking.css';
 
 const STATUS_STEPS = [
-  { key: 'received', label: 'تم الاستلام' },
-  { key: 'washing', label: 'تحت الغسيل' },
-  { key: 'drying', label: 'التجفيف' },
-  { key: 'ironing', label: 'الكي' },
+  { key: 'pending', label: 'قيد الانتظار' },
+  { key: 'processing', label: 'قيد التنفيذ' },
   { key: 'ready', label: 'جاهز للاستلام' },
   { key: 'delivered', label: 'تم التسليم' }
 ];
