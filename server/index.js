@@ -90,31 +90,7 @@ app.get('/api/health', async (req, res) => {
   }
 });
 
-// مسار فحص قاعدة البيانات للتشخيص
-app.get('/api/debug-db', async (req, res) => {
-  try {
-    const migrations = await query('SELECT * FROM migrations ORDER BY id DESC');
-    const constraints = await query(`
-      SELECT con.conname, pg_get_constraintdef(con.oid) as definition
-      FROM pg_catalog.pg_constraint con
-      INNER JOIN pg_catalog.pg_class rel ON rel.oid = con.conrelid
-      WHERE rel.relname = 'order_items'
-    `);
-    const samples = await query('SELECT id, status, qr_code FROM order_items LIMIT 5');
-    
-    res.json({
-      success: true,
-      migrations: migrations.rows,
-      constraints: constraints.rows,
-      samples: samples.rows
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: error.message
-    });
-  }
-});
+
 
 // Endpoint لإعادة seed يدوياً (للطوارئ)
 app.post('/api/seed', async (req, res) => {
