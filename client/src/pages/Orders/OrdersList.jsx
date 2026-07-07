@@ -1,18 +1,23 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Plus, Filter, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Plus, Filter, Eye, ChevronLeft, ChevronRight, QrCode, Copy } from 'lucide-react';
 import { ordersAPI } from '../../services/api';
+import { useToast } from '../../context/ToastContext';
+import { QRCodeCanvas } from 'qrcode.react';
 import Button from '../../components/UI/Button';
 import Card from '../../components/UI/Card';
 import StatusBadge from '../../components/UI/StatusBadge';
 import LoadingSpinner from '../../components/UI/LoadingSpinner';
 import EmptyState from '../../components/UI/EmptyState';
+import Modal from '../../components/UI/Modal';
 import './OrdersList.css';
 
 export default function OrdersList() {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [qrModalOrder, setQrModalOrder] = useState(null);
   const [filters, setFilters] = useState({
     status: '',
     search: '',
@@ -20,6 +25,12 @@ export default function OrdersList() {
     endDate: ''
   });
   const [searchText, setSearchText] = useState('');
+
+  const handleCopyText = (e, text) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(text);
+    showToast('تم نسخ كود الطلب بنجاح! 📋', 'success');
+  };
 
   // Dropdown & Calendar states
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
@@ -380,7 +391,8 @@ export default function OrdersList() {
           <table className="orders-table">
             <thead>
               <tr>
-                <th>رقم الطلب</th>
+                <th>كود الطلب</th>
+                <th style={{ textAlign: 'center' }}>رمز QR</th>
                 <th>اسم العميل</th>
                 <th>رقم الجوال</th>
                 <th>تاريخ الطلب</th>
@@ -399,6 +411,7 @@ export default function OrdersList() {
                                   order.status !== 'cancelled' && 
                                   order.expected_delivery_at && 
                                   new Date(order.expected_delivery_at) < new Date();
+                const orderCode = `ORD-${String(order.id).padStart(4, '0')}`;
 
                 return (
                   <tr 
@@ -406,7 +419,31 @@ export default function OrdersList() {
                     className="clickable"
                     onClick={() => navigate(`/orders/${order.id}`)}
                   >
-                    <td><span className="order-id-badge">#{order.id}</span></td>
+                    <td>
+                      <div className="order-code-cell-wrapper" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span className="order-id-badge">{orderCode}</span>
+                        <button
+                          type="button"
+                          className="copy-btn-compact"
+                          title="نسخ الكود"
+                          onClick={(e) => handleCopyText(e, orderCode)}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', padding: '2px', color: '#94a3b8' }}
+                        >
+                          <Copy size={13} />
+                        </button>
+                      </div>
+                    </td>
+                    <td className="text-center" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        type="button"
+                        className="qr-action-btn"
+                        title="عرض الـ QR"
+                        onClick={() => setQrModalOrder(order)}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', color: '#4f46e5' }}
+                      >
+                        <QrCode size={18} />
+                      </button>
+                    </td>
                     <td>{order.customer_name || 'عميل عام'}</td>
                     <td>{order.customer_phone || '-'}</td>
                     <td>{formatDate(order.created_at)}</td>
@@ -450,6 +487,30 @@ export default function OrdersList() {
           </table>
         </div>
       )}
+
+      {/* مودال الـ QR للطلب */}
+      <Modal
+        isOpen={!!qrModalOrder}
+        onClose={() => setQrModalOrder(null)}
+        title={`رمز QR للطلب: ORD-${String(qrModalOrder?.id || '').padStart(4, '0')}`}
+      >
+        {qrModalOrder && (
+          <div className="flex flex-col items-center justify-center p-md text-center">
+            <QRCodeCanvas 
+              value={`ORD-${String(qrModalOrder.id).padStart(4, '0')}`} 
+              size={200}
+              level="H"
+              includeMargin={true}
+            />
+            <strong className="mt-md" style={{ fontSize: '1.25rem', color: '#1e293b' }}>
+              ORD-{String(qrModalOrder.id).padStart(4, '0')}
+            </strong>
+            <span className="text-secondary mt-xs" style={{ display: 'block', marginTop: '6px' }}>
+              العميل: {qrModalOrder.customer_name || 'عميل عام'}
+            </span>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }
