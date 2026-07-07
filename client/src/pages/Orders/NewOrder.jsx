@@ -987,10 +987,11 @@ export default function NewOrder() {
                             <input
                               type="number"
                               className="form-input form-input-compact price-input"
-                              value={item.price}
+                              value={item.price === 0 ? '' : item.price}
                               onChange={(e) => handlePriceChange(index, e.target.value)}
                               min="0"
                               step="0.5"
+                              placeholder="0"
                             />
                             <span className="price-suffix">ر.س</span>
                           </div>
@@ -1041,11 +1042,12 @@ export default function NewOrder() {
                     <input
                       type="number"
                       className="form-input inline-input"
-                      value={paidAmount}
+                      value={paidAmount === 0 ? '' : paidAmount}
                       onChange={(e) => setPaidAmount(parseFloat(e.target.value) || 0)}
                       max={totalAmount}
                       min="0"
                       step="0.5"
+                      placeholder="0"
                     />
                     <span className="suffix">{settings.currency}</span>
                   </div>
