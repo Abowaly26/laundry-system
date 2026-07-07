@@ -124,7 +124,10 @@ export default function OrderDetails() {
 
   // Click outside to close dropdowns
   useEffect(() => {
-    const handleClickOutside = () => {
+    const handleClickOutside = (event) => {
+      if (event.target.closest('.table-select-container')) {
+        return;
+      }
       setOpenItemStatusDropdownId(null);
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -459,7 +462,7 @@ export default function OrderDetails() {
                             {ITEM_STATUS_OPTIONS.find(opt => opt.value === item.status)?.label || 'تحديث...'}
                           </button>
                           {openItemStatusDropdownId === item.id && (
-                            <div className="table-select-dropdown" style={{ right: '50%', transform: 'translateX(50%)', minWidth: '130px' }}>
+                            <div className="table-select-dropdown" style={{ right: 0, left: 'auto', minWidth: '130px' }}>
                               {ITEM_STATUS_OPTIONS.map((opt) => (
                                 <button
                                   key={opt.value}
