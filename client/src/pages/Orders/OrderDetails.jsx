@@ -634,9 +634,6 @@ export default function OrderDetails() {
             <p className="text-secondary mb-md" style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', marginBottom: '16px' }}>
               نوع القطعة: {getItemTypeAr(qrModalItem.item_type)} {qrModalItem.size_name ? `(${qrModalItem.size_name})` : ''} | الخدمة: {qrModalItem.service_name_ar || qrModalItem.service?.name_ar}
             </p>
-            <Button variant="secondary" onClick={() => setQrModalItem(null)}>
-              إغلاق
-            </Button>
           </div>
         )}
       </Modal>
