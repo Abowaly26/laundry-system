@@ -241,6 +241,28 @@ export default function ItemTracking() {
           <div className="item-details-container">
             {currentItem ? (
               <Card title={`تفاصيل القطعة: ${currentItem.qr_code}`}>
+                {scannedOrder && (
+                  <button
+                    type="button"
+                    onClick={() => setCurrentItem(null)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--primary)',
+                      fontWeight: '700',
+                      fontSize: '0.85rem',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      cursor: 'pointer',
+                      marginBottom: '14px',
+                      padding: '0'
+                    }}
+                  >
+                    <ArrowRight size={16} style={{ marginLeft: '4px' }} />
+                    الرجوع لتفاصيل الطلب ({`ORD-${String(scannedOrder.id).padStart(4, '0')}`})
+                  </button>
+                )}
                 <div className="item-meta-info">
                   <div className="info-row">
                     <span>نوع القطعة:</span>
@@ -365,20 +387,23 @@ export default function ItemTracking() {
                     const isDeliveredBlock = nextStatus === 'تم التسليم' && parseFloat(scannedOrder.remaining_amount) > 0;
                     
                     return (
-                      <div 
-                        key={item.id} 
-                        className="order-item-row" 
-                        style={{ 
-                          display: 'flex', 
-                          justifyContent: 'space-between', 
-                          alignItems: 'center', 
-                          padding: '12px 14px', 
-                          background: '#f8fafc',
-                          borderRadius: '10px',
-                          border: '1px solid #e2e8f0',
-                          transition: 'all 0.2s ease'
-                        }}
-                      >
+                    <div 
+                      key={item.id} 
+                      className="order-item-row" 
+                      onClick={() => handleItemScan(item.qr_code)}
+                      style={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between', 
+                        alignItems: 'center', 
+                        padding: '12px 14px', 
+                        background: '#f8fafc',
+                        borderRadius: '10px',
+                        border: '1px solid #e2e8f0',
+                        transition: 'all 0.2s ease',
+                        cursor: 'pointer'
+                      }}
+                      title="انقر لعرض سجل حركة القطعة ومراحل العمل"
+                    >
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                           <strong style={{ fontSize: '0.85rem', color: '#0f172a' }}>{item.qr_code}</strong>
                           <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
@@ -392,7 +417,7 @@ export default function ItemTracking() {
                             <Button 
                               variant="secondary" 
                               size="small" 
-                              onClick={() => handleAdvanceItemInOrder(item.id)}
+                              onClick={(e) => { e.stopPropagation(); handleAdvanceItemInOrder(item.id); }}
                               disabled={loading || isDeliveredBlock}
                               style={{ fontSize: '0.72rem', padding: '6px 10px', minWidth: '78px', fontWeight: '700' }}
                               title={isDeliveredBlock ? 'لا يمكن التسليم لوجود مبلغ متبقي' : `تحديث إلى: ${nextStatus}`}

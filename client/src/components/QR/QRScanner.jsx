@@ -44,36 +44,44 @@ export default function QRScanner({ onScanSuccess, onScanFailure }) {
   }, [onScanSuccess, onScanFailure]);
 
   useEffect(() => {
-    // ترجمة نصوص مكتبة html5-qrcode إلى العربية بشكل ديناميكي
+    // ترجمة نصوص مكتبة html5-qrcode إلى العربية بشكل ديناميكي وقوي
     const translateScanner = () => {
-      const permissionBtn = document.getElementById('qr-reader__camera_permission_button');
-      if (permissionBtn && permissionBtn.innerText !== 'السماح بالوصول للكاميرا') {
-        permissionBtn.innerText = 'السماح بالوصول للكاميرا';
-        permissionBtn.style.fontFamily = "'Cairo', sans-serif";
-      }
+      // ترجمة الأزرار
+      const buttons = document.querySelectorAll('#qr-reader button');
+      buttons.forEach(btn => {
+        const text = btn.innerText;
+        if (text.includes('Request Camera') || text.includes('permission') || text.includes('Permission')) {
+          btn.innerText = 'السماح بالوصول للكاميرا';
+          btn.style.fontFamily = "'Cairo', sans-serif";
+        } else if (text.includes('Start Scanning') || text.includes('Start')) {
+          btn.innerText = 'بدء المسح';
+          btn.style.fontFamily = "'Cairo', sans-serif";
+        } else if (text.includes('Stop Scanning') || text.includes('Stop')) {
+          btn.innerText = 'إيقاف المسح';
+          btn.style.fontFamily = "'Cairo', sans-serif";
+        }
+      });
 
-      const swapLink = document.getElementById('qr-reader__dashboard_section_swaplink');
-      if (swapLink && swapLink.innerText !== 'مسح من ملف صورة') {
-        swapLink.innerText = 'مسح من ملف صورة';
-        swapLink.style.fontFamily = "'Cairo', sans-serif";
-      }
+      // ترجمة الروابط
+      const links = document.querySelectorAll('#qr-reader a');
+      links.forEach(link => {
+        const text = link.innerText;
+        if (text.includes('Scan an Image') || text.includes('Image File') || text.includes('file')) {
+          link.innerText = 'مسح من ملف صورة';
+          link.style.fontFamily = "'Cairo', sans-serif";
+        } else if (text.includes('Use camera') || text.includes('camera directly')) {
+          link.innerText = 'استخدام الكاميرا مباشرة';
+          link.style.fontFamily = "'Cairo', sans-serif";
+        }
+      });
 
-      const chooseCameraLabel = document.querySelector('#qr-reader__camera_selection option[value=""]');
-      if (chooseCameraLabel && chooseCameraLabel.innerText !== 'اختر الكاميرا') {
-        chooseCameraLabel.innerText = 'اختر الكاميرا';
-      }
-      
-      const scanRegion = document.getElementById('qr-reader__dashboard_section');
-      if (scanRegion) {
-        const buttons = scanRegion.querySelectorAll('button');
-        buttons.forEach(btn => {
-          if (btn.innerText.includes('Start Scanning')) {
-            btn.innerText = 'بدء المسح';
-          } else if (btn.innerText.includes('Stop Scanning')) {
-            btn.innerText = 'إيقاف المسح';
-          }
-        });
-      }
+      // ترجمة خيارات قائمة اختيار الكاميرا
+      const options = document.querySelectorAll('#qr-reader select option');
+      options.forEach(opt => {
+        if (opt.value === '' && (opt.innerText.includes('Choose') || opt.innerText.includes('Select'))) {
+          opt.innerText = 'اختر الكاميرا';
+        }
+      });
     };
 
     const interval = setInterval(translateScanner, 300);
