@@ -30,6 +30,14 @@ export default function OrderDetails() {
 
   // حالة لتسليم الطلب
   const [delivering, setDelivering] = useState(false);
+  const [openItemStatusDropdownId, setOpenItemStatusDropdownId] = useState(null);
+
+  const ITEM_STATUS_OPTIONS = [
+    { value: 'pending', label: 'قيد الانتظار' },
+    { value: 'processing', label: 'قيد التنفيذ' },
+    { value: 'ready', label: 'جاهز للاستلام' },
+    { value: 'delivered', label: 'تم التسليم' }
+  ];
 
   const loadOrderDetails = async () => {
     setLoading(true);
@@ -111,6 +119,32 @@ export default function OrderDetails() {
       showToast(err.message || 'خطأ في الاتصال بالخادم', 'error');
     } finally {
       setSavingPayment(false);
+    }
+  };
+
+  // Click outside to close dropdowns
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setOpenItemStatusDropdownId(null);
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // تحديث حالة القطعة إلى حالة معينة
+  const handleUpdateItemStatus = async (itemId, newStatus) => {
+    try {
+      const res = await itemsAPI.updateStatus(itemId, newStatus);
+      if (res.success) {
+        showToast('تم تحديث حالة القطعة بنجاح!', 'success');
+        loadOrderDetails();
+      } else {
+        showToast(res.message || 'فشل في تحديث حالة القطعة', 'error');
+      }
+    } catch (err) {
+      showToast(err.message || 'خطأ أثناء التحديث', 'error');
+    } finally {
+      setOpenItemStatusDropdownId(null);
     }
   };
 
@@ -412,16 +446,33 @@ export default function OrderDetails() {
                         <StatusBadge status={item.status} type="item" />
                       </td>
                       <td className="text-center">
-                        {item.status !== 'delivered' && (
-                          <Button 
-                            variant="secondary" 
-                            size="small"
-                            onClick={() => handleAdvanceItemStatus(item.id)}
+                        <div className="table-select-container">
+                          <button
+                            type="button"
+                            className="table-select-trigger"
+                            style={{ height: '32px', fontSize: '0.8rem', padding: '4px 12px', minWidth: '120px', margin: '0 auto' }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setOpenItemStatusDropdownId(openItemStatusDropdownId === item.id ? null : item.id);
+                            }}
                           >
-                            ترقية الحالة
-                          </Button>
-                        )}
-                        {item.status === 'delivered' && <span className="text-success">مكتملة ✓</span>}
+                            {ITEM_STATUS_OPTIONS.find(opt => opt.value === item.status)?.label || 'تحديث...'}
+                          </button>
+                          {openItemStatusDropdownId === item.id && (
+                            <div className="table-select-dropdown" style={{ right: '50%', transform: 'translateX(50%)', minWidth: '130px' }}>
+                              {ITEM_STATUS_OPTIONS.map((opt) => (
+                                <button
+                                  key={opt.value}
+                                  type="button"
+                                  className={`table-select-item ${item.status === opt.value ? 'selected' : ''}`}
+                                  onClick={() => handleUpdateItemStatus(item.id, opt.value)}
+                                >
+                                  {opt.label}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}
