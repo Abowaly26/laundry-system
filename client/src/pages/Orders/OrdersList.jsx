@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Plus, Filter, Eye, ChevronLeft, ChevronRight, QrCode, Copy } from 'lucide-react';
+import { Search, Plus, Filter, Eye, ChevronLeft, ChevronRight, QrCode, Copy, Download } from 'lucide-react';
 import { ordersAPI } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import { QRCodeCanvas } from 'qrcode.react';
@@ -208,6 +208,84 @@ export default function OrdersList() {
     });
   };
 
+  const getOrderStatusLabel = (status) => {
+    switch (status) {
+      case 'pending': return 'قيد الانتظار';
+      case 'processing': return 'قيد التنفيذ';
+      case 'ready': return 'جاهز للاستلام';
+      case 'delivered': return 'تم التسليم';
+      case 'cancelled': return 'ملغي';
+      default: return status || '-';
+    }
+  };
+
+  const exportToCSV = () => {
+    const ordersToExport = Array.isArray(orders) ? orders : [];
+    if (ordersToExport.length === 0) {
+      showToast('لا توجد طلبات متطابقة لتصديرها', 'warning');
+      return;
+    }
+
+    const headers = [
+      'كود الطلب',
+      'اسم العميل',
+      'رقم الجوال',
+      'تاريخ الطلب',
+      'عدد القطع',
+      'إجمالي المبلغ (ر.س)',
+      'المتبقي (ر.س)',
+      'الحالة',
+      'تاريخ التسليم المتوقع'
+    ];
+
+    const formatCSVField = (field) => {
+      if (field === null || field === undefined) return '""';
+      const stringField = String(field);
+      return `"${stringField.replace(/"/g, '""')}"`;
+    };
+
+    const rows = ordersToExport.map(order => {
+      const orderCode = `ORD-${String(order?.id || '').padStart(4, '0')}`;
+      const customerName = order?.customer_name || 'عميل عام';
+      const phone = order?.customer_phone || '-';
+      const orderDate = formatDate(order?.created_at);
+      const itemsCount = order?.items_count || 0;
+      const totalAmount = parseFloat(order?.total_amount || 0).toFixed(2);
+      const remainingAmount = parseFloat(order?.remaining_amount || 0).toFixed(2);
+      const statusLabel = getOrderStatusLabel(order?.status);
+      const deliveryDate = formatDate(order?.expected_delivery_at);
+
+      return [
+        formatCSVField(orderCode),
+        formatCSVField(customerName),
+        formatCSVField(phone),
+        formatCSVField(orderDate),
+        formatCSVField(itemsCount),
+        formatCSVField(totalAmount),
+        formatCSVField(remainingAmount),
+        formatCSVField(statusLabel),
+        formatCSVField(deliveryDate)
+      ];
+    });
+
+    const csvContent = '\uFEFF' + [
+      headers.map(h => formatCSVField(h)).join(','),
+      ...rows.map(e => e.join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    const dateStr = new Date().toISOString().split('T')[0];
+    link.setAttribute('download', `orders_export_${dateStr}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast('تم تصدير الطلبات بنجاح إلى ملف إكسل (CSV) 📊', 'success');
+  };
+
   const hasActiveFilters = filters.status || filters.startDate || filters.endDate || searchText;
 
   return (
@@ -217,10 +295,21 @@ export default function OrdersList() {
           <h1 className="page-title">إدارة الطلبات</h1>
           <p className="page-subtitle">استعراض وتصفية وتعديل طلبات الغسيل والتنظيف</p>
         </div>
-        <Button variant="primary" onClick={() => navigate('/orders/new')}>
-          <Plus size={18} style={{ marginLeft: '8px' }} />
-          تسجيل طلب جديد
-        </Button>
+        <div className="flex gap-sm items-center">
+          <Button
+            variant="secondary"
+            onClick={exportToCSV}
+            disabled={!orders || orders.length === 0}
+            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+          >
+            <Download size={18} />
+            تصدير ملف إكسل
+          </Button>
+          <Button variant="primary" onClick={() => navigate('/orders/new')}>
+            <Plus size={18} style={{ marginLeft: '8px' }} />
+            تسجيل طلب جديد
+          </Button>
+        </div>
       </div>
 
       {/* شريط الفلاتر والبحث المدمج الاحترافي */}
@@ -387,93 +476,110 @@ export default function OrdersList() {
           message="لم نعثر على أي طلبات تطابق معايير البحث الحالية. يمكنك تسجيل طلب جديد."
         />
       ) : (
-        <div className="table-container">
-          <table className="orders-table">
-            <thead>
-              <tr>
-                <th>كود الطلب</th>
-                <th style={{ textAlign: 'center' }}>رمز QR</th>
-                <th>اسم العميل</th>
-                <th>رقم الجوال</th>
-                <th>تاريخ الطلب</th>
-                <th>عدد القطع</th>
-                <th>إجمالي المبلغ</th>
-                <th>المتبقي</th>
-                <th>الحالة</th>
-                <th>تاريخ التسليم</th>
-              </tr>
-            </thead>
-            <tbody>
-               {(Array.isArray(orders) ? orders : []).map((order) => {
-                if (!order) return null;
-                const isOverdue = order.status !== 'delivered' && 
-                                  order.status !== 'cancelled' && 
-                                  order.expected_delivery_at && 
-                                  new Date(order.expected_delivery_at) < new Date();
-                const orderCode = `ORD-${String(order.id).padStart(4, '0')}`;
+        <div className="orders-list-table-card">
+          <div className="orders-list-table-header">
+            <div className="orders-list-table-title">
+              <span>قائمة الطلبات</span>
+              <span className="orders-count-pill">{orders.length} طلب</span>
+            </div>
+            <button 
+              type="button"
+              onClick={exportToCSV} 
+              className="export-excel-action-btn flex items-center"
+              title="تصدير بيانات الطلبات المعروضة إلى ملف إكسل (Excel/CSV)"
+            >
+              <Download size={16} />
+              تصدير البيانات
+            </button>
+          </div>
+          <div className="table-container">
+            <table className="orders-table">
+              <thead>
+                <tr>
+                  <th>كود الطلب</th>
+                  <th style={{ textAlign: 'center' }}>رمز QR</th>
+                  <th>اسم العميل</th>
+                  <th>رقم الجوال</th>
+                  <th>تاريخ الطلب</th>
+                  <th>عدد القطع</th>
+                  <th>إجمالي المبلغ</th>
+                  <th>المتبقي</th>
+                  <th>الحالة</th>
+                  <th>تاريخ التسليم</th>
+                </tr>
+              </thead>
+              <tbody>
+                 {(Array.isArray(orders) ? orders : []).map((order) => {
+                  if (!order) return null;
+                  const isOverdue = order.status !== 'delivered' && 
+                                    order.status !== 'cancelled' && 
+                                    order.expected_delivery_at && 
+                                    new Date(order.expected_delivery_at) < new Date();
+                  const orderCode = `ORD-${String(order.id).padStart(4, '0')}`;
 
-                return (
-                  <tr 
-                    key={order.id} 
-                    className="clickable"
-                    onClick={() => navigate(`/orders/${order.id}`)}
-                  >
-                    <td>
-                      <div className="order-code-cell-wrapper" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span className="order-id-badge">{orderCode}</span>
+                  return (
+                    <tr 
+                      key={order.id} 
+                      className="clickable"
+                      onClick={() => navigate(`/orders/${order.id}`)}
+                    >
+                      <td>
+                        <div className="order-code-cell-wrapper" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span className="order-id-badge">{orderCode}</span>
+                          <button
+                            type="button"
+                            className="copy-btn-compact"
+                            title="نسخ الكود"
+                            onClick={(e) => handleCopyText(e, orderCode)}
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', padding: '4px', color: '#64748b', transition: 'color 0.2s' }}
+                            onMouseEnter={(e) => e.currentTarget.style.color = '#0f172a'}
+                            onMouseLeave={(e) => e.currentTarget.style.color = '#64748b'}
+                          >
+                            <Copy size={16} />
+                          </button>
+                        </div>
+                      </td>
+                      <td className="text-center" onClick={(e) => e.stopPropagation()}>
                         <button
                           type="button"
-                          className="copy-btn-compact"
-                          title="نسخ الكود"
-                          onClick={(e) => handleCopyText(e, orderCode)}
-                          style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', padding: '4px', color: '#64748b', transition: 'color 0.2s' }}
-                          onMouseEnter={(e) => e.currentTarget.style.color = '#0f172a'}
-                          onMouseLeave={(e) => e.currentTarget.style.color = '#64748b'}
+                          className="qr-action-btn"
+                          title="عرض الـ QR"
+                          onClick={() => setQrModalOrder(order)}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', color: '#4f46e5' }}
                         >
-                          <Copy size={16} />
+                          <QrCode size={18} />
                         </button>
-                      </div>
-                    </td>
-                    <td className="text-center" onClick={(e) => e.stopPropagation()}>
-                      <button
-                        type="button"
-                        className="qr-action-btn"
-                        title="عرض الـ QR"
-                        onClick={() => setQrModalOrder(order)}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', color: '#4f46e5' }}
-                      >
-                        <QrCode size={18} />
-                      </button>
-                    </td>
-                    <td>{order.customer_name || 'عميل عام'}</td>
-                    <td>{order.customer_phone || '-'}</td>
-                    <td>{formatDate(order.created_at)}</td>
-                    <td className="text-center font-semibold">{order.items_count || 0}</td>
-                    <td>{parseFloat(order.total_amount || 0).toFixed(2)} ر.س</td>
-                    <td>
-                      {(() => {
-                        const remaining = parseFloat(order.remaining_amount || 0);
-                        if (remaining > 0) {
-                          return <span className="text-error font-semibold">{remaining.toFixed(2)} ر.س</span>;
-                        } else if (remaining < 0) {
-                          return <span className="status-badge-credit">رصيد: {Math.abs(remaining).toFixed(2)} ر.س</span>;
-                        } else {
-                          return <span className="status-badge-paid">مدفوع</span>;
-                        }
-                      })()}
-                    </td>
-                    <td>
-                      <StatusBadge status={order.status} type="order" />
-                    </td>
-                    <td className={isOverdue ? 'text-error font-semibold' : ''}>
-                      {formatDate(order.expected_delivery_at)}
-                      {isOverdue && <span className="overdue-tag"> (متأخر)</span>}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                      </td>
+                      <td>{order.customer_name || 'عميل عام'}</td>
+                      <td>{order.customer_phone || '-'}</td>
+                      <td>{formatDate(order.created_at)}</td>
+                      <td className="text-center font-semibold">{order.items_count || 0}</td>
+                      <td>{parseFloat(order.total_amount || 0).toFixed(2)} ر.س</td>
+                      <td>
+                        {(() => {
+                          const remaining = parseFloat(order.remaining_amount || 0);
+                          if (remaining > 0) {
+                            return <span className="text-error font-semibold">{remaining.toFixed(2)} ر.س</span>;
+                          } else if (remaining < 0) {
+                            return <span className="status-badge-credit">رصيد: {Math.abs(remaining).toFixed(2)} ر.س</span>;
+                          } else {
+                            return <span className="status-badge-paid">مدفوع</span>;
+                          }
+                        })()}
+                      </td>
+                      <td>
+                        <StatusBadge status={order.status} type="order" />
+                      </td>
+                      <td className={isOverdue ? 'text-error font-semibold' : ''}>
+                        {formatDate(order.expected_delivery_at)}
+                        {isOverdue && <span className="overdue-tag"> (متأخر)</span>}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
