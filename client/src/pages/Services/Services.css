@@ -166,7 +166,8 @@
   border: 1px solid var(--border);
   padding: 8px;
   max-height: 300px;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: auto;
 }
 
 .price-preview-table {
@@ -199,15 +200,17 @@
   border-bottom: none;
 }
 
+.price-preview-table th:first-child,
 .size-group-cell {
   font-weight: 700;
   color: var(--primary);
   background: rgba(99, 102, 241, 0.05);
   vertical-align: middle;
   text-align: right !important;
-  position: sticky;
-  right: 0;
-  z-index: 1;
+}
+
+.price-preview-table th:first-child {
+  background: var(--bg-card);
 }
 
 /* Dynamic Chips Input Container */
@@ -270,7 +273,8 @@
   background: var(--bg-hover);
   padding: 12px;
   max-height: 400px;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .matrix-scroll-wrapper {
@@ -298,11 +302,6 @@
   z-index: 1;
 }
 
-.pricing-matrix-table th:first-child {
-  text-align: right;
-  min-width: 120px;
-}
-
 .pricing-matrix-table td {
   padding: 8px 12px;
   border-bottom: 1px solid var(--border);
@@ -314,13 +313,17 @@
   background: rgba(99, 102, 241, 0.03);
 }
 
+.pricing-matrix-table th:first-child,
 .size-name-col {
   color: var(--primary);
   background: rgba(99, 102, 241, 0.05);
   font-weight: 700;
-  position: sticky;
-  right: 0;
-  z-index: 1;
+  text-align: right;
+  min-width: 120px;
+}
+
+.pricing-matrix-table th:first-child {
+  background: var(--bg-card);
 }
 
 .matrix-price-input {

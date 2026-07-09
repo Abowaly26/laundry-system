@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Wallet, CreditCard, TrendingUp, Download } from 'lucide-react';
+import { Wallet, CreditCard, TrendingUp, Download, Search } from 'lucide-react';
 import { paymentsAPI, dashboardAPI } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import Card from '../../components/UI/Card';
@@ -12,6 +12,7 @@ export default function Finance() {
   const { showToast } = useToast();
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
   
   const paymentsList = Array.isArray(payments) ? payments : [];
 
@@ -32,8 +33,15 @@ export default function Finance() {
   const loadFinanceData = async () => {
     setLoading(true);
     try {
-      // 1. تحميل قائمة الدفعات بالفلترة
-      const paymentsRes = await paymentsAPI.getAll(filters);
+      // 1. تحميل قائمة الدفعات بالفلترة (تمرير معايير الباك اند date_from و date_to)
+      const queryParams = {
+        limit: 1000
+      };
+      if (filters.method) queryParams.method = filters.method;
+      if (filters.startDate) queryParams.date_from = filters.startDate;
+      if (filters.endDate) queryParams.date_to = filters.endDate;
+
+      const paymentsRes = await paymentsAPI.getAll(queryParams);
       if (paymentsRes && paymentsRes.success) {
         setPayments(Array.isArray(paymentsRes.data) ? paymentsRes.data : []);
       } else {
@@ -66,6 +74,7 @@ export default function Finance() {
       startDate: '',
       endDate: ''
     });
+    setSearchQuery('');
   };
 
   const formatDate = (dateStr) => {
@@ -90,10 +99,25 @@ export default function Finance() {
     return 'سداد كامل';
   };
 
+  // تصفية إضافية بالبحث الفوري داخل المدفوعات المجلوبة
+  const filteredPayments = paymentsList.filter(p => {
+    if (!searchQuery.trim()) return true;
+    const query = searchQuery.trim().toLowerCase();
+    const idMatch = String(p?.id || '').includes(query);
+    const orderMatch = String(p?.order_id || '').includes(query);
+    const custNameMatch = (p?.customer_name || '').toLowerCase().includes(query);
+    const custPhoneMatch = (p?.customer_phone || '').toLowerCase().includes(query);
+    const employeeMatch = (p?.created_by_name || p?.user_name || '').toLowerCase().includes(query);
+    const amountMatch = String(p?.amount || '').includes(query);
+    return idMatch || orderMatch || custNameMatch || custPhoneMatch || employeeMatch || amountMatch;
+  });
+
+  // إجمالي المبالغ في قائمة الدفعات المصفاة الحالية
+  const filteredTotal = filteredPayments.reduce((sum, p) => sum + (parseFloat(p?.amount || 0)), 0);
+
   const exportToCSV = () => {
-    const paymentsToExport = Array.isArray(paymentsList) ? paymentsList : [];
-    if (paymentsToExport.length === 0) {
-      showToast('لا توجد عمليات تحصيل لتصديرها', 'warning');
+    if (filteredPayments.length === 0) {
+      showToast('لا توجد عمليات تحصيل لتصديرها في الوقت الحالي', 'warning');
       return;
     }
 
@@ -114,14 +138,14 @@ export default function Finance() {
       return `"${stringField.replace(/"/g, '""')}"`;
     };
 
-    const rows = paymentsToExport.map(p => {
+    const rows = filteredPayments.map(p => {
       const paymentId = `#${p?.id || '-'}`;
       const orderId = `#${p?.order_id || '-'}`;
       const customerName = p?.customer_name || 'عميل عام';
       const amount = parseFloat(p?.amount || 0).toFixed(2);
       const method = getPaymentMethodLabel(p?.method);
       const type = getPaymentTypeLabel(p?.type);
-      const userName = p?.user_name || 'موظف الاستقبال';
+      const userName = p?.created_by_name || p?.user_name || 'موظف الاستقبال';
       const dateStr = formatDate(p?.created_at);
 
       return [
@@ -135,6 +159,18 @@ export default function Finance() {
         formatCSVField(dateStr)
       ];
     });
+
+    // إضافة صف الإجمالي في نهاية ملف الإكسل
+    rows.push([
+      formatCSVField('إجمالي المبالغ المحصلة (المصفاة)'),
+      formatCSVField(''),
+      formatCSVField(''),
+      formatCSVField(`+${filteredTotal.toFixed(2)} ر.س`),
+      formatCSVField(''),
+      formatCSVField(''),
+      formatCSVField(''),
+      formatCSVField('')
+    ]);
 
     const csvContent = '\uFEFF' + [
       headers.map(h => formatCSVField(h)).join(','),
@@ -154,9 +190,6 @@ export default function Finance() {
     showToast('تم تصدير سجل المدفوعات والتحصيلات بنجاح إلى ملف إكسل (CSV) 📊', 'success');
   };
 
-  // إجمالي المبالغ في قائمة الدفعات المصفاة الحالية
-  const filteredTotal = paymentsList.reduce((sum, p) => sum + (parseFloat(p?.amount || 0)), 0);
-
   return (
     <div className="page finance-page">
       <div className="page-header">
@@ -168,7 +201,7 @@ export default function Finance() {
           <Button
             variant="secondary"
             onClick={exportToCSV}
-            disabled={!paymentsList || paymentsList.length === 0}
+            disabled={!filteredPayments || filteredPayments.length === 0}
             style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
           >
             <Download size={18} />
@@ -210,9 +243,23 @@ export default function Finance() {
         </Card>
       </div>
 
-      {/* فلاتر التصفية */}
+      {/* فلاتر التصفية والبحث الفوري */}
       <Card className="mb-md">
         <div className="finance-filters-grid">
+          <div className="form-group" style={{ gridColumn: 'span 1' }}>
+            <label className="form-label">بحث سريع في التحصيلات</label>
+            <div className="search-box" style={{ margin: 0 }}>
+              <input
+                type="text"
+                className="form-input"
+                placeholder="رقم العملية، الطلب، العميل، أو الموظف..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <Search size={16} className="search-icon" />
+            </div>
+          </div>
+
           <div className="form-group">
             <label className="form-label">طريقة الدفع</label>
             <select
@@ -264,10 +311,10 @@ export default function Finance() {
         <div className="flex justify-center items-center" style={{ height: '200px' }}>
           <LoadingSpinner />
         </div>
-      ) : paymentsList.length === 0 ? (
+      ) : filteredPayments.length === 0 ? (
         <EmptyState 
           title="لا توجد عمليات تحصيل" 
-          message="لم نجد أي حركات دفع مسجلة تطابق التصفية المحددة."
+          message="لم نجد أي حركات دفع مسجلة تطابق التصفية أو البحث المحدد."
         />
       ) : (
         <div className="table-container">
@@ -285,7 +332,7 @@ export default function Finance() {
               </tr>
             </thead>
             <tbody>
-              {paymentsList.map((p) => (
+              {filteredPayments.map((p) => (
                 <tr key={p?.id}>
                   <td><strong>#{p?.id}</strong></td>
                   <td><a href={`/orders/${p?.order_id}`} className="text-primary font-semibold">#{p?.order_id}</a></td>
@@ -296,7 +343,7 @@ export default function Finance() {
                     {p?.type === 'deposit' ? 'دفعة مقدمة' : 
                      p?.type === 'balance' ? 'متبقي الطلب' : 'سداد كامل'}
                   </td>
-                  <td>{p?.user_name || 'موظف الاستقبال'}</td>
+                  <td>{p?.created_by_name || p?.user_name || 'موظف الاستقبال'}</td>
                   <td>{formatDate(p?.created_at)}</td>
                 </tr>
               ))}
