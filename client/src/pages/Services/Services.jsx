@@ -910,7 +910,8 @@ export default function Services() {
         isOpen={showItemTypeModal}
         onClose={() => setShowItemTypeModal(false)}
         title={itemTypeModalMode === 'add' ? 'إضافة قطعة وشبكة أسعار جديدة' : 'تعديل أسعار القطعة وأحجامها'}
-        width="680px"
+        width="940px"
+        size="xl"
       >
         <form onSubmit={handleSaveItemType}>
           <div className="form-row">

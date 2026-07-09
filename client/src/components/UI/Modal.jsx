@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { X } from 'lucide-react';
 import './Modal.css';
 
-export default function Modal({ isOpen, onClose, title, children, footer, size = '' }) {
+export default function Modal({ isOpen, onClose, title, children, footer, size = '', width }) {
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -26,9 +26,14 @@ export default function Modal({ isOpen, onClose, title, children, footer, size =
 
   if (!isOpen) return null;
 
+  const customStyle = width ? { maxWidth: width, width: '95%' } : {};
+
   return (
     <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className={`modal ${size === 'lg' ? 'modal-lg' : ''}`}>
+      <div 
+        className={`modal ${size === 'lg' ? 'modal-lg' : ''} ${size === 'xl' ? 'modal-xl' : ''}`}
+        style={customStyle}
+      >
         <div className="modal-header">
           <h3 className="modal-title">{title}</h3>
           <button className="modal-close" onClick={onClose}>
