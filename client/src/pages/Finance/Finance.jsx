@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Wallet, CreditCard, TrendingUp } from 'lucide-react';
+import { Wallet, CreditCard, TrendingUp, Download } from 'lucide-react';
 import { paymentsAPI, dashboardAPI } from '../../services/api';
+import { useToast } from '../../context/ToastContext';
 import Card from '../../components/UI/Card';
 import Button from '../../components/UI/Button';
 import LoadingSpinner from '../../components/UI/LoadingSpinner';
@@ -8,6 +9,7 @@ import EmptyState from '../../components/UI/EmptyState';
 import './Finance.css';
 
 export default function Finance() {
+  const { showToast } = useToast();
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
   
@@ -78,6 +80,80 @@ export default function Finance() {
     });
   };
 
+  const getPaymentMethodLabel = (method) => {
+    return method === 'cash' ? 'نقدي (كاش)' : 'إلكتروني (شبكة)';
+  };
+
+  const getPaymentTypeLabel = (type) => {
+    if (type === 'deposit') return 'دفعة مقدمة';
+    if (type === 'balance') return 'متبقي الطلب';
+    return 'سداد كامل';
+  };
+
+  const exportToCSV = () => {
+    const paymentsToExport = Array.isArray(paymentsList) ? paymentsList : [];
+    if (paymentsToExport.length === 0) {
+      showToast('لا توجد عمليات تحصيل لتصديرها', 'warning');
+      return;
+    }
+
+    const headers = [
+      'رقم العملية',
+      'رقم الطلب',
+      'اسم العميل',
+      'المبلغ المحصل (ر.س)',
+      'طريقة الدفع',
+      'نوع الدفعة',
+      'الموظف المسؤول',
+      'التاريخ والوقت'
+    ];
+
+    const formatCSVField = (field) => {
+      if (field === null || field === undefined) return '""';
+      const stringField = String(field);
+      return `"${stringField.replace(/"/g, '""')}"`;
+    };
+
+    const rows = paymentsToExport.map(p => {
+      const paymentId = `#${p?.id || '-'}`;
+      const orderId = `#${p?.order_id || '-'}`;
+      const customerName = p?.customer_name || 'عميل عام';
+      const amount = parseFloat(p?.amount || 0).toFixed(2);
+      const method = getPaymentMethodLabel(p?.method);
+      const type = getPaymentTypeLabel(p?.type);
+      const userName = p?.user_name || 'موظف الاستقبال';
+      const dateStr = formatDate(p?.created_at);
+
+      return [
+        formatCSVField(paymentId),
+        formatCSVField(orderId),
+        formatCSVField(customerName),
+        formatCSVField(amount),
+        formatCSVField(method),
+        formatCSVField(type),
+        formatCSVField(userName),
+        formatCSVField(dateStr)
+      ];
+    });
+
+    const csvContent = '\uFEFF' + [
+      headers.map(h => formatCSVField(h)).join(','),
+      ...rows.map(e => e.join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    const dateStr = new Date().toISOString().split('T')[0];
+    link.setAttribute('download', `finance_payments_export_${dateStr}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast('تم تصدير سجل المدفوعات والتحصيلات بنجاح إلى ملف إكسل (CSV) 📊', 'success');
+  };
+
   // إجمالي المبالغ في قائمة الدفعات المصفاة الحالية
   const filteredTotal = paymentsList.reduce((sum, p) => sum + (parseFloat(p?.amount || 0)), 0);
 
@@ -87,6 +163,17 @@ export default function Finance() {
         <div>
           <h1 className="page-title">الحسابات والتقارير المالية</h1>
           <p className="page-subtitle">متابعة التحصيلات اليومية، سجل المدفوعات والديون المتبقية</p>
+        </div>
+        <div className="flex gap-sm items-center">
+          <Button
+            variant="secondary"
+            onClick={exportToCSV}
+            disabled={!paymentsList || paymentsList.length === 0}
+            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+          >
+            <Download size={18} />
+            تصدير ملف إكسل
+          </Button>
         </div>
       </div>
 
