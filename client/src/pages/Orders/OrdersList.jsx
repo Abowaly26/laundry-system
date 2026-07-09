@@ -482,15 +482,6 @@ export default function OrdersList() {
               <span>قائمة الطلبات</span>
               <span className="orders-count-pill">{orders.length} طلب</span>
             </div>
-            <button 
-              type="button"
-              onClick={exportToCSV} 
-              className="export-excel-action-btn flex items-center"
-              title="تصدير بيانات الطلبات المعروضة إلى ملف إكسل (Excel/CSV)"
-            >
-              <Download size={16} />
-              تصدير البيانات
-            </button>
           </div>
           <div className="table-container">
             <table className="orders-table">
