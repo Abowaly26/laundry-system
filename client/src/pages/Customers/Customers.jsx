@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Plus, User, Edit2, Trash2, Calendar, Phone, MapPin } from 'lucide-react';
+import { Search, Plus, User, Edit2, Trash2, Calendar, Phone, MapPin, Download } from 'lucide-react';
 import { customersAPI } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import { useSettings } from '../../context/SettingsContext';
@@ -155,6 +155,58 @@ export default function Customers() {
     });
   };
 
+  const exportToCSV = () => {
+    const customersToExport = Array.isArray(customers) ? customers : [];
+    if (customersToExport.length === 0) {
+      showToast('لا يوجد عملاء لتصديرهم', 'warning');
+      return;
+    }
+
+    const headers = [
+      'الاسم',
+      'رقم الهاتف',
+      'العنوان',
+      'تاريخ التسجيل'
+    ];
+
+    const formatCSVField = (field) => {
+      if (field === null || field === undefined) return '""';
+      const stringField = String(field);
+      return `"${stringField.replace(/"/g, '""')}"`;
+    };
+
+    const rows = customersToExport.map(c => {
+      const name = c?.name || '-';
+      const phone = c?.phone || '-';
+      const address = c?.address || '-';
+      const regDate = formatDate(c?.created_at);
+
+      return [
+        formatCSVField(name),
+        formatCSVField(phone),
+        formatCSVField(address),
+        formatCSVField(regDate)
+      ];
+    });
+
+    const csvContent = '\uFEFF' + [
+      headers.map(h => formatCSVField(h)).join(','),
+      ...rows.map(e => e.join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    const dateStr = new Date().toISOString().split('T')[0];
+    link.setAttribute('download', `customers_export_${dateStr}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast('تم تصدير العملاء بنجاح إلى ملف إكسل (CSV) 📊', 'success');
+  };
+
   return (
     <div className="page customers-page">
       <div className="page-header">
@@ -162,10 +214,21 @@ export default function Customers() {
           <h1 className="page-title">إدارة العملاء</h1>
           <p className="page-subtitle">إضافة وتعديل العملاء واستعراض سجل الطلبات والمدفوعات الخاصة بهم</p>
         </div>
-        <Button variant="primary" onClick={handleOpenAdd}>
-          <Plus size={18} style={{ marginLeft: '8px' }} />
-          إضافة عميل جديد
-        </Button>
+        <div className="flex gap-sm items-center">
+          <Button
+            variant="secondary"
+            onClick={exportToCSV}
+            disabled={!customers || customers.length === 0}
+            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+          >
+            <Download size={18} />
+            تصدير ملف إكسل
+          </Button>
+          <Button variant="primary" onClick={handleOpenAdd}>
+            <Plus size={18} style={{ marginLeft: '8px' }} />
+            إضافة عميل جديد
+          </Button>
+        </div>
       </div>
 
       {/* شريط البحث */}
