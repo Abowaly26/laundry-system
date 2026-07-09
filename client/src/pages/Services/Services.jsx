@@ -392,122 +392,199 @@ export default function Services() {
           </div>
         </div>
       </div>
-          <Card className="mb-md">
-            <div className="search-box">
-              <input
-                type="text"
-                className="form-input"
-                placeholder="ابحث عن نوع القطعة أو الحجم (مثال: بدلة، بطانية، سجاد، عادي)..."
-                value={itemTypeSearch}
-                onChange={(e) => setItemTypeSearch(e.target.value)}
-              />
-              <Search size={18} className="search-icon" />
-            </div>
-          </Card>
 
-          {loadingItemTypes ? (
-            <div className="flex justify-center items-center" style={{ height: '200px' }}>
-              <LoadingSpinner />
+      {/* Top KPI Summary Ribbon */}
+      {(() => {
+        const totalSizesCount = itemTypes.reduce((acc, curr) => acc + (curr.sizes || []).length, 0);
+        const activeServicesCount = services.filter(s => s.is_active).length;
+        return (
+          <div className="services-kpi-ribbon mb-md">
+            <div className="kpi-box">
+              <div className="kpi-icon-wrapper indigo-glow">
+                <Tags size={22} />
+              </div>
+              <div className="kpi-content">
+                <span className="kpi-label">أنواع الملابس المُعرفة</span>
+                <h4 className="kpi-value">{itemTypes.length} <small>قطعة</small></h4>
+              </div>
             </div>
-          ) : !Array.isArray(itemTypes) || itemTypes.length === 0 ? (
-            <EmptyState 
-              title="لا توجد قطع ملابس" 
-              message="لم نجد أي أنواع قطع ملابس معرفة بالنظام حالياً. اضغط لإضافة نوع قطعة جديد."
-            />
-          ) : (() => {
-            const filteredItemTypes = itemTypes.filter(itemType => {
-              if (!itemTypeSearch.trim()) return true;
-              const query = itemTypeSearch.trim().toLowerCase();
-              const matchAr = (itemType.name_ar || '').toLowerCase().includes(query);
-              const matchEn = (itemType.name_en || '').toLowerCase().includes(query);
-              const matchSizes = (itemType.sizes || []).some(sz => (sz.size_name || '').toLowerCase().includes(query));
-              return matchAr || matchEn || matchSizes;
-            });
 
-            return filteredItemTypes.length === 0 ? (
-              <EmptyState 
-                title="لا توجد نتائج" 
-                message="لم نجد أي قطع ملابس أو أحجام تطابق بحثك الحالي."
-              />
-            ) : (
-              <div className="services-grid mt-md">
-                {filteredItemTypes.map((itemType) => {
-                  const sortedCardSizes = sortSizes(itemType.sizes || []);
-                  return (
-                    <Card key={itemType.id} className="service-card item-type-card">
-                      <div className="service-card-header">
-                        <div className="service-icon-wrapper item-tag-icon">
-                          <Tags size={20} />
-                        </div>
+            <div className="kpi-box">
+              <div className="kpi-icon-wrapper emerald-glow">
+                <Sparkles size={22} />
+              </div>
+              <div className="kpi-content">
+                <span className="kpi-label">إجمالي الأحجام والخيارات</span>
+                <h4 className="kpi-value">{totalSizesCount} <small>حجم في الشبكة</small></h4>
+              </div>
+            </div>
+
+            <div className="kpi-box">
+              <div className="kpi-icon-wrapper amber-glow">
+                <ShieldAlert size={22} />
+              </div>
+              <div className="kpi-content">
+                <span className="kpi-label">الخدمات المتاحة للغسيل</span>
+                <h4 className="kpi-value">{activeServicesCount} <small>خدمة نشطة</small></h4>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Search Bar & Control Panel */}
+      <div className="services-search-control-card mb-md">
+        <div className="search-input-wrapper">
+          <Search size={19} className="search-icon-left" />
+          <input
+            type="text"
+            className="search-input-clean"
+            placeholder="ابحث سريعاً باسم القطعة أو الحجم (مثال: بدلة، بطانية، سجاد، عادي)..."
+            value={itemTypeSearch}
+            onChange={(e) => setItemTypeSearch(e.target.value)}
+          />
+          {itemTypeSearch && (
+            <button 
+              type="button" 
+              className="clear-search-btn" 
+              onClick={() => setItemTypeSearch('')}
+              title="مسح البحث"
+            >
+              <X size={16} />
+            </button>
+          )}
+        </div>
+      </div>
+
+      {loadingItemTypes ? (
+        <div className="flex justify-center items-center" style={{ height: '200px' }}>
+          <LoadingSpinner />
+        </div>
+      ) : !Array.isArray(itemTypes) || itemTypes.length === 0 ? (
+        <EmptyState 
+          title="لا توجد قطع ملابس" 
+          message="لم نجد أي أنواع قطع ملابس معرفة بالنظام حالياً. اضغط لإضافة نوع قطعة جديد."
+        />
+      ) : (() => {
+        const filteredItemTypes = itemTypes.filter(itemType => {
+          if (!itemTypeSearch.trim()) return true;
+          const query = itemTypeSearch.trim().toLowerCase();
+          const matchAr = (itemType.name_ar || '').toLowerCase().includes(query);
+          const matchEn = (itemType.name_en || '').toLowerCase().includes(query);
+          const matchSizes = (itemType.sizes || []).some(sz => (sz.size_name || '').toLowerCase().includes(query));
+          return matchAr || matchEn || matchSizes;
+        });
+
+        return filteredItemTypes.length === 0 ? (
+          <EmptyState 
+            title="لا توجد نتائج" 
+            message="لم نجد أي قطع ملابس أو أحجام تطابق بحثك الحالي."
+          />
+        ) : (
+          <div className="services-grid mt-md">
+            {filteredItemTypes.map((itemType) => {
+              const sortedCardSizes = sortSizes(itemType.sizes || []);
+              return (
+                <Card key={itemType.id} className="service-card item-type-card-premium">
+                  {/* Top Header of Card */}
+                  <div className="card-top-header">
+                    <div className="header-title-section">
+                      <div className="card-icon-badge">
+                        <Tags size={22} />
                       </div>
-                      
-                      <div className="service-card-body">
-                        <h3>{itemType.name_ar}</h3>
-                        <p className="service-en-name text-secondary">{itemType.name_en || 'بدون اسم إنجليزي'}</p>
-                        
-                        <div className="item-sizes-list-badge mt-sm">
-                          <span className="meta-label">الأحجام المتوفرة:</span>
-                          <div className="size-badges-container">
-                            {sortedCardSizes.map(sz => {
-                              const sName = typeof sz === 'object' && sz !== null ? (sz.size_name || '-') : String(sz);
-                              return <span key={typeof sz === 'object' && sz !== null ? (sz.id || sName) : sName} className="size-pill-badge">{sName}</span>;
-                            })}
-                          </div>
-                        </div>
+                      <div>
+                        <h3 className="card-item-title">{itemType.name_ar}</h3>
+                        <span className="card-item-subtitle">{itemType.name_en || 'Item Type'}</span>
+                      </div>
+                    </div>
 
-                        {/* Show summary price matrix inside the card */}
-                        <div className="item-price-preview-table-wrapper mt-md">
-                          <table className="price-preview-table">
-                            <thead>
-                              <tr>
-                                <th style={{ minWidth: '80px' }}>الحجم</th>
-                                {services.filter(s => s.is_active).map(svc => (
-                                  <th key={svc.id} style={{ minWidth: '100px', textAlign: 'center' }}>{svc.name_ar}</th>
-                                ))}
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {sortedCardSizes.map(sz => {
-                                const sName = typeof sz === 'object' && sz !== null ? (sz.size_name || '-') : String(sz);
-                                const sPrices = typeof sz === 'object' && sz !== null ? (sz.prices || []) : [];
+                    <div className="header-actions-right">
+                      <span className="size-count-pill">
+                        {sortedCardSizes.length} {sortedCardSizes.length === 1 ? 'حجم' : 'أحجام'}
+                      </span>
+                      {isAdmin && (
+                        <button
+                          type="button"
+                          className="quick-delete-icon-btn"
+                          onClick={() => handleDeleteItemType(itemType.id)}
+                          title="حذف هذا النوع بالكامل"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Sizes Section */}
+                  <div className="card-sizes-section mt-sm">
+                    <span className="section-mini-label">الأحجام المتوفرة للقطعة:</span>
+                    <div className="size-badges-container">
+                      {sortedCardSizes.map(sz => {
+                        const sName = typeof sz === 'object' && sz !== null ? (sz.size_name || '-') : String(sz);
+                        return <span key={typeof sz === 'object' && sz !== null ? (sz.id || sName) : sName} className="size-pill-badge">{sName}</span>;
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Price Preview Table */}
+                  <div className="item-price-preview-table-wrapper mt-md">
+                    <table className="price-preview-table">
+                      <thead>
+                        <tr>
+                          <th style={{ minWidth: '75px' }}>الحجم</th>
+                          {services.filter(s => s.is_active).map(svc => (
+                            <th key={svc.id} style={{ minWidth: '95px', textAlign: 'center' }}>{svc.name_ar}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {sortedCardSizes.map(sz => {
+                          const sName = typeof sz === 'object' && sz !== null ? (sz.size_name || '-') : String(sz);
+                          const sPrices = typeof sz === 'object' && sz !== null ? (sz.prices || []) : [];
+                          return (
+                            <tr key={typeof sz === 'object' && sz !== null ? (sz.id || sName) : sName}>
+                              <td className="size-group-cell">{sName}</td>
+                              {services.filter(s => s.is_active).map(svc => {
+                                const priceObj = sPrices.find(p => p.service_id === svc.id);
+                                const priceVal = parseFloat(priceObj ? priceObj.price : 0) || 0;
                                 return (
-                                  <tr key={typeof sz === 'object' && sz !== null ? (sz.id || sName) : sName}>
-                                    <td className="size-group-cell">{sName}</td>
-                                    {services.filter(s => s.is_active).map(svc => {
-                                      const priceObj = sPrices.find(p => p.service_id === svc.id);
-                                      const price = priceObj ? priceObj.price : 0;
-                                      return (
-                                        <td key={svc.id} className="text-primary font-bold" style={{ textAlign: 'center' }}>
-                                          {parseFloat(price).toFixed(2)} ر.س
-                                        </td>
-                                      );
-                                    })}
-                                  </tr>
+                                  <td key={svc.id} style={{ textAlign: 'center' }}>
+                                    {priceVal > 0 ? (
+                                      <span className="price-badge-active">
+                                        {priceVal.toFixed(2)} <small>ر.س</small>
+                                      </span>
+                                    ) : (
+                                      <span className="price-badge-zero">—</span>
+                                    )}
+                                  </td>
                                 );
                               })}
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
 
-                      {isAdmin && (
-                        <div className="service-card-actions">
-                          <Button variant="secondary" size="small" onClick={() => handleOpenEditItemType(itemType)}>
-                            <Edit2 size={14} style={{ marginLeft: '4px' }} />
-                            تعديل الأسعار
-                          </Button>
-                          <Button variant="danger" size="small" onClick={() => handleDeleteItemType(itemType.id)}>
-                            <Trash2 size={14} style={{ marginLeft: '4px' }} />
-                            حذف بالكامل
-                          </Button>
-                        </div>
-                      )}
-                    </Card>
-                  );
-                })}
-              </div>
-            );
-          })()}
+                  {/* Prominent Action Button inside Card Footer */}
+                  {isAdmin && (
+                    <div className="card-premium-footer mt-md">
+                      <Button
+                        variant="primary"
+                        className="edit-full-pricing-btn"
+                        onClick={() => handleOpenEditItemType(itemType)}
+                      >
+                        <Edit2 size={16} />
+                        <span>تعديل أحجام وشبكة أسعار القطعة</span>
+                      </Button>
+                    </div>
+                  )}
+                </Card>
+              );
+            })}
+          </div>
+        );
+      })()}
 
       {/* مودال أنواع القطع وشبكة الأسعار */}
       <Modal
