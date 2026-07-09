@@ -575,7 +575,7 @@ export default function Services() {
                         onClick={() => handleOpenEditItemType(itemType)}
                       >
                         <Edit2 size={16} />
-                        <span>تعديل أحجام وشبكة أسعار القطعة</span>
+                        <span>تعديل الأسعار والأحجام</span>
                       </Button>
                     </div>
                   )}
