@@ -4,14 +4,26 @@
   gap: var(--space-md);
 }
 
-/* للبطاقات الخاصة بأنواع القطع، نحتاج مساحة أكبر */
-.item-type-card {
-  min-width: 350px;
+/* للبطاقات الخاصة بأنواع القطع المطورة (item-type-card-premium)، نجعلها كارتين فقط في الصف لراحة وعرض ممتاز لجدول الأسعار */
+.item-type-card,
+.item-type-card-premium {
+  min-width: 0;
+  width: 100%;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 1100px) {
+  .services-grid:has(.item-type-card-premium),
   .services-grid:has(.item-type-card) {
-    grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 24px;
+  }
+}
+
+@media (max-width: 1099px) {
+  .services-grid:has(.item-type-card-premium),
+  .services-grid:has(.item-type-card) {
+    grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+    gap: 20px;
   }
 }
 
@@ -173,15 +185,15 @@
 .price-preview-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.8rem;
-  min-width: 400px;
+  font-size: 0.86rem;
+  min-width: 450px;
 }
 
 .price-preview-table th {
   text-align: center;
   color: var(--text-secondary);
-  font-weight: 700;
-  padding: 8px 6px;
+  font-weight: 800;
+  padding: 10px 8px;
   border-bottom: 2px solid var(--border);
   background: var(--bg-card);
   position: sticky;
@@ -190,7 +202,7 @@
 }
 
 .price-preview-table td {
-  padding: 8px 6px;
+  padding: 10px 8px;
   color: var(--text);
   border-bottom: 1px solid var(--border);
   border-right: 1px solid rgba(0, 0, 0, 0.05);
