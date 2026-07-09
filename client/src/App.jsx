@@ -11,7 +11,6 @@ import NewOrder from './pages/Orders/NewOrder';
 import OrdersList from './pages/Orders/OrdersList';
 import OrderDetails from './pages/Orders/OrderDetails';
 import ItemTracking from './pages/Items/ItemTracking';
-import WorkloadDashboard from './pages/Orders/WorkloadDashboard';
 import Customers from './pages/Customers/Customers';
 import Services from './pages/Services/Services';
 import Finance from './pages/Finance/Finance';
@@ -51,7 +50,6 @@ function App() {
 
               {/* تتبع القطع وعملية التشغيل */}
               <Route path="tracking" element={<ItemTracking />} />
-              <Route path="workload" element={<WorkloadDashboard />} />
 
               {/* إدارة العملاء والخدمات والمالية */}
               <Route path="customers" element={<Customers />} />
