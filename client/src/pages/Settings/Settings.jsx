@@ -19,6 +19,7 @@ export default function Settings() {
     taxNumber: settings.taxNumber || '',
     vatPercent: settings.vatPercent !== undefined ? settings.vatPercent : 15,
     currency: settings.currency || 'ر.س',
+    defaultCountryCode: settings.defaultCountryCode || '966',
     whatsappTemplate: settings.whatsappTemplate || ''
   });
 
@@ -95,7 +96,21 @@ export default function Settings() {
                     value={formData.currency}
                     onChange={handleChange}
                     required
-                    placeholder="مثال: ر.س، د.إ"
+                    placeholder="مثال: ر.س، د.إ، ج.م"
+                  />
+                </div>
+              </div>
+              <div className="form-group-row">
+                <div className="form-group flex-1">
+                  <label className="form-label">كود الدولة (للواتساب)</label>
+                  <input
+                    type="text"
+                    name="defaultCountryCode"
+                    className="form-input"
+                    value={formData.defaultCountryCode}
+                    onChange={handleChange}
+                    required
+                    placeholder="مثال: 966، 20، 971"
                   />
                 </div>
               </div>
@@ -108,15 +123,15 @@ export default function Settings() {
                   className="form-input"
                   value={formData.laundryAddress}
                   onChange={handleChange}
-                  placeholder="مثال: الرياض، حي السليمانية، شارع التحلية"
+                  placeholder="مثال: الرياض، حي السليمانية / القاهرة، المعادي"
                 />
               </div>
             </Card>
 
-            <Card title="الضريبة والفوترة (ZATCA Compliance)" className="mt-md">
+            <Card title="الضريبة والفوترة (الإعدادات المالية)" className="mt-md">
               <div className="form-group-row">
                 <div className="form-group flex-1">
-                  <label className="form-label">نسبة ضريبة القيمة المضافة (VAT %)</label>
+                  <label className="form-label">نسبة ضريبة القيمة المضافة (%)</label>
                   <input
                     type="number"
                     name="vatPercent"
@@ -142,7 +157,7 @@ export default function Settings() {
                 </div>
               </div>
               <p className="settings-tip">
-                * الرقم الضريبي ونسبة الضريبة يظهران تلقائياً في أسفل الفاتورة المطبوعة للعملاء تماشياً مع متطلبات هيئة الزكاة والضريبة والجمارك.
+                * الرقم الضريبي ونسبة الضريبة يظهران تلقائياً في الفاتورة المطبوعة للعملاء تماشياً مع متطلبات الجهات الضريبية المحلية.
               </p>
             </Card>
           </div>

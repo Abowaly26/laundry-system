@@ -539,13 +539,13 @@ export default function NewOrder() {
           } else if (/^[3567]\d{7}$/.test(sanitizedPhone)) {
             sanitizedPhone = '974' + sanitizedPhone; // Qatar
           } else if (sanitizedPhone.startsWith('05')) {
-            sanitizedPhone = '966' + sanitizedPhone.substring(1); // Saudi/UAE
+            sanitizedPhone = (settings.defaultCountryCode || '966') + sanitizedPhone.substring(1); // Saudi/UAE
           } else if (sanitizedPhone.startsWith('5') && sanitizedPhone.length === 9) {
-            sanitizedPhone = '966' + sanitizedPhone; // Saudi without 0
+            sanitizedPhone = (settings.defaultCountryCode || '966') + sanitizedPhone; // Saudi without 0
           } else if (sanitizedPhone.startsWith('0')) {
-            sanitizedPhone = '966' + sanitizedPhone.substring(1); // Fallback
+            sanitizedPhone = (settings.defaultCountryCode || '966') + sanitizedPhone.substring(1); // Fallback
           } else {
-            sanitizedPhone = '966' + sanitizedPhone; // Absolute fallback
+            sanitizedPhone = (settings.defaultCountryCode || '966') + sanitizedPhone; // Absolute fallback
           }
         }
 

@@ -9,6 +9,7 @@ const DEFAULT_SETTINGS = {
   taxNumber: '300012345600003',
   vatPercent: 15,
   currency: 'ر.س',
+  defaultCountryCode: '966',
   whatsappTemplate: `مرحباً {customer_name}،
 تم تسجيل طلبك رقم #{order_id} بنجاح.
 
