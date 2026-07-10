@@ -867,11 +867,11 @@ export default function NewOrder() {
                 <table className="new-order-items-table">
                   <thead>
                     <tr>
-                      <th style={{ width: '20%' }}>نوع القطعة</th>
+                      <th style={{ width: '18%' }}>نوع القطعة</th>
                       <th style={{ width: '12%' }}>الحجم</th>
-                      <th style={{ width: '22%' }}>الخدمة المطلوبة</th>
+                      <th style={{ width: '20%' }}>الخدمة المطلوبة</th>
                       <th style={{ width: '12%', minWidth: '110px' }}>السعر</th>
-                      <th style={{ width: '29%' }}>ملاحظات على القطعة</th>
+                      <th style={{ width: '33%' }}>ملاحظات على القطعة</th>
                       <th style={{ width: '5%' }}>إجراء</th>
                     </tr>
                   </thead>

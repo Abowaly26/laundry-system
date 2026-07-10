@@ -349,14 +349,21 @@
 }
 
 .new-order-items-table .item-notes-input {
-  min-height: 38px;
+  min-height: 58px;
   height: auto !important;
   max-height: 132px;
   line-height: 1.45;
+  padding-top: 9px !important;
+  padding-bottom: 9px !important;
   resize: none;
   overflow: hidden;
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+.new-order-items-table th:nth-child(5),
+.new-order-items-table td:nth-child(5) {
+  min-width: 300px;
 }
 
 /* Price Input with Suffix */
