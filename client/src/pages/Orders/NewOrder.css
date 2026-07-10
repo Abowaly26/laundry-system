@@ -294,11 +294,11 @@
 /* Modern Items Billing Rows */
 .items-table-container {
   margin-top: 6px;
-}
-
-/* Modern Items Billing Rows */
-.items-table-container {
-  margin-top: 6px;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 8px;
 }
 
 .new-order-items-table {
