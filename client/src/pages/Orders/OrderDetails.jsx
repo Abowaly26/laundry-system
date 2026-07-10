@@ -294,14 +294,14 @@ export default function OrderDetails() {
     <div className="page order-details-page">
       {/* رأس الصفحة */}
       <div className="page-header no-print">
-        <div>
-          <div className="flex items-center gap-sm">
-            <h1 className="page-title">تفاصيل الطلب #{order.id}</h1>
+        <div className="flex-col">
+          <div className="flex gap-sm items-center">
+            <h1 className="page-title" style={{ margin: 0 }}>تفاصيل الطلب #{order.id}</h1>
             <StatusBadge status={order.status} type="order" />
           </div>
           <p className="page-subtitle">تتبع القطع، معالجة الدفعات، وإجراءات التسليم</p>
         </div>
-        <div className="flex gap-sm items-center">
+        <div className="flex gap-sm items-center" style={{ flexWrap: 'wrap', justifyContent: 'flex-start', marginTop: '10px' }}>
           <Button variant="secondary" onClick={() => navigate('/orders')}>
             <ArrowRight size={16} style={{ marginLeft: '6px' }} />
             الرجوع للطلبات

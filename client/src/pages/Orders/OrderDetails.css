@@ -240,9 +240,16 @@
 .details-main,
 .details-main .card,
 .details-main .card-body,
-.details-main .table-container,
 .items-tracking-table,
 .items-tracking-table tr,
 .items-tracking-table td {
   overflow: visible !important;
+}
+
+@media (max-width: 768px) {
+  .details-main .table-container {
+    overflow-x: auto !important;
+    overflow-y: auto !important;
+    padding-bottom: 120px;
+  }
 }
