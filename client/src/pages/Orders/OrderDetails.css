@@ -250,6 +250,6 @@
   .details-main .table-container {
     overflow-x: auto !important;
     overflow-y: auto !important;
-    padding-bottom: 120px;
+    padding-bottom: 0;
   }
 }
