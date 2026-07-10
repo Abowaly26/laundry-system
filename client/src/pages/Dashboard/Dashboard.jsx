@@ -252,29 +252,29 @@ export default function Dashboard() {
         <button className="quick-action-btn primary" onClick={() => navigate('/orders/new')}>
           <div className="quick-action-icon"><PlusCircle size={20} /></div>
           <div className="quick-action-info">
-            <span className="quick-action-title">طلب غسيل جديد</span>
-            <span className="quick-action-subtitle">إنشاء فاتورة واستلام الملابس</span>
+            <span className="quick-action-title">{t('dashboard.newOrder')}</span>
+            <span className="quick-action-subtitle">{t('dashboard.newOrderSub') || 'إنشاء فاتورة واستلام الملابس'}</span>
           </div>
         </button>
         <button className="quick-action-btn success" onClick={() => navigate('/customers')}>
           <div className="quick-action-icon"><UserPlus size={20} /></div>
           <div className="quick-action-info">
-            <span className="quick-action-title">تسجيل عميل جديد</span>
-            <span className="quick-action-subtitle">إضافة وتعديل بيانات العملاء</span>
+            <span className="quick-action-title">{t('dashboard.addCustomer')}</span>
+            <span className="quick-action-subtitle">{t('dashboard.addCustomerSub') || 'إضافة وتعديل بيانات العملاء'}</span>
           </div>
         </button>
         <button className="quick-action-btn info" onClick={() => navigate('/tracking')}>
           <div className="quick-action-icon"><Scan size={20} /></div>
           <div className="quick-action-info">
-            <span className="quick-action-title">مسح كود QR للقطع</span>
-            <span className="quick-action-subtitle">تتبع الملابس وتحديث الحالة</span>
+            <span className="quick-action-title">{t('dashboard.scanQR')}</span>
+            <span className="quick-action-subtitle">{t('dashboard.scanQRSub') || 'تتبع الملابس وتحديث الحالة'}</span>
           </div>
         </button>
         <button className="quick-action-btn warning" onClick={() => navigate('/finance')}>
           <div className="quick-action-icon"><Wallet size={20} /></div>
           <div className="quick-action-info">
-            <span className="quick-action-title">التقارير المالية</span>
-            <span className="quick-action-subtitle">عرض التحصيلات والديون المعلقة</span>
+            <span className="quick-action-title">{t('dashboard.viewRevenue')}</span>
+            <span className="quick-action-subtitle">{t('dashboard.viewRevenueSub') || 'عرض التحصيلات والديون المعلقة'}</span>
           </div>
         </button>
       </div>
@@ -304,7 +304,7 @@ export default function Dashboard() {
       <div className="charts-row">
         <div className="chart-card">
           <div className="chart-card-header">
-            <h3 className="chart-card-title">إيرادات آخر 7 أيام</h3>
+            <h3 className="chart-card-title">{t('dashboard.revenueOverTime') || 'إيرادات آخر 7 أيام'}</h3>
           </div>
           <div className="chart-card-body" style={{ height: 300 }}>
             {revenueList.length > 0 ? (
@@ -319,7 +319,7 @@ export default function Dashboard() {
 
         <div className="chart-card">
           <div className="chart-card-header">
-            <h3 className="chart-card-title">الخدمات الأكثر طلباً</h3>
+            <h3 className="chart-card-title">{t('dashboard.popularServices') || 'الخدمات الأكثر طلباً'}</h3>
           </div>
           <div className="chart-card-body" style={{ height: 300 }}>
             {popularServicesList.length > 0 ? (
@@ -338,13 +338,13 @@ export default function Dashboard() {
         <div className="overdue-section">
           <h3 style={{ marginBottom: 'var(--space-sm)', fontSize: '0.95rem' }}>
             <AlertTriangle size={18} style={{ verticalAlign: 'middle', marginLeft: 6, color: 'var(--warning)' }} />
-            طلبات متأخرة ({overdueList.length})
+            {t('dashboard.overdueOrders')} ({overdueList.length})
           </h3>
           {overdueList.slice(0, 5).map((order) => (
             <div className="overdue-alert" key={order._id || order.id}>
               <AlertTriangle size={18} className="alert-icon" />
               <span>
-                الطلب{' '}
+                {t('dashboard.orderId')}{' '}
                 <span
                   className="order-link"
                   onClick={() => navigate(`/orders/${order._id || order.id}`)}
@@ -352,7 +352,7 @@ export default function Dashboard() {
                   #{order.orderNumber || order.id}
                 </span>
                 {' - '}
-                {order.customer?.name || 'عميل'}
+                {order.customer?.name || t('dashboard.customer')}
                 {' - متأخر'}
               </span>
             </div>
@@ -363,7 +363,7 @@ export default function Dashboard() {
       {/* Recent Orders */}
       <div className="recent-orders">
         <div className="recent-orders-header">
-          <h3 className="recent-orders-title">أحدث الطلبات</h3>
+          <h3 className="recent-orders-title">{t('dashboard.recentOrders') || 'أحدث الطلبات'}</h3>
           <div className="flex gap-sm items-center">
             <button 
               onClick={exportToCSV} 
@@ -375,7 +375,7 @@ export default function Dashboard() {
             </button>
             <span style={{ color: 'var(--border)' }}>|</span>
             <Link to="/orders" className="recent-orders-link">
-              عرض الكل
+              {t('dashboard.viewAll') || 'عرض الكل'}
             </Link>
           </div>
         </div>
@@ -383,12 +383,12 @@ export default function Dashboard() {
           <table>
             <thead>
               <tr>
-                <th>رقم الطلب</th>
-                <th>العميل</th>
-                <th>القطع</th>
-                <th>الحالة</th>
-                <th>المبلغ</th>
-                <th>التاريخ</th>
+                <th>{t('dashboard.orderId') || 'رقم الطلب'}</th>
+                <th>{t('dashboard.customer') || 'العميل'}</th>
+                <th>{t('dashboard.items') || 'القطع'}</th>
+                <th>{t('dashboard.status') || 'الحالة'}</th>
+                <th>{t('dashboard.amount') || 'المبلغ'}</th>
+                <th>{t('dashboard.date') || 'التاريخ'}</th>
               </tr>
             </thead>
             <tbody>
@@ -412,7 +412,7 @@ export default function Dashboard() {
               ) : (
                 <tr>
                   <td colSpan={6} style={{ textAlign: 'center', padding: 32, color: 'var(--text-secondary)' }}>
-                    لا توجد طلبات حديثة
+                    {t('dashboard.noRecentOrders') || 'لا توجد طلبات حديثة'}
                   </td>
                 </tr>
               )}

@@ -1,37 +1,37 @@
 import Badge from './Badge';
+import { useTranslation } from 'react-i18next';
 
 const statusConfig = {
   // Order statuses
-  pending: { label: 'قيد الانتظار', variant: 'warning' },
-  processing: { label: 'قيد التنفيذ', variant: 'info' },
-  ready: { label: 'جاهز للاستلام', variant: 'success' },
-  delivered: { label: 'تم التسليم', variant: 'default' },
-  cancelled: { label: 'ملغي', variant: 'error' },
+  pending: { labelKey: 'status.pending', variant: 'warning' },
+  processing: { labelKey: 'status.processing', variant: 'info' },
+  ready: { labelKey: 'status.ready', variant: 'success' },
+  delivered: { labelKey: 'status.delivered', variant: 'default' },
+  cancelled: { labelKey: 'status.cancelled', variant: 'error' },
 
   // Item statuses
-  received: { label: 'تم الاستلام', variant: 'default' },
-  washing: { label: 'غسيل', variant: 'info' },
-  drying: { label: 'تجفيف', variant: 'info' },
-  ironing: { label: 'كي', variant: 'warning' },
-  // ready shares with above
-  // delivered shares with above
+  received: { labelKey: 'status.received', variant: 'default' },
+  washing: { labelKey: 'status.washing', variant: 'info' },
+  drying: { labelKey: 'status.drying', variant: 'info' },
+  ironing: { labelKey: 'status.ironing', variant: 'warning' },
 
   // Payment statuses
-  paid: { label: 'مدفوع', variant: 'success' },
-  partial: { label: 'جزئي', variant: 'warning' },
-  unpaid: { label: 'غير مدفوع', variant: 'error' },
+  paid: { labelKey: 'status.paid', variant: 'success' },
+  partial: { labelKey: 'status.partial', variant: 'warning' },
+  unpaid: { labelKey: 'status.unpaid', variant: 'error' },
 
   // User statuses
-  active: { label: 'نشط', variant: 'success' },
-  inactive: { label: 'غير نشط', variant: 'default' },
+  active: { labelKey: 'status.active', variant: 'success' },
+  inactive: { labelKey: 'status.inactive', variant: 'default' },
 };
 
 export default function StatusBadge({ status, className = '' }) {
-  const config = statusConfig[status] || { label: status, variant: 'default' };
+  const { t } = useTranslation();
+  const config = statusConfig[status] || { labelKey: `status.${status}`, variant: 'default' };
 
   return (
     <Badge variant={config.variant} className={className}>
-      {config.label}
+      {t(config.labelKey)}
     </Badge>
   );
 }
