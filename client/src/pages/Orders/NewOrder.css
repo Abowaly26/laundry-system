@@ -1451,11 +1451,60 @@
   overflow: visible !important;
 }
 
-/* Ensure the table container itself scrolls on mobile, but has padding for dropdowns */
+/* Ensure the table container itself scrolls on mobile, or stacks vertically */
 @media (max-width: 768px) {
   .items-table-container {
-    overflow-x: auto !important;
-    overflow-y: auto !important;
-    padding-bottom: 120px; /* Space for dropdowns so they don't get fully clipped */
+    overflow: visible !important;
+    padding-bottom: 0;
+  }
+  
+  .new-order-items-table,
+  .new-order-items-table tbody,
+  .new-order-items-table th {
+    display: block !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .new-order-items-table thead {
+    display: none !important;
+  }
+
+  .new-order-items-table tr.item-main-row {
+    display: flex !important;
+    flex-direction: column;
+    gap: 12px;
+    background: var(--bg-white);
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: 12px 12px 0 0;
+  }
+
+  .new-order-items-table tr.item-notes-row {
+    display: block !important;
+    background: var(--bg-white);
+    padding: 0 16px 16px;
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 12px 12px;
+    margin-bottom: 16px;
+  }
+
+  .new-order-items-table td {
+    display: block !important;
+    width: 100% !important;
+    padding: 0 !important;
+    border: none !important;
+  }
+
+  .new-order-items-table tr.item-main-row td:nth-child(1)::before { content: 'القطعة:'; display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-light); margin-bottom: 6px; }
+  .new-order-items-table tr.item-main-row td:nth-child(2)::before { content: 'الحجم:'; display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-light); margin-bottom: 6px; }
+  .new-order-items-table tr.item-main-row td:nth-child(3)::before { content: 'الخدمة:'; display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-light); margin-bottom: 6px; }
+  .new-order-items-table tr.item-main-row td:nth-child(4)::before { content: 'السعر:'; display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-light); margin-bottom: 6px; }
+
+  .new-order-items-table tr.item-main-row td:nth-child(5) {
+    margin-top: 4px;
+    padding-top: 16px !important;
+    border-top: 1px dashed var(--border) !important;
   }
 }
