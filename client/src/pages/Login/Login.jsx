@@ -100,6 +100,7 @@ export default function Login() {
               تسجيل الدخول
             </Button>
           </div>
+        </form>
       </div>
     </div>
   );
