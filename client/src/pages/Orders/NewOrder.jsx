@@ -382,6 +382,12 @@ export default function NewOrder() {
     setItems(newItems);
   };
 
+  const fitItemNotesField = (element) => {
+    if (!element) return;
+    element.style.height = 'auto';
+    element.style.height = `${element.scrollHeight}px`;
+  };
+
   // إضافة عميل سريع
   const handleAddCustomer = async (e) => {
     e.preventDefault();
@@ -997,12 +1003,17 @@ export default function NewOrder() {
                           </div>
                         </td>
                         <td>
-                          <input
-                            type="text"
-                            className="form-input form-input-compact"
+                          <textarea
+                            className="form-input form-input-compact item-notes-input"
                             value={item.notes}
-                            onChange={(e) => handleNotesChange(index, e.target.value)}
+                            onChange={(e) => {
+                              handleNotesChange(index, e.target.value);
+                              fitItemNotesField(e.target);
+                            }}
+                            onInput={(e) => fitItemNotesField(e.target)}
+                            ref={fitItemNotesField}
                             placeholder="مثال: بقعة زيت، تلف بالكم..."
+                            rows={1}
                           />
                         </td>
                         <td>

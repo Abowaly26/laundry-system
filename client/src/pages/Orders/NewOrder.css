@@ -348,6 +348,17 @@
   box-sizing: border-box;
 }
 
+.new-order-items-table .item-notes-input {
+  min-height: 38px;
+  height: auto !important;
+  max-height: 132px;
+  line-height: 1.45;
+  resize: none;
+  overflow: hidden;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 /* Price Input with Suffix */
 .price-input-wrapper {
   position: relative;
