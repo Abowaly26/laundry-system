@@ -2,6 +2,7 @@
 const express = require('express');
 const { query } = require('../config/database');
 const authMiddleware = require('../middleware/auth');
+const authorizeRoles = require('../middleware/roles');
 
 const router = express.Router();
 router.use(authMiddleware);
@@ -128,7 +129,7 @@ router.get('/:id', async (req, res) => {
 /**
  * POST /api/customers
  */
-router.post('/', async (req, res) => {
+router.post('/', authorizeRoles('admin', 'cashier', 'super_owner'), async (req, res) => {
   try {
     const { name, phone, address } = req.body;
 
@@ -158,7 +159,7 @@ router.post('/', async (req, res) => {
 /**
  * PUT /api/customers/:id
  */
-router.put('/:id', async (req, res) => {
+router.put('/:id', authorizeRoles('admin', 'cashier', 'super_owner'), async (req, res) => {
   try {
     const { id } = req.params;
     const { name, phone, address } = req.body;
@@ -191,7 +192,7 @@ router.put('/:id', async (req, res) => {
 /**
  * DELETE /api/customers/:id
  */
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authorizeRoles('admin', 'cashier', 'super_owner'), async (req, res) => {
   try {
     const { id } = req.params;
 

@@ -46,16 +46,44 @@ function App() {
 
               {/* مسارات الطلبات */}
               <Route path="orders" element={<OrdersList />} />
-              <Route path="orders/new" element={<NewOrder />} />
+              <Route 
+                path="orders/new" 
+                element={
+                  <ProtectedRoute noWorker>
+                    <NewOrder />
+                  </ProtectedRoute>
+                } 
+              />
               <Route path="orders/:id" element={<OrderDetails />} />
 
               {/* تتبع القطع وعملية التشغيل */}
               <Route path="tracking" element={<ItemTracking />} />
 
               {/* إدارة العملاء والخدمات والمالية */}
-              <Route path="customers" element={<Customers />} />
-              <Route path="services" element={<Services />} />
-              <Route path="finance" element={<Finance />} />
+              <Route 
+                path="customers" 
+                element={
+                  <ProtectedRoute noWorker>
+                    <Customers />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="services" 
+                element={
+                  <ProtectedRoute adminOnly>
+                    <Services />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="finance" 
+                element={
+                  <ProtectedRoute adminOnly>
+                    <Finance />
+                  </ProtectedRoute>
+                } 
+              />
 
               {/* إدارة المستخدمين والإعدادات (للمدير فقط) */}
               <Route

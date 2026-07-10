@@ -20,12 +20,12 @@ import './Sidebar.css';
 // قائمة التنقل الرئيسية
 const navItems = [
   { path: '/', label: 'لوحة التحكم', icon: LayoutDashboard },
-  { path: '/orders/new', label: 'طلب جديد', icon: PlusCircle, hideForSuperOwner: true },
+  { path: '/orders/new', label: 'طلب جديد', icon: PlusCircle, hideForSuperOwner: true, noWorker: true },
   { path: '/orders', label: 'الطلبات', icon: ClipboardList, hideForSuperOwner: true },
   { path: '/tracking', label: 'تتبع القطع', icon: ScanLine, hideForSuperOwner: true },
-  { path: '/customers', label: 'العملاء', icon: Users, hideForSuperOwner: true },
-  { path: '/services', label: 'الخدمات', icon: Sparkles, hideForSuperOwner: true },
-  { path: '/finance', label: 'المالية', icon: Wallet, hideForSuperOwner: true },
+  { path: '/customers', label: 'العملاء', icon: Users, hideForSuperOwner: true, noWorker: true },
+  { path: '/services', label: 'الخدمات', icon: Sparkles, hideForSuperOwner: true, adminOnly: true },
+  { path: '/finance', label: 'المالية', icon: Wallet, hideForSuperOwner: true, adminOnly: true },
   { path: '/users', label: 'المستخدمين', icon: UserCog, adminOnly: true },
   { path: '/settings', label: 'الإعدادات', icon: SettingsIcon, adminOnly: true },
 ];
@@ -44,7 +44,7 @@ const roleLabels = {
 };
 
 export default function Sidebar({ isOpen, onClose }) {
-  const { user, logout, isAdmin, isSuperOwner, laundryName } = useAuth();
+  const { user, logout, isAdmin, isSuperOwner, isWorker, laundryName } = useAuth();
   const { settings } = useSettings();
   const location = useLocation();
 
@@ -52,8 +52,9 @@ export default function Sidebar({ isOpen, onClose }) {
   const filteredItems = isSuperOwner
     ? superOwnerItems
     : navItems.filter(item => {
-        if (item.hideForSuperOwner) return true; // إظهار للـ admin/cashier/worker
-        if (item.adminOnly) return isAdmin;
+        if (item.hideForSuperOwner && isSuperOwner) return false;
+        if (item.adminOnly && !isAdmin) return false;
+        if (item.noWorker && isWorker) return false;
         return true;
       });
 

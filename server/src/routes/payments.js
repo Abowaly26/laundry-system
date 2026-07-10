@@ -2,6 +2,7 @@
 const express = require('express');
 const { query, transaction } = require('../config/database');
 const authMiddleware = require('../middleware/auth');
+const authorizeRoles = require('../middleware/roles');
 
 const router = express.Router();
 
@@ -125,7 +126,7 @@ router.get('/order/:orderId', async (req, res) => {
  * POST /api/payments
  * إنشاء دفعة جديدة لطلب
  */
-router.post('/', async (req, res) => {
+router.post('/', authorizeRoles('admin', 'cashier', 'super_owner'), async (req, res) => {
   try {
     const { order_id, amount, method, type } = req.body;
 

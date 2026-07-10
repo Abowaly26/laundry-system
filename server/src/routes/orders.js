@@ -3,6 +3,7 @@ const express = require('express');
 const QRCode = require('qrcode');
 const { query, transaction } = require('../config/database');
 const authMiddleware = require('../middleware/auth');
+const authorizeRoles = require('../middleware/roles');
 
 const router = express.Router();
 
@@ -407,7 +408,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
  * POST /api/orders
  * إنشاء طلب جديد مع القطع وتوليد QR codes
  */
-router.post('/', authMiddleware, async (req, res) => {
+router.post('/', authMiddleware, authorizeRoles('admin', 'cashier', 'super_owner'), async (req, res) => {
   try {
     const { customer_id, items, notes, paid_amount, payment_method, expected_delivery_at } = req.body;
 
@@ -647,7 +648,7 @@ router.put('/:id', authMiddleware, async (req, res) => {
  * DELETE /api/orders/:id
  * إلغاء الطلب
  */
-router.delete('/:id', authMiddleware, async (req, res) => {
+router.delete('/:id', authMiddleware, authorizeRoles('admin', 'cashier', 'super_owner'), async (req, res) => {
   try {
     const { id } = req.params;
 
