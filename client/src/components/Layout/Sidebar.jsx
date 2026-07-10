@@ -19,7 +19,7 @@ import './Sidebar.css';
 
 // قائمة التنقل الرئيسية
 const navItems = [
-  { path: '/', label: 'لوحة التحكم', icon: LayoutDashboard },
+  { path: '/', label: 'لوحة التحكم', icon: LayoutDashboard, noWorker: true },
   { path: '/orders/new', label: 'طلب جديد', icon: PlusCircle, hideForSuperOwner: true, noWorker: true },
   { path: '/orders', label: 'الطلبات', icon: ClipboardList, hideForSuperOwner: true },
   { path: '/tracking', label: 'تتبع القطع', icon: ScanLine, hideForSuperOwner: true },

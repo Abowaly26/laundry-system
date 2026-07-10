@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, Navigate } from 'react-router-dom';
 import {
   ClipboardList,
   Loader,
@@ -41,8 +41,12 @@ export default function Dashboard() {
   const [popularServices, setPopularServices] = useState([]);
   const [overdue, setOverdue] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { isSuperOwner, isWorker, laundryName } = useAuth();
   const navigate = useNavigate();
-  const { isSuperOwner, laundryName } = useAuth();
+
+  if (isWorker) {
+    return <Navigate to="/tracking" replace />;
+  }
 
   const revenueList = Array.isArray(revenue) ? revenue : [];
   const popularServicesList = Array.isArray(popularServices) ? popularServices : [];

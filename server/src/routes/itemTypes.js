@@ -22,8 +22,15 @@ router.get('/', async (req, res) => {
     const sizesRes = await query('SELECT * FROM item_sizes ORDER BY id ASC');
     const itemSizes = sizesRes.rows;
 
-    // 3. جلب جميع الأسعار
-    const pricesRes = await query('SELECT * FROM item_size_prices ORDER BY id ASC');
+    // 3. جلب الأسعار للمغسلة الحالية فقط
+    let pricesQuery = 'SELECT p.* FROM item_size_prices p';
+    let pricesParams = [];
+    if (req.user.role !== 'super_owner' && req.user.laundry_id) {
+      pricesQuery += ' JOIN services s ON p.service_id = s.id WHERE s.laundry_id = $1';
+      pricesParams.push(req.user.laundry_id);
+    }
+    pricesQuery += ' ORDER BY p.id ASC';
+    const pricesRes = await query(pricesQuery, pricesParams);
     const sizePrices = pricesRes.rows;
 
     // تجميع البيانات بشكل شجري احترافي
@@ -69,7 +76,7 @@ router.get('/', async (req, res) => {
  * POST /api/item-types
  * إضافة نوع قطعة جديد مع الأحجام وأسعار الخدمات (المدير فقط)
  */
-router.post('/', authorizeRoles('admin'), async (req, res) => {
+router.post('/', authorizeRoles('super_owner'), async (req, res) => {
   try {
     const { name_ar, name_en, sizes, prices } = req.body;
 
@@ -140,7 +147,7 @@ router.post('/', authorizeRoles('admin'), async (req, res) => {
  * PUT /api/item-types/:id
  * تعديل اسم نوع القطعة، أحجامها وأسعارها (المدير فقط)
  */
-router.put('/:id', authorizeRoles('admin'), async (req, res) => {
+router.put('/:id', authorizeRoles('super_owner'), async (req, res) => {
   try {
     const { id } = req.params;
     const { name_ar, name_en, sizes, prices } = req.body;
@@ -239,7 +246,7 @@ router.put('/:id', authorizeRoles('admin'), async (req, res) => {
  * DELETE /api/item-types/:id
  * حذف نوع قطعة بالكامل (المدير فقط)
  */
-router.delete('/:id', authorizeRoles('admin'), async (req, res) => {
+router.delete('/:id', authorizeRoles('super_owner'), async (req, res) => {
   try {
     const { id } = req.params;
 

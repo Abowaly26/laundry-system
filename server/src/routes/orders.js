@@ -100,15 +100,16 @@ router.get('/track/:orderIdOrPhone', async (req, res) => {
       );
 
       if (customerResult.rows.length > 0) {
-        const customer = customerResult.rows[0];
+        const customerIds = customerResult.rows.map(row => row.id);
+        const placeholders = customerIds.map((_, i) => `$${i + 1}`).join(',');
         const customerOrdersResult = await query(`
           SELECT o.*, c.name as customer_name, c.phone as customer_phone
           FROM orders o
           JOIN customers c ON o.customer_id = c.id
-          WHERE o.customer_id = $1 AND o.status NOT IN ('cancelled')
+          WHERE o.customer_id IN (${placeholders}) AND o.status NOT IN ('cancelled')
           ORDER BY o.created_at DESC
-          LIMIT 5
-        `, [customer.id]);
+          LIMIT 10
+        `, customerIds);
 
         orders = await Promise.all(customerOrdersResult.rows.map(async order => {
           const itemsResult = await query(`
@@ -213,18 +214,26 @@ router.get('/', authMiddleware, async (req, res) => {
  */
 router.get('/workload/status', authMiddleware, async (req, res) => {
   try {
+    let laundryCheck = '';
+    let queryParams = [];
+    if (req.user.role !== 'super_owner' && req.user.laundry_id) {
+      laundryCheck = 'AND o.laundry_id = $1';
+      queryParams.push(req.user.laundry_id);
+    }
+
     const itemsResult = await query(`
-      SELECT status, COUNT(*) as count 
-      FROM order_items 
-      WHERE status IN ('pending', 'processing')
-      GROUP BY status
-    `);
+      SELECT oi.status, COUNT(*) as count 
+      FROM order_items oi
+      JOIN orders o ON oi.order_id = o.id
+      WHERE oi.status IN ('pending', 'processing') ${laundryCheck}
+      GROUP BY oi.status
+    `, queryParams);
 
     const activeOrdersResult = await query(`
       SELECT COUNT(*) as count 
-      FROM orders 
-      WHERE status IN ('pending', 'processing')
-    `);
+      FROM orders o
+      WHERE o.status IN ('pending', 'processing') ${laundryCheck}
+    `, queryParams);
 
     const stats = {
       pending: 0,
@@ -279,6 +288,13 @@ router.get('/workload/timeline', authMiddleware, async (req, res) => {
       targetDateStr = today.toISOString().split('T')[0];
     }
 
+    let laundryCheck = '';
+    let queryParams = [targetDateStr];
+    if (req.user.role !== 'super_owner' && req.user.laundry_id) {
+      laundryCheck = 'AND o.laundry_id = $2';
+      queryParams.push(req.user.laundry_id);
+    }
+
     // جلب الطلبات النشطة التي موعد تسليمها المتوقع في اليوم المحدد
     // أو الطلبات المتأخرة بالكامل (يعني موعد تسليمها قبل اليوم ومستواها ليس delivered/cancelled)
     const timelineResult = await query(`
@@ -292,9 +308,9 @@ router.get('/workload/timeline', authMiddleware, async (req, res) => {
         AND (
           DATE(o.expected_delivery_at) = $1 
           OR DATE(o.expected_delivery_at) < $1
-        )
+        ) ${laundryCheck}
       ORDER BY o.expected_delivery_at ASC
-    `, [targetDateStr]);
+    `, queryParams);
 
     res.json({
       success: true,
@@ -312,6 +328,13 @@ router.get('/workload/timeline', authMiddleware, async (req, res) => {
  */
 router.get('/workload/weekly', authMiddleware, async (req, res) => {
   try {
+    let laundryCheck = '';
+    let queryParams = [];
+    if (req.user.role !== 'super_owner' && req.user.laundry_id) {
+      laundryCheck = 'AND o.laundry_id = $1';
+      queryParams.push(req.user.laundry_id);
+    }
+
     // جلب مجموع القطع النشطة المجدولة لكل يوم خلال الـ 7 أيام القادمة
     const result = await query(`
       SELECT DATE(o.expected_delivery_at) as delivery_date, COUNT(oi.id) as items_count
@@ -320,9 +343,10 @@ router.get('/workload/weekly', authMiddleware, async (req, res) => {
       WHERE o.status NOT IN ('delivered', 'cancelled')
         AND o.expected_delivery_at >= CURRENT_DATE
         AND o.expected_delivery_at < CURRENT_DATE + INTERVAL '7 days'
+        ${laundryCheck}
       GROUP BY DATE(o.expected_delivery_at)
       ORDER BY delivery_date ASC
-    `);
+    `, queryParams);
 
     // إعداد هيكل البيانات للأيام السبعة القادمة مع تعبئة الأيام الفارغة بـ 0
     const weeklyData = [];
@@ -363,12 +387,19 @@ router.get('/workload/weekly', authMiddleware, async (req, res) => {
  */
 router.get('/:id', authMiddleware, async (req, res) => {
   try {
+    let laundryCheck = '';
+    let queryParams = [req.params.id];
+    if (req.user.role !== 'super_owner' && req.user.laundry_id) {
+      laundryCheck = 'AND o.laundry_id = $2';
+      queryParams.push(req.user.laundry_id);
+    }
+
     const orderResult = await query(`
       SELECT o.*, c.name as customer_name, c.phone as customer_phone, c.address as customer_address
       FROM orders o
       JOIN customers c ON o.customer_id = c.id
-      WHERE o.id = $1
-    `, [req.params.id]);
+      WHERE o.id = $1 ${laundryCheck}
+    `, queryParams);
 
     if (orderResult.rows.length === 0) {
       return res.status(404).json({ success: false, message: 'الطلب غير موجود' });
@@ -570,7 +601,14 @@ router.put('/:id', authMiddleware, async (req, res) => {
     const { id } = req.params;
     const { status, notes, expected_delivery_at } = req.body;
 
-    const existingResult = await query('SELECT * FROM orders WHERE id = $1', [id]);
+    let laundryCheck = '';
+    let queryParams = [id];
+    if (req.user.role !== 'super_owner' && req.user.laundry_id) {
+      laundryCheck = 'AND laundry_id = $2';
+      queryParams.push(req.user.laundry_id);
+    }
+
+    const existingResult = await query(`SELECT * FROM orders WHERE id = $1 ${laundryCheck}`, queryParams);
     if (existingResult.rows.length === 0) {
       return res.status(404).json({ success: false, message: 'الطلب غير موجود' });
     }
@@ -652,7 +690,14 @@ router.delete('/:id', authMiddleware, authorizeRoles('admin', 'cashier', 'super_
   try {
     const { id } = req.params;
 
-    const existingResult = await query('SELECT * FROM orders WHERE id = $1', [id]);
+    let laundryCheck = '';
+    let queryParams = [id];
+    if (req.user.role !== 'super_owner' && req.user.laundry_id) {
+      laundryCheck = 'AND laundry_id = $2';
+      queryParams.push(req.user.laundry_id);
+    }
+
+    const existingResult = await query(`SELECT * FROM orders WHERE id = $1 ${laundryCheck}`, queryParams);
     if (existingResult.rows.length === 0) {
       return res.status(404).json({ success: false, message: 'الطلب غير موجود' });
     }
