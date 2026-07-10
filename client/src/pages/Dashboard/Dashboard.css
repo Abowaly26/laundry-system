@@ -171,6 +171,9 @@
 .chart-card-body {
   padding: var(--space-lg);
   position: relative;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 /* Overdue Section */

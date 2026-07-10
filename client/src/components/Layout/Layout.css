@@ -10,6 +10,10 @@
   padding-top: var(--header-height);
   min-height: 100vh;
   background: var(--bg);
+  min-width: 0; /* Critical for flex children to allow shrinking */
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 .layout-content {
