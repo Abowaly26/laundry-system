@@ -1,8 +1,10 @@
 import { Menu, Building2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useTranslation } from 'react-i18next';
 import './Header.css';
 
 export default function Header({ title, onMenuClick }) {
+  const { i18n } = useTranslation();
   const { user, laundryName, isSuperOwner } = useAuth();
 
   const getInitials = (name) => {
@@ -28,6 +30,22 @@ export default function Header({ title, onMenuClick }) {
       </div>
 
       <div className="header-left">
+        <button 
+          onClick={() => i18n.changeLanguage(i18n.language === 'en' ? 'ar' : 'en')}
+          style={{ 
+            background: 'var(--primary-light)', 
+            border: 'none', 
+            cursor: 'pointer', 
+            marginInlineEnd: '15px', 
+            color: 'var(--primary)', 
+            fontWeight: 'bold',
+            padding: '4px 12px',
+            borderRadius: '16px',
+            fontSize: '0.85rem'
+          }}
+        >
+          {i18n.language === 'en' ? 'العربية' : 'English'}
+        </button>
         <div className="header-user">
           <span className="header-user-name">{user?.name}</span>
           <div className="header-user-avatar">
