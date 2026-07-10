@@ -805,6 +805,30 @@
     min-width: 80px;
     flex-shrink: 0;
   }
+  
+  .scheduler-fields-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .new-order-page .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .search-section {
+    width: 100%;
+  }
+  
+  .search-input-wrapper input {
+    width: 100%;
+  }
+  
+  .new-order-top-row,
+  .new-order-bottom-row {
+    display: flex;
+    flex-direction: column;
+  }
 }
 
 /* Chart Styles as Day Selectors */
