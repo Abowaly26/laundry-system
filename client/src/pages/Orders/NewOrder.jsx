@@ -516,7 +516,7 @@ export default function NewOrder() {
         }
         if (sanitizedPhone.startsWith('0')) {
           sanitizedPhone = '966' + sanitizedPhone.substring(1);
-        } else if (!sanitizedPhone.startsWith('966') && sanitizedPhone.length < 11) {
+        } else if (!sanitizedPhone.startsWith('966')) {
           sanitizedPhone = '966' + sanitizedPhone;
         }
 
