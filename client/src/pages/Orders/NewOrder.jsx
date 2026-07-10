@@ -510,14 +510,43 @@ export default function NewOrder() {
           .replace(/{tracking_link}/g, trackingLink);
 
         const encodedText = encodeURIComponent(text);
+        
+        // Smart International Phone Formatting
+        const arabCodes = ['966', '20', '971', '965', '968', '973', '974', '962', '961', '963', '964', '967', '218', '216', '213', '212', '222', '249', '252', '253', '269'];
         let sanitizedPhone = customerPhone.replace(/\D/g, '');
+        
         if (sanitizedPhone.startsWith('00')) {
           sanitizedPhone = sanitizedPhone.substring(2);
         }
-        if (sanitizedPhone.startsWith('0')) {
-          sanitizedPhone = '966' + sanitizedPhone.substring(1);
-        } else if (!sanitizedPhone.startsWith('966')) {
-          sanitizedPhone = '966' + sanitizedPhone;
+        
+        let hasCountryCode = false;
+        for (let code of arabCodes) {
+          if (sanitizedPhone.startsWith(code) && sanitizedPhone.length >= code.length + 7) {
+            hasCountryCode = true;
+            break;
+          }
+        }
+
+        if (!hasCountryCode) {
+          if (sanitizedPhone.startsWith('01') && sanitizedPhone.length === 11) {
+            sanitizedPhone = '20' + sanitizedPhone.substring(1); // Egypt
+          } else if (sanitizedPhone.startsWith('1') && sanitizedPhone.length === 10) {
+            sanitizedPhone = '20' + sanitizedPhone; // Egypt without 0
+          } else if (/^[569]\d{7}$/.test(sanitizedPhone)) {
+            sanitizedPhone = '965' + sanitizedPhone; // Kuwait
+          } else if (/^[36]\d{7}$/.test(sanitizedPhone)) {
+            sanitizedPhone = '973' + sanitizedPhone; // Bahrain
+          } else if (/^[3567]\d{7}$/.test(sanitizedPhone)) {
+            sanitizedPhone = '974' + sanitizedPhone; // Qatar
+          } else if (sanitizedPhone.startsWith('05')) {
+            sanitizedPhone = '966' + sanitizedPhone.substring(1); // Saudi/UAE
+          } else if (sanitizedPhone.startsWith('5') && sanitizedPhone.length === 9) {
+            sanitizedPhone = '966' + sanitizedPhone; // Saudi without 0
+          } else if (sanitizedPhone.startsWith('0')) {
+            sanitizedPhone = '966' + sanitizedPhone.substring(1); // Fallback
+          } else {
+            sanitizedPhone = '966' + sanitizedPhone; // Absolute fallback
+          }
         }
 
         // توجيه تلقائي لواتساب
