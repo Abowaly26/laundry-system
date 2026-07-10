@@ -286,7 +286,7 @@
   }
 
   .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   }
 
   .stat-card {
@@ -299,9 +299,18 @@
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 600px) {
   .stats-grid {
     grid-template-columns: 1fr;
+  }
+  
+  .stat-card {
+    align-items: flex-start;
+  }
+  
+  .stat-icon {
+    width: 40px;
+    height: 40px;
   }
 }
 
