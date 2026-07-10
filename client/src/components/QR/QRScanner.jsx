@@ -1,113 +1,190 @@
-import { useEffect, useId, useRef } from 'react';
-import { Html5QrcodeScanner, Html5Qrcode, Html5QrcodeScanType } from 'html5-qrcode';
-import { ImageIcon } from 'lucide-react';
+import { useEffect, useState, useRef } from 'react';
+import { Html5Qrcode } from 'html5-qrcode';
+import { Camera, SwitchCamera, ImageIcon, AlertCircle } from 'lucide-react';
+import Button from '../UI/Button';
 
 export default function QRScanner({ onScanSuccess, onScanFailure }) {
+  const [cameras, setCameras] = useState([]);
+  const [activeCameraId, setActiveCameraId] = useState(null);
+  const [isScanning, setIsScanning] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+  const [isSecure, setIsSecure] = useState(true);
+  
   const scannerRef = useRef(null);
-  const readerId = useId().replace(/:/g, '');
-  const imageReaderId = `${readerId}-image-reader`;
-  const uploadId = `${readerId}-image-upload`;
+  const readerId = "qr-reader-custom";
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
-    const scanner = new Html5QrcodeScanner(
-      readerId,
-      {
-        fps: 10,
-        qrbox: { width: 250, height: 250 },
-        rememberLastUsedCamera: true,
-        showTorchButtonIfSupported: false,
-        supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA],
-      },
-      false
-    );
+    if (window.isSecureContext === false) {
+      setIsSecure(false);
+      setErrorMsg('المتصفح يمنع الكاميرا لأن الاتصال غير آمن. يجب استخدام HTTPS.');
+    }
 
-    scanner.render(
-      (decodedText) => {
-        if (onScanSuccess) onScanSuccess(decodedText);
-      },
-      (error) => {
-        if (onScanFailure) onScanFailure(error);
-      }
-    );
-
-    scannerRef.current = scanner;
-
+    scannerRef.current = new Html5Qrcode(readerId);
+    
     return () => {
-      if (scannerRef.current) {
-        scannerRef.current.clear().catch(() => {});
+      if (scannerRef.current && scannerRef.current.isScanning) {
+        scannerRef.current.stop().catch(() => {});
       }
     };
-  }, [onScanSuccess, onScanFailure, readerId]);
+  }, []);
 
-  // تخصيص نصوص مكتبة السكانر وإخفاء العناصر غير المستخدمة في الواجهة.
-  useEffect(() => {
-    const patch = () => {
-      document.querySelectorAll(`#${readerId} *`).forEach(el => {
-        if (el.children.length === 0 && el.innerText) {
-          const t = el.innerText.trim();
-          if (t.includes('Request Camera') || t === 'Request Camera Permissions') {
-            el.innerText = 'السماح بالوصول للكاميرا';
-            el.style.fontFamily = "'Cairo', sans-serif";
-          } else if (t === 'Start Scanning') {
-            el.innerText = 'بدء المسح';
-            el.style.fontFamily = "'Cairo', sans-serif";
-          } else if (t === 'Stop Scanning') {
-            el.innerText = 'إيقاف المسح';
-            el.style.fontFamily = "'Cairo', sans-serif";
+  const startScanning = async (cameraId = null) => {
+    if (!isSecure) return;
+    setErrorMsg('');
+    
+    try {
+      let selectedCameraId = cameraId;
+      
+      if (!cameras.length) {
+        const devices = await Html5Qrcode.getCameras();
+        if (devices && devices.length > 0) {
+          setCameras(devices);
+          
+          if (!selectedCameraId) {
+            const backCamera = devices.find(
+              d => d.label.toLowerCase().includes('back') || 
+                   d.label.toLowerCase().includes('environment') ||
+                   d.label.toLowerCase().includes('خلفية')
+            );
+            selectedCameraId = backCamera ? backCamera.id : devices[0].id;
           }
+        } else {
+          throw new Error('لم يتم العثور على أي كاميرا في جهازك.');
         }
-      });
+      } else if (!selectedCameraId) {
+        selectedCameraId = cameras[0].id;
+      }
 
-      document.querySelectorAll(`#${readerId} a, #${readerId}__dashboard_section_swaplink`).forEach(el => {
-        el.style.display = 'none';
-      });
-    };
+      if (scannerRef.current.isScanning) {
+        await scannerRef.current.stop();
+      }
+      
+      await scannerRef.current.start(
+        selectedCameraId,
+        {
+          fps: 10,
+          qrbox: { width: 220, height: 220 },
+          aspectRatio: 1.0,
+        },
+        (decodedText) => {
+          if (onScanSuccess) onScanSuccess(decodedText);
+        },
+        (errorMessage) => {}
+      );
+      
+      setIsScanning(true);
+      setActiveCameraId(selectedCameraId);
+      
+    } catch (err) {
+      console.error("Camera start error:", err);
+      setIsScanning(false);
+      
+      const errMsg = err?.message || err?.name || '';
+      if (errMsg.includes('NotAllowedError') || errMsg.includes('Permission')) {
+        setErrorMsg('رفض المتصفح الوصول للكاميرا. يرجى منح الصلاحية من إعدادات المتصفح وإعادة المحاولة.');
+      } else if (errMsg.includes('NotFoundError') || errMsg.includes('Requested device not found')) {
+        setErrorMsg('لم يتم العثور على الكاميرا المحددة في جهازك.');
+      } else if (errMsg.includes('NotSupportedError') || errMsg.includes('HTTPS')) {
+        setErrorMsg('المتصفح لا يدعم تشغيل الكاميرا هنا أو يتطلب HTTPS.');
+      } else {
+        setErrorMsg(`فشل تشغيل الكاميرا: ${errMsg}`);
+      }
+    }
+  };
 
-    const interval = setInterval(patch, 200);
-    return () => clearInterval(interval);
-  }, [readerId]);
+  const stopScanning = async () => {
+    if (scannerRef.current && scannerRef.current.isScanning) {
+      try {
+        await scannerRef.current.stop();
+        setIsScanning(false);
+      } catch (err) {
+        console.error("Failed to stop scanner", err);
+      }
+    }
+  };
 
-  // فتح ملف صورة وقراءة QR منه
-  const handleImageUpload = (e) => {
+  const switchCamera = async () => {
+    if (cameras.length < 2) return;
+    const currentIndex = cameras.findIndex(c => c.id === activeCameraId);
+    const nextIndex = (currentIndex + 1) % cameras.length;
+    await startScanning(cameras[nextIndex].id);
+  };
+
+  const handleFileUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const html5Qrcode = new Html5Qrcode(imageReaderId);
-    html5Qrcode
-      .scanFile(file, true)
-      .then(decodedText => {
-        if (onScanSuccess) onScanSuccess(decodedText);
-        html5Qrcode.clear();
-      })
-      .catch(() => {
-        if (onScanFailure) onScanFailure('لم يتم التعرف على رمز QR في الصورة');
-        html5Qrcode.clear();
-      });
-
-    // إعادة ضبط الـ input لتمكين اختيار نفس الملف مرة أخرى
+    setErrorMsg('');
+    try {
+      if (scannerRef.current && scannerRef.current.isScanning) {
+        await stopScanning();
+      }
+      
+      const decodedText = await scannerRef.current.scanFile(file, true);
+      if (onScanSuccess) onScanSuccess(decodedText);
+    } catch (err) {
+      console.error("File scan error", err);
+      setErrorMsg('لم يتم التعرف على رمز QR في هذه الصورة. يرجى التأكد من وضوح الصورة والرمز.');
+      if (onScanFailure) onScanFailure(err);
+    }
+    
     e.target.value = '';
   };
 
   return (
-    <div className="qr-scanner-shell">
-      <div id={readerId} className="qr-reader"></div>
+    <div className="qr-custom-shell">
+      <div className={`qr-viewport-container ${isScanning ? 'scanning' : ''}`}>
+        <div id={readerId} className="qr-reader-viewport"></div>
+        
+        {!isScanning && (
+          <div className="qr-placeholder" onClick={() => startScanning()} style={{ cursor: 'pointer' }}>
+            <Camera size={48} className="placeholder-icon" />
+            <p>اضغط لتشغيل الكاميرا</p>
+          </div>
+        )}
+      </div>
 
-      <div id={imageReaderId} style={{ display: 'none' }}></div>
+      {errorMsg && (
+        <div className="alert-message error" style={{ marginTop: '12px', fontSize: '0.85rem' }}>
+          <AlertCircle size={16} />
+          {errorMsg}
+        </div>
+      )}
 
-      <label
-        htmlFor={uploadId}
-        className="qr-image-upload-btn"
-      >
-        <ImageIcon size={16} />
-        رفع صورة تحتوي على QR
-      </label>
-      <input
-        id={uploadId}
-        type="file"
-        accept="image/*"
-        style={{ display: 'none' }}
-        onChange={handleImageUpload}
-      />
+      <div className="qr-controls" style={{ marginTop: '15px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+        {!isScanning ? (
+          <Button variant="primary" onClick={() => startScanning()} style={{ flex: 1 }}>
+            <Camera size={18} /> الكاميرا
+          </Button>
+        ) : (
+          <Button variant="danger" onClick={stopScanning} style={{ flex: 1 }}>
+            إيقاف
+          </Button>
+        )}
+
+        {cameras.length > 1 && isScanning && (
+          <Button variant="secondary" onClick={switchCamera} style={{ flex: 1 }}>
+            <SwitchCamera size={18} /> تبديل
+          </Button>
+        )}
+
+        <Button 
+          variant="secondary" 
+          onClick={() => fileInputRef.current?.click()}
+          style={{ flex: 1 }}
+        >
+          <ImageIcon size={18} /> المعرض
+        </Button>
+        
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          style={{ display: 'none' }}
+          onChange={handleFileUpload}
+        />
+      </div>
     </div>
   );
 }
