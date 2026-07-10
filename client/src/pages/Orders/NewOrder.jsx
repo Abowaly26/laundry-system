@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { Fragment, useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Trash2, Search, UserPlus, Printer, ArrowRight, Save, FileText, ChevronLeft, ChevronRight } from 'lucide-react';
 import { customersAPI, servicesAPI, ordersAPI, itemTypesAPI } from '../../services/api';
@@ -867,17 +867,17 @@ export default function NewOrder() {
                 <table className="new-order-items-table">
                   <thead>
                     <tr>
-                      <th style={{ width: '18%' }}>نوع القطعة</th>
-                      <th style={{ width: '12%' }}>الحجم</th>
-                      <th style={{ width: '20%' }}>الخدمة المطلوبة</th>
-                      <th style={{ width: '12%', minWidth: '110px' }}>السعر</th>
-                      <th style={{ width: '33%' }}>ملاحظات على القطعة</th>
-                      <th style={{ width: '5%' }}>إجراء</th>
+                      <th style={{ width: '27%' }}>نوع القطعة</th>
+                      <th style={{ width: '16%' }}>الحجم</th>
+                      <th style={{ width: '30%' }}>الخدمة المطلوبة</th>
+                      <th style={{ width: '17%', minWidth: '110px' }}>السعر</th>
+                      <th style={{ width: '10%' }}>إجراء</th>
                     </tr>
                   </thead>
                   <tbody>
                     {items.map((item, index) => (
-                      <tr key={index}>
+                      <Fragment key={index}>
+                      <tr className="item-main-row">
                         <td>
                           <div className="table-select-container">
                             <button
@@ -1003,20 +1003,6 @@ export default function NewOrder() {
                           </div>
                         </td>
                         <td>
-                          <textarea
-                            className="form-input form-input-compact item-notes-input"
-                            value={item.notes}
-                            onChange={(e) => {
-                              handleNotesChange(index, e.target.value);
-                              fitItemNotesField(e.target);
-                            }}
-                            onInput={(e) => fitItemNotesField(e.target)}
-                            ref={fitItemNotesField}
-                            placeholder="مثال: بقعة زيت، تلف بالكم..."
-                            rows={1}
-                          />
-                        </td>
-                        <td>
                           <button
                             type="button"
                             className="btn-remove-row text-error"
@@ -1027,6 +1013,26 @@ export default function NewOrder() {
                           </button>
                         </td>
                       </tr>
+                      <tr className="item-notes-row">
+                        <td colSpan={5}>
+                          <div className="item-notes-field">
+                            <span className="item-notes-label">ملاحظات على القطعة</span>
+                            <textarea
+                              className="form-input form-input-compact item-notes-input"
+                              value={item.notes}
+                              onChange={(e) => {
+                                handleNotesChange(index, e.target.value);
+                                fitItemNotesField(e.target);
+                              }}
+                              onInput={(e) => fitItemNotesField(e.target)}
+                              ref={fitItemNotesField}
+                              placeholder="مثال: بقعة زيت، تلف بالكم..."
+                              rows={1}
+                            />
+                          </div>
+                        </td>
+                      </tr>
+                      </Fragment>
                     ))}
                   </tbody>
                 </table>

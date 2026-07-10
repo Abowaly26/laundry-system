@@ -304,7 +304,7 @@
 .new-order-items-table {
   width: 100%;
   border-collapse: separate;
-  border-spacing: 0 12px;
+  border-spacing: 0;
 }
 
 .new-order-items-table th {
@@ -342,6 +342,38 @@
   border-color: rgba(99, 102, 241, 0.15);
 }
 
+.new-order-items-table tbody::before {
+  content: '';
+  display: table-row;
+  height: 12px;
+}
+
+.new-order-items-table .item-main-row td {
+  border-bottom: 0;
+}
+
+.new-order-items-table .item-main-row td:first-child {
+  border-radius: 0 10px 0 0;
+}
+
+.new-order-items-table .item-main-row td:last-child {
+  border-radius: 10px 0 0 0;
+}
+
+.new-order-items-table .item-notes-row td {
+  border-top: 0;
+  border-right: 1.5px solid var(--border);
+  border-left: 1.5px solid var(--border);
+  border-radius: 0 0 10px 10px;
+  padding: 0 16px 14px;
+}
+
+.new-order-items-table .item-notes-row:not(:last-child)::after {
+  content: '';
+  display: table-row;
+  height: 12px;
+}
+
 .new-order-items-table .form-input-compact,
 .new-order-items-table .table-select-trigger {
   height: 38px !important;
@@ -349,21 +381,31 @@
 }
 
 .new-order-items-table .item-notes-input {
-  min-height: 58px;
+  min-height: 44px;
   height: auto !important;
   max-height: 132px;
   line-height: 1.45;
-  padding-top: 9px !important;
-  padding-bottom: 9px !important;
+  padding: 10px 12px !important;
   resize: none;
   overflow: hidden;
   white-space: pre-wrap;
   word-break: break-word;
 }
 
-.new-order-items-table th:nth-child(5),
-.new-order-items-table td:nth-child(5) {
-  min-width: 300px;
+.item-notes-field {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: start;
+  gap: 10px;
+  width: 100%;
+}
+
+.item-notes-label {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  font-weight: 800;
+  line-height: 44px;
+  white-space: nowrap;
 }
 
 /* Price Input with Suffix */
@@ -389,6 +431,7 @@
 
 .price-input-wrapper .price-input:focus,
 .new-order-items-table input:focus,
+.new-order-items-table textarea:focus,
 .new-order-items-table select:focus,
 .new-order-items-table .table-select-trigger:focus {
   border-color: var(--primary) !important;
