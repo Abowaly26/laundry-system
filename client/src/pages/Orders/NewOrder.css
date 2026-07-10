@@ -33,6 +33,8 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .new-order-top-row {
@@ -40,6 +42,8 @@
   grid-template-columns: 1fr 1.35fr;
   gap: 16px;
   align-items: stretch;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .new-order-bottom-row {
@@ -47,16 +51,22 @@
   grid-template-columns: 2.15fr 1fr;
   gap: 16px;
   align-items: start;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .layout-card-wrapper {
   height: 100%;
   overflow: visible;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .layout-card-wrapper > .card {
   height: 100%;
   overflow: visible;
+  min-width: 0;
+  max-width: 100%;
 }
 
 /* Redefine card aesthetics for compact premium POS */
