@@ -137,10 +137,59 @@ export default function QRScanner({ onScanSuccess, onScanFailure }) {
       <div className={`qr-viewport-container ${isScanning ? 'scanning' : ''}`}>
         <div id={readerId} className="qr-reader-viewport"></div>
         
+        {isScanning && (
+          <div className="qr-scan-hint-overlay" style={{
+            position: 'absolute',
+            bottom: '24px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            background: 'rgba(15, 23, 42, 0.85)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+            color: 'white',
+            padding: '10px 20px',
+            borderRadius: '30px',
+            fontSize: '0.9rem',
+            zIndex: 10,
+            whiteSpace: 'nowrap',
+            pointerEvents: 'none',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)'
+          }}>
+            <span style={{ 
+              display: 'inline-block', 
+              width: '8px', 
+              height: '8px', 
+              background: '#22c55e', 
+              borderRadius: '50%',
+              boxShadow: '0 0 8px #22c55e',
+              animation: 'pulse 2s infinite'
+            }}></span>
+            قم بتوجيه الباركود داخل الإطار
+          </div>
+        )}
+
         {!isScanning && (
-          <div className="qr-placeholder" onClick={() => startScanning()} style={{ cursor: 'pointer' }}>
-            <Camera size={48} className="placeholder-icon" />
-            <p>اضغط لتشغيل الكاميرا</p>
+          <div className="qr-placeholder" onClick={() => startScanning()} style={{ cursor: 'pointer', padding: '24px', textAlign: 'center' }}>
+            <div style={{ 
+              background: 'rgba(79, 70, 229, 0.1)', 
+              color: 'var(--primary)',
+              width: '72px', 
+              height: '72px', 
+              borderRadius: '50%', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              marginBottom: '16px'
+            }}>
+              <Camera size={36} strokeWidth={1.5} />
+            </div>
+            <h4 style={{ margin: '0 0 8px 0', color: '#1e293b', fontSize: '1.15rem', fontWeight: '600' }}>الماسح الضوئي الذكي</h4>
+            <p style={{ margin: 0, color: '#64748b', fontSize: '0.9rem', lineHeight: '1.6', maxWidth: '240px' }}>
+              انقر هنا لفتح الكاميرا والتركيز على الباركود الخاص بالقطعة لتسجيلها فوراً
+            </p>
           </div>
         )}
       </div>
