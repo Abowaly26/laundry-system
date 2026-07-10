@@ -1,0 +1,20 @@
+{
+  "sidebar": {
+    "dashboard": "لوحة التحكم",
+    "newOrder": "طلب جديد",
+    "orders": "الطلبات",
+    "itemTracking": "تتبع القطع",
+    "customers": "العملاء",
+    "services": "الخدمات",
+    "finances": "المالية",
+    "users": "المستخدمين",
+    "settings": "الإعدادات",
+    "logout": "تسجيل الخروج"
+  },
+  "layout": {
+    "welcome": "مرحباً",
+    "language": "English",
+    "orderDetails": "تفاصيل الطلب",
+    "laundryName": "المغسلة الذكية"
+  }
+}

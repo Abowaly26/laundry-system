@@ -1,29 +1,33 @@
 import { useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import './Layout.css';
 
-const pageTitles = {
-  '/': 'لوحة التحكم',
-  '/orders/new': 'طلب جديد',
-  '/orders': 'الطلبات',
-  '/tracking': 'تتبع القطع',
-  '/customers': 'العملاء',
-  '/services': 'الخدمات',
-  '/finance': 'المالية',
-  '/users': 'المستخدمين',
+const pageTitleKeys = {
+  '/': 'sidebar.dashboard',
+  '/orders/new': 'sidebar.newOrder',
+  '/orders': 'sidebar.orders',
+  '/tracking': 'sidebar.itemTracking',
+  '/customers': 'sidebar.customers',
+  '/services': 'sidebar.services',
+  '/finance': 'sidebar.finances',
+  '/users': 'sidebar.users',
+  '/settings': 'sidebar.settings',
 };
 
 export default function Layout() {
+  const { t } = useTranslation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
 
   const getPageTitle = () => {
     if (location.pathname.startsWith('/orders/') && location.pathname !== '/orders/new') {
-      return 'تفاصيل الطلب';
+      return t('layout.orderDetails') || 'تفاصيل الطلب';
     }
-    return pageTitles[location.pathname] || 'المغسلة الذكية';
+    const key = pageTitleKeys[location.pathname];
+    return key ? t(key) : t('layout.laundryName') || 'المغسلة الذكية';
   };
 
   return (

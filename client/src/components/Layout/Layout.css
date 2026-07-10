@@ -6,7 +6,7 @@
 
 .layout-main {
   flex: 1;
-  margin-right: var(--sidebar-width);
+  margin-inline-start: var(--sidebar-width);
   padding-top: var(--header-height);
   min-height: 100vh;
   background: var(--bg);
@@ -23,6 +23,6 @@
 
 @media (max-width: 768px) {
   .layout-main {
-    margin-right: 0;
+  margin-inline-start: 0;
   }
 }

@@ -1,0 +1,20 @@
+{
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "newOrder": "New Order",
+    "orders": "Orders",
+    "itemTracking": "Item Tracking",
+    "customers": "Customers",
+    "services": "Services",
+    "finances": "Finances",
+    "users": "Users",
+    "settings": "Settings",
+    "logout": "Logout"
+  },
+  "layout": {
+    "welcome": "Welcome",
+    "language": "العربية",
+    "orderDetails": "Order Details",
+    "laundryName": "Smart Laundry"
+  }
+}

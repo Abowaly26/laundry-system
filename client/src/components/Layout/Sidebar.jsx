@@ -1,4 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   LayoutDashboard,
   PlusCircle,
@@ -19,21 +20,21 @@ import './Sidebar.css';
 
 // قائمة التنقل الرئيسية
 const navItems = [
-  { path: '/', label: 'لوحة التحكم', icon: LayoutDashboard, noWorker: true },
-  { path: '/orders/new', label: 'طلب جديد', icon: PlusCircle, hideForSuperOwner: true, noWorker: true },
-  { path: '/orders', label: 'الطلبات', icon: ClipboardList, hideForSuperOwner: true },
-  { path: '/tracking', label: 'تتبع القطع', icon: ScanLine, hideForSuperOwner: true },
-  { path: '/customers', label: 'العملاء', icon: Users, hideForSuperOwner: true, noWorker: true },
-  { path: '/services', label: 'الخدمات', icon: Sparkles, hideForSuperOwner: true, adminOnly: true },
-  { path: '/finance', label: 'المالية', icon: Wallet, hideForSuperOwner: true, adminOnly: true },
-  { path: '/users', label: 'المستخدمين', icon: UserCog, adminOnly: true },
-  { path: '/settings', label: 'الإعدادات', icon: SettingsIcon, adminOnly: true },
+  { path: '/', labelKey: 'sidebar.dashboard', icon: LayoutDashboard, noWorker: true },
+  { path: '/orders/new', labelKey: 'sidebar.newOrder', icon: PlusCircle, hideForSuperOwner: true, noWorker: true },
+  { path: '/orders', labelKey: 'sidebar.orders', icon: ClipboardList, hideForSuperOwner: true },
+  { path: '/tracking', labelKey: 'sidebar.itemTracking', icon: ScanLine, hideForSuperOwner: true },
+  { path: '/customers', labelKey: 'sidebar.customers', icon: Users, hideForSuperOwner: true, noWorker: true },
+  { path: '/services', labelKey: 'sidebar.services', icon: Sparkles, hideForSuperOwner: true, adminOnly: true },
+  { path: '/finance', labelKey: 'sidebar.finances', icon: Wallet, hideForSuperOwner: true, adminOnly: true },
+  { path: '/users', labelKey: 'sidebar.users', icon: UserCog, adminOnly: true },
+  { path: '/settings', labelKey: 'sidebar.settings', icon: SettingsIcon, adminOnly: true },
 ];
 
 // عناصر خاصة بـ super_owner
 const superOwnerItems = [
-  { path: '/laundries', label: 'إدارة المغاسل', icon: Store },
-  { path: '/users', label: 'الموظفين', icon: UserCog },
+  { path: '/laundries', labelKey: 'إدارة المغاسل', icon: Store },
+  { path: '/users', labelKey: 'الموظفين', icon: UserCog },
 ];
 
 const roleLabels = {
@@ -44,6 +45,7 @@ const roleLabels = {
 };
 
 export default function Sidebar({ isOpen, onClose }) {
+  const { t, i18n } = useTranslation();
   const { user, logout, isAdmin, isSuperOwner, isWorker, laundryName } = useAuth();
   const { settings } = useSettings();
   const location = useLocation();
@@ -100,22 +102,17 @@ export default function Sidebar({ isOpen, onClose }) {
         </div>
 
         <nav className="sidebar-nav">
-          {filteredItems.map((item) => {
-            const Icon = item.icon;
-            const active = isActive(item);
-
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`sidebar-nav-item ${active ? 'active' : ''}`}
-                onClick={onClose}
-              >
-                <Icon size={20} className="nav-icon" />
-                <span>{item.label}</span>
-              </Link>
-            );
-          })}
+          {filteredItems.map((item) => (
+            <Link
+              key={item.path}
+              to={item.path}
+              className={`sidebar-nav-item ${isActive(item) ? 'active' : ''}`}
+              onClick={onClose}
+            >
+              <item.icon size={20} className="nav-icon" />
+              <span>{t(item.labelKey || item.label)}</span>
+            </Link>
+          ))}
         </nav>
 
         <div className="sidebar-footer">
@@ -124,16 +121,21 @@ export default function Sidebar({ isOpen, onClose }) {
               {isSuperOwner ? <Crown size={16} /> : getInitials(user?.name)}
             </div>
             <div className="sidebar-user-info">
-              <div className="sidebar-user-name">{user?.name || 'المستخدم'}</div>
+              <div className="sidebar-user-name">{user?.name || t('layout.welcome')}</div>
               <div className="sidebar-user-role">
-                {roleLabels[user?.role] || user?.role}
+                {t(roleLabels[user?.role]) || user?.role}
               </div>
             </div>
           </div>
-          <button className="sidebar-logout-btn" onClick={logout}>
-            <LogOut size={18} />
-            <span>تسجيل الخروج</span>
-          </button>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button className="sidebar-logout-btn" onClick={() => i18n.changeLanguage(i18n.language === 'en' ? 'ar' : 'en')} style={{ flex: 1, justifyContent: 'center' }}>
+              <span>{t('layout.language')}</span>
+            </button>
+            <button className="sidebar-logout-btn" onClick={logout} style={{ flex: 1, justifyContent: 'center', background: 'var(--danger-light)', color: 'var(--danger)' }}>
+              <LogOut size={18} />
+              <span>{t('sidebar.logout')}</span>
+            </button>
+          </div>
         </div>
       </aside>
     </>
