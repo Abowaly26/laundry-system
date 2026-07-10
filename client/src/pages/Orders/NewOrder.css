@@ -1440,9 +1440,17 @@
 .bottom-items-wrapper,
 .bottom-items-wrapper > .card,
 .bottom-items-wrapper .card-body,
-.items-table-container,
 .new-order-items-table,
 .new-order-items-table tr,
 .new-order-items-table td {
   overflow: visible !important;
+}
+
+/* Ensure the table container itself scrolls on mobile, but has padding for dropdowns */
+@media (max-width: 768px) {
+  .items-table-container {
+    overflow-x: auto !important;
+    overflow-y: auto !important;
+    padding-bottom: 120px; /* Space for dropdowns so they don't get fully clipped */
+  }
 }
