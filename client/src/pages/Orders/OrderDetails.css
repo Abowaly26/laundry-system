@@ -248,8 +248,69 @@
 
 @media (max-width: 768px) {
   .details-main .table-container {
-    overflow-x: auto !important;
-    overflow-y: auto !important;
-    padding-bottom: 120px;
+    overflow: visible !important;
+    padding-bottom: 0;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Convert tables to stacked cards */
+  .details-main table,
+  .details-main tbody,
+  .details-main th {
+    display: block !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .details-main thead {
+    display: none !important;
+  }
+
+  .details-main tr {
+    display: flex !important;
+    flex-direction: column;
+    gap: 8px;
+    background: var(--bg-white);
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+
+  .details-main td {
+    display: flex !important;
+    justify-content: space-between;
+    align-items: center;
+    width: 100% !important;
+    padding: 6px 0 !important;
+    border: none !important;
+    border-bottom: 1px dashed var(--border) !important;
+  /* Mobile labels for Items Tracking Table */
+  .items-tracking-table tr td:nth-child(1)::before { content: 'كود القطعة:'; display: block; font-weight: 600; color: var(--text-light); }
+  .items-tracking-table tr td:nth-child(2)::before { content: 'رمز QR:'; display: block; font-weight: 600; color: var(--text-light); }
+  .items-tracking-table tr td:nth-child(3)::before { content: 'القطعة:'; display: block; font-weight: 600; color: var(--text-light); }
+  .items-tracking-table tr td:nth-child(4)::before { content: 'الخدمة:'; display: block; font-weight: 600; color: var(--text-light); }
+  .items-tracking-table tr td:nth-child(5)::before { content: 'ملاحظات:'; display: block; font-weight: 600; color: var(--text-light); }
+  .items-tracking-table tr td:nth-child(6)::before { content: 'السعر:'; display: block; font-weight: 600; color: var(--text-light); }
+  .items-tracking-table tr td:nth-child(7)::before { content: 'الحالة:'; display: block; font-weight: 600; color: var(--text-light); }
+  .items-tracking-table tr td:nth-child(8)::before { content: 'تحديث:'; display: block; font-weight: 600; color: var(--text-light); }
+
+  /* Mobile labels for Payments Table */
+  .details-main .card:last-child table tr td:nth-child(1)::before { content: 'التاريخ:'; display: block; font-weight: 600; color: var(--text-light); }
+  .details-main .card:last-child table tr td:nth-child(2)::before { content: 'المبلغ:'; display: block; font-weight: 600; color: var(--text-light); }
+  .details-main .card:last-child table tr td:nth-child(3)::before { content: 'طريقة الدفع:'; display: block; font-weight: 600; color: var(--text-light); }
+  .details-main .card:last-child table tr td:nth-child(4)::before { content: 'بواسطة:'; display: block; font-weight: 600; color: var(--text-light); }
+  .details-main .card:last-child table tr td:nth-child(5)::before { content: 'إجراءات:'; display: block; font-weight: 600; color: var(--text-light); }
+
+  .details-main td:last-child {
+    border-bottom: none !important;
+  }
+
+  /* Specific styling for item tracking status dropdown */
+  .details-main .table-select-container {
+    width: auto;
   }
 }
