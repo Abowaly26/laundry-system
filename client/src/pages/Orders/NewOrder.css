@@ -1437,7 +1437,12 @@
 }
 
 /* Force visible overflow in the bottom items card and table rows to prevent dropdown clipping */
-.bottom-items-wrapper,
+.bottom-items-wrapper {
+  overflow: visible !important;
+  min-width: 0;
+  max-width: 100%;
+}
+
 .bottom-items-wrapper > .card,
 .bottom-items-wrapper .card-body,
 .new-order-items-table,
