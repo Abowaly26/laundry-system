@@ -511,8 +511,13 @@ export default function NewOrder() {
 
         const encodedText = encodeURIComponent(text);
         let sanitizedPhone = customerPhone.replace(/\D/g, '');
-        if (sanitizedPhone.startsWith('05') && sanitizedPhone.length === 10) {
+        if (sanitizedPhone.startsWith('00')) {
+          sanitizedPhone = sanitizedPhone.substring(2);
+        }
+        if (sanitizedPhone.startsWith('0')) {
           sanitizedPhone = '966' + sanitizedPhone.substring(1);
+        } else if (!sanitizedPhone.startsWith('966') && sanitizedPhone.length < 11) {
+          sanitizedPhone = '966' + sanitizedPhone;
         }
 
         // توجيه تلقائي لواتساب
