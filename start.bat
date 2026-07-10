@@ -23,12 +23,15 @@ echo   Backend:  http://localhost:5000/api
 echo   Frontend: http://localhost:3001/
 echo.
 echo   🔐 بيانات الدخول:
-echo   - المدير:  admin@laundry.com / admin123
-echo   - الكاشير: cashier@laundry.com / cashier123
-echo   - العامل:  worker@laundry.com / worker123
+echo   👑 صاحب النظام: owner@system.com / owner123
+echo   🏪 أدمن مغسلة 1: admin@laundry.com / admin123
+echo   🏪 أدمن مغسلة 2: admin2@laundry2.com / admin123
+echo   👤 الكاشير:     cashier@laundry.com / cashier123
+echo   🔧 العامل:      worker@laundry.com / worker123
 echo.
 echo ═══════════════════════════════════════════════════
 echo.
 echo 💡 نصيحة: لا تغلق النوافذ المفتوحة للحفاظ على السيرفرات
 echo.
 pause
+

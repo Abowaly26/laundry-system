@@ -166,6 +166,12 @@ router.get('/', authMiddleware, async (req, res) => {
       params.push(date_to + ' 23:59:59');
     }
 
+    // فلتر المغسلة: admin/cashier/worker يرون طلبات مغسلتهم فقط
+    if (req.user.role !== 'super_owner' && req.user.laundry_id) {
+      conditions.push(`o.laundry_id = $${paramCount++}`);
+      params.push(req.user.laundry_id);
+    }
+
     const whereClause = conditions.length > 0 ? 'WHERE ' + conditions.join(' AND ') : '';
 
     const totalResult = await query(
@@ -457,10 +463,10 @@ router.post('/', authMiddleware, async (req, res) => {
     const result = await transaction(async (client) => {
       // إنشاء الطلب
       const orderResult = await client.query(`
-        INSERT INTO orders (customer_id, status, total_amount, paid_amount, remaining_amount, expected_delivery_at, notes)
-        VALUES ($1, 'pending', $2, $3, $4, $5, $6)
+        INSERT INTO orders (customer_id, status, total_amount, paid_amount, remaining_amount, expected_delivery_at, notes, laundry_id)
+        VALUES ($1, 'pending', $2, $3, $4, $5, $6, $7)
         RETURNING id
-      `, [customer_id, totalAmount, paidAmount, remainingAmount, expectedDeliveryStr, notes || '']);
+      `, [customer_id, totalAmount, paidAmount, remainingAmount, expectedDeliveryStr, notes || '', req.user.laundry_id]);
 
       const orderId = orderResult.rows[0].id;
       const createdItems = [];

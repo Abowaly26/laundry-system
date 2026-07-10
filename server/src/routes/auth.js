@@ -1,4 +1,4 @@
-// مسارات المصادقة - Authentication Routes (PostgreSQL)
+// مسارات المصادقة - Authentication Routes (PostgreSQL) - Multi-Laundry
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -24,9 +24,12 @@ router.post('/login', async (req, res) => {
       });
     }
 
-    // البحث عن المستخدم
+    // البحث عن المستخدم مع بيانات المغسلة
     const result = await query(
-      'SELECT * FROM users WHERE email = $1',
+      `SELECT u.*, l.name as laundry_name 
+       FROM users u 
+       LEFT JOIN laundries l ON u.laundry_id = l.id 
+       WHERE u.email = $1`,
       [email]
     );
 
@@ -56,9 +59,9 @@ router.post('/login', async (req, res) => {
       });
     }
 
-    // إنشاء توكن JWT
+    // إنشاء توكن JWT (يتضمن laundry_id)
     const token = jwt.sign(
-      { userId: user.id, role: user.role },
+      { userId: user.id, role: user.role, laundry_id: user.laundry_id },
       JWT_SECRET,
       { expiresIn: '24h' }
     );
@@ -72,7 +75,9 @@ router.post('/login', async (req, res) => {
           id: user.id,
           name: user.name,
           email: user.email,
-          role: user.role
+          role: user.role,
+          laundry_id: user.laundry_id,
+          laundry_name: user.laundry_name
         }
       }
     });
@@ -91,9 +96,17 @@ router.post('/login', async (req, res) => {
  */
 router.get('/me', authMiddleware, (req, res) => {
   try {
+    // إرجاع بيانات المستخدم مع laundry_id و laundry_name
     res.json({
       success: true,
-      data: req.user
+      data: {
+        id: req.user.id,
+        name: req.user.name,
+        email: req.user.email,
+        role: req.user.role,
+        laundry_id: req.user.laundry_id,
+        laundry_name: req.user.laundry_name
+      }
     });
   } catch (error) {
     console.error('Get me error:', error);

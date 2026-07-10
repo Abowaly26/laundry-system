@@ -54,6 +54,7 @@ const paymentsRouter = require('./src/routes/payments');
 const dashboardRouter = require('./src/routes/dashboard');
 const usersRouter = require('./src/routes/users');
 const itemTypesRouter = require('./src/routes/itemTypes');
+const laundriesRouter = require('./src/routes/laundries');
 
 // ربط المسارات
 app.use('/api/auth', authRouter);
@@ -65,6 +66,7 @@ app.use('/api/payments', paymentsRouter);
 app.use('/api/dashboard', dashboardRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/item-types', itemTypesRouter);
+app.use('/api/laundries', laundriesRouter);
 
 // اختبار الاتصال بالخادم
 app.get('/api/health', async (req, res) => {
@@ -219,12 +221,14 @@ async function startServer() {
       console.log(`║  🗄️  Database: PostgreSQL                                 ║`);
       console.log('║                                                           ║');
       console.log('╠═══════════════════════════════════════════════════════════╣');
-      console.log('║                                                           ║');
-      console.log('║  🔐 Default Accounts:                                     ║');
-      console.log('║     👨‍💼 Admin: admin@laundry.com / admin123              ║');
-      console.log('║     👤 Cashier: cashier@laundry.com / cashier123         ║');
-      console.log('║     🔧 Worker: worker@laundry.com / worker123            ║');
-      console.log('║                                                           ║');
+      console.log('\u2551                                                           \u2551');
+      console.log('\u2551  \uD83D\uDD10 Default Accounts:                                     \u2551');
+      console.log('\u2551     \uD83D\uDC51 Owner:   owner@system.com / owner123            \u2551');
+      console.log('\u2551     \uD83C\uDFEA Admin 1: admin@laundry.com / admin123           \u2551');
+      console.log('\u2551     \uD83C\uDFEA Admin 2: admin2@laundry2.com / admin123         \u2551');
+      console.log('\u2551     \uD83D\uDC64 Cashier: cashier@laundry.com / cashier123       \u2551');
+      console.log('\u2551     \uD83D\uDD27 Worker:  worker@laundry.com / worker123         \u2551');
+      console.log('\u2551                                                           \u2551');
       console.log('╚═══════════════════════════════════════════════════════════╝');
       console.log('');
     });

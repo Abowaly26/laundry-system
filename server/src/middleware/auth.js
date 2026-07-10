@@ -6,6 +6,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'laundry_smart_secret_key_2024';
 
 /**
  * التحقق من توكن JWT وإرفاق بيانات المستخدم بالطلب
+ * يدعم الآن: super_owner, admin, cashier, worker
  */
 async function authMiddleware(req, res, next) {
   try {
@@ -23,9 +24,9 @@ async function authMiddleware(req, res, next) {
     // التحقق من صحة التوكن
     const decoded = jwt.verify(token, JWT_SECRET);
 
-    // التحقق من وجود المستخدم وأنه نشط
+    // التحقق من وجود المستخدم وأنه نشط - مع laundry_id
     const result = await query(
-      'SELECT id, name, email, role, is_active FROM users WHERE id = $1',
+      'SELECT u.id, u.name, u.email, u.role, u.is_active, u.laundry_id, l.name as laundry_name FROM users u LEFT JOIN laundries l ON u.laundry_id = l.id WHERE u.id = $1',
       [decoded.userId]
     );
 
@@ -45,7 +46,7 @@ async function authMiddleware(req, res, next) {
       });
     }
 
-    // إرفاق بيانات المستخدم بالطلب
+    // إرفاق بيانات المستخدم بالطلب (مع laundry_id)
     req.user = user;
     next();
   } catch (error) {

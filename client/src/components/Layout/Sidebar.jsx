@@ -10,43 +10,64 @@ import {
   UserCog,
   Settings as SettingsIcon,
   LogOut,
-  WashingMachine,
+  Store,
+  Crown,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../context/SettingsContext';
 import './Sidebar.css';
 
+// قائمة التنقل الرئيسية
 const navItems = [
   { path: '/', label: 'لوحة التحكم', icon: LayoutDashboard },
-  { path: '/orders/new', label: 'طلب جديد', icon: PlusCircle },
-  { path: '/orders', label: 'الطلبات', icon: ClipboardList },
-  { path: '/tracking', label: 'تتبع القطع', icon: ScanLine },
-  { path: '/customers', label: 'العملاء', icon: Users },
-  { path: '/services', label: 'الخدمات', icon: Sparkles },
-  { path: '/finance', label: 'المالية', icon: Wallet },
+  { path: '/orders/new', label: 'طلب جديد', icon: PlusCircle, hideForSuperOwner: true },
+  { path: '/orders', label: 'الطلبات', icon: ClipboardList, hideForSuperOwner: true },
+  { path: '/tracking', label: 'تتبع القطع', icon: ScanLine, hideForSuperOwner: true },
+  { path: '/customers', label: 'العملاء', icon: Users, hideForSuperOwner: true },
+  { path: '/services', label: 'الخدمات', icon: Sparkles, hideForSuperOwner: true },
+  { path: '/finance', label: 'المالية', icon: Wallet, hideForSuperOwner: true },
   { path: '/users', label: 'المستخدمين', icon: UserCog, adminOnly: true },
   { path: '/settings', label: 'الإعدادات', icon: SettingsIcon, adminOnly: true },
 ];
 
+// عناصر خاصة بـ super_owner
+const superOwnerItems = [
+  { path: '/laundries', label: 'إدارة المغاسل', icon: Store },
+  { path: '/users', label: 'الموظفين', icon: UserCog },
+];
+
 const roleLabels = {
-  admin: 'مدير النظام',
-  manager: 'مدير',
-  employee: 'موظف',
-  worker: 'عامل',
+  super_owner: 'صاحب النظام',
+  admin: 'مدير المغسلة',
+  cashier: 'موظف استقبال',
+  worker: 'عامل تشغيل',
 };
 
 export default function Sidebar({ isOpen, onClose }) {
-  const { user, logout, isAdmin } = useAuth();
+  const { user, logout, isAdmin, isSuperOwner, laundryName } = useAuth();
   const { settings } = useSettings();
   const location = useLocation();
 
-  const filteredItems = navItems.filter(
-    (item) => !item.adminOnly || isAdmin
-  );
+  // فلتر عناصر القائمة حسب الدور
+  const filteredItems = isSuperOwner
+    ? superOwnerItems
+    : navItems.filter(item => {
+        if (item.hideForSuperOwner) return true; // إظهار للـ admin/cashier/worker
+        if (item.adminOnly) return isAdmin;
+        return true;
+      });
 
   const getInitials = (name) => {
     if (!name) return '؟';
     return name.split(' ').map((n) => n[0]).join('').slice(0, 2);
+  };
+
+  const isActive = (item) => {
+    if (item.path === '/') return location.pathname === '/';
+    if (item.path === '/orders') {
+      return location.pathname === '/orders' || (location.pathname.startsWith('/orders/') && location.pathname !== '/orders/new');
+    }
+    return location.pathname.startsWith(item.path);
   };
 
   return (
@@ -61,28 +82,32 @@ export default function Sidebar({ isOpen, onClose }) {
             <img src="/favicon.png" alt="logo" className="sidebar-logo-image" />
           </div>
           <div className="brand-text">
-            <span className="brand-name">المغسلة</span>
-            <span className="brand-subtitle">نظام إدارة المغسلة</span>
+            {isSuperOwner ? (
+              <>
+                <span className="brand-name">لوحة التحكم الرئيسية</span>
+                <span className="brand-subtitle super-owner-badge">
+                  <Crown size={10} /> صاحب النظام
+                </span>
+              </>
+            ) : (
+              <>
+                <span className="brand-name">{laundryName || settings?.laundry_name || 'المغسلة'}</span>
+                <span className="brand-subtitle">نظام إدارة المغسلة</span>
+              </>
+            )}
           </div>
         </div>
 
         <nav className="sidebar-nav">
           {filteredItems.map((item) => {
             const Icon = item.icon;
-            let isActive = false;
-            if (item.path === '/') {
-              isActive = location.pathname === '/';
-            } else if (item.path === '/orders') {
-              isActive = location.pathname === '/orders' || (location.pathname.startsWith('/orders/') && location.pathname !== '/orders/new');
-            } else {
-              isActive = location.pathname.startsWith(item.path);
-            }
+            const active = isActive(item);
 
             return (
               <Link
                 key={item.path}
                 to={item.path}
-                className={`sidebar-nav-item ${isActive ? 'active' : ''}`}
+                className={`sidebar-nav-item ${active ? 'active' : ''}`}
                 onClick={onClose}
               >
                 <Icon size={20} className="nav-icon" />
@@ -94,8 +119,8 @@ export default function Sidebar({ isOpen, onClose }) {
 
         <div className="sidebar-footer">
           <div className="sidebar-user">
-            <div className="sidebar-user-avatar">
-              {getInitials(user?.name)}
+            <div className={`sidebar-user-avatar ${isSuperOwner ? 'super-owner-avatar' : ''}`}>
+              {isSuperOwner ? <Crown size={16} /> : getInitials(user?.name)}
             </div>
             <div className="sidebar-user-info">
               <div className="sidebar-user-name">{user?.name || 'المستخدم'}</div>

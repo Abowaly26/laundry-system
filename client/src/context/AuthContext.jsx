@@ -72,7 +72,10 @@ export function AuthProvider({ children }) {
     login,
     logout,
     isAuthenticated: !!token && !!user,
-    isAdmin: user?.role === 'admin',
+    isAdmin: user?.role === 'admin' || user?.role === 'super_owner',
+    isSuperOwner: user?.role === 'super_owner',
+    laundryId: user?.laundry_id,
+    laundryName: user?.laundry_name,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -86,8 +89,8 @@ export function useAuth() {
   return context;
 }
 
-export function ProtectedRoute({ children, adminOnly = false }) {
-  const { isAuthenticated, isAdmin, loading } = useAuth();
+export function ProtectedRoute({ children, adminOnly = false, superOwnerOnly = false }) {
+  const { isAuthenticated, isAdmin, isSuperOwner, loading } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -101,6 +104,10 @@ export function ProtectedRoute({ children, adminOnly = false }) {
 
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  if (superOwnerOnly && !isSuperOwner) {
+    return <Navigate to="/" replace />;
   }
 
   if (adminOnly && !isAdmin) {

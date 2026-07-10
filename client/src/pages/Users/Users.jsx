@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Plus, User, Edit2 } from 'lucide-react';
-import { usersAPI } from '../../services/api';
+import { Plus, User, Edit2, Building2 } from 'lucide-react';
+import { usersAPI, laundriesAPI } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
+import { useAuth } from '../../context/AuthContext';
 import Button from '../../components/UI/Button';
 import Modal from '../../components/UI/Modal';
 import Input from '../../components/UI/Input';
@@ -12,6 +13,8 @@ import './Users.css';
 
 export default function Users() {
   const { showToast } = useToast();
+  const { isSuperOwner } = useAuth();
+  const [laundries, setLaundries] = useState([]);
 
   const getInitials = (name) => {
     if (!name) return '؟';
@@ -48,7 +51,8 @@ export default function Users() {
     email: '',
     password: '',
     role: 'worker',
-    is_active: 1
+    is_active: 1,
+    laundry_id: ''
   });
 
   const loadUsers = async () => {
@@ -65,9 +69,19 @@ export default function Users() {
     }
   };
 
+  // جلب المغاسل للـ super_owner
+  const loadLaundries = async () => {
+    if (!isSuperOwner) return;
+    try {
+      const res = await laundriesAPI.getAll();
+      if (res.success) setLaundries(res.data);
+    } catch (err) { console.error(err); }
+  };
+
   useEffect(() => {
     loadUsers();
-  }, []);
+    loadLaundries();
+  }, [isSuperOwner]);
 
   const handleOpenAdd = () => {
     setModalMode('add');
@@ -76,7 +90,8 @@ export default function Users() {
       email: '',
       password: '',
       role: 'worker',
-      is_active: 1
+      is_active: 1,
+      laundry_id: laundries.length > 0 ? laundries[0].id : ''
     });
     setShowModal(true);
   };
@@ -87,9 +102,10 @@ export default function Users() {
     setFormData({
       name: user.name,
       email: user.email,
-      password: '', // نترك حقل الباسورد فارغ لتغييره فقط عند الحاجة
+      password: '',
       role: user.role,
-      is_active: user.is_active
+      is_active: user.is_active,
+      laundry_id: user.laundry_id || ''
     });
     setShowModal(true);
   };
@@ -148,6 +164,7 @@ export default function Users() {
 
   const getRoleAr = (role) => {
     const rolesMapping = {
+      super_owner: '👑 صاحب النظام',
       admin: 'مدير النظام (Admin)',
       cashier: 'موظف استقبال (Cashier)',
       worker: 'عامل تشغيل (Worker)'
@@ -184,6 +201,7 @@ export default function Users() {
               <tr>
                 <th>اسم الموظف</th>
                 <th>البريد الإلكتروني</th>
+                {isSuperOwner && <th><Building2 size={14} style={{verticalAlign:'middle', marginLeft:'4px'}}/>المغسلة</th>}
                 <th>الصلاحية (الدور)</th>
                 <th>الحالة</th>
                 <th style={{ width: '180px', textAlign: 'center' }}>العمليات</th>
@@ -209,6 +227,14 @@ export default function Users() {
                     </div>
                   </td>
                   <td>{user.email}</td>
+                  {isSuperOwner && (
+                    <td>
+                      <span style={{fontSize:'0.8rem', color:'var(--text-muted)', display:'flex', alignItems:'center', gap:'4px'}}>
+                        <Building2 size={12}/>
+                        {user.laundry_name || '—'}
+                      </span>
+                    </td>
+                  )}
                   <td>
                     <span className={`role-tag ${user.role}`}>
                       {getRoleAr(user.role)}
@@ -291,6 +317,22 @@ export default function Users() {
               <option value="admin">مدير النظام (Admin) - صلاحيات كاملة</option>
             </select>
           </div>
+
+          {/* super_owner يحدد المغسلة */}
+          {isSuperOwner && laundries.length > 0 && (
+            <div className="form-group">
+              <label className="form-label">المغسلة</label>
+              <select
+                className="form-select"
+                value={formData.laundry_id}
+                onChange={(e) => setFormData({ ...formData, laundry_id: parseInt(e.target.value) })}
+              >
+                {laundries.map(l => (
+                  <option key={l.id} value={l.id}>{l.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
 
           <div className="form-group">
             <label className="form-label">الحالة</label>

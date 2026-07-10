@@ -3,6 +3,7 @@
 /**
  * التحقق من أن دور المستخدم ضمن الأدوار المسموحة
  * @param {string[]} allowedRoles - مصفوفة الأدوار المسموحة مثل ['admin', 'cashier']
+ * ملاحظة: super_owner يتجاوز جميع القيود تلقائياً
  */
 function authorizeRoles(...allowedRoles) {
   return (req, res, next) => {
@@ -12,6 +13,11 @@ function authorizeRoles(...allowedRoles) {
         success: false,
         message: 'غير مصرح - يرجى تسجيل الدخول أولاً'
       });
+    }
+
+    // super_owner يملك صلاحيات كاملة دون قيود
+    if (req.user.role === 'super_owner') {
+      return next();
     }
 
     // التحقق من أن دور المستخدم ضمن الأدوار المسموحة
@@ -27,3 +33,4 @@ function authorizeRoles(...allowedRoles) {
 }
 
 module.exports = authorizeRoles;
+

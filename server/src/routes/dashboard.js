@@ -1,38 +1,47 @@
-// مسارات لوحة التحكم - Dashboard Routes
+// مسارات لوحة التحكم - Dashboard Routes (Multi-Laundry)
 const express = require('express');
 const { query } = require('../config/database');
 const authMiddleware = require('../middleware/auth');
 
 const router = express.Router();
-
-// تطبيق المصادقة على جميع المسارات
 router.use(authMiddleware);
 
 /**
  * GET /api/dashboard/stats
- * إحصائيات اليوم (عدد الطلبات، الإيرادات، الحالات)
+ * إحصائيات اليوم - مفلترة بالمغسلة
  */
 router.get('/stats', async (req, res) => {
   try {
     const today = new Date().toISOString().split('T')[0];
+    const isSuperOwner = req.user.role === 'super_owner';
+    const laundryId = req.user.laundry_id;
+
+    // بناء شرط المغسلة
+    const laundryFilter = isSuperOwner ? '' : `AND o.laundry_id = ${laundryId}`;
+    const laundryFilterSimple = isSuperOwner ? '' : `AND laundry_id = ${laundryId}`;
 
     // إحصائيات طلبات اليوم
     const todayOrdersResult = await query(`
-      SELECT COUNT(*) as count FROM orders WHERE DATE(created_at) = $1 AND status != 'cancelled'
+      SELECT COUNT(*) as count FROM orders 
+      WHERE DATE(created_at) = $1 AND status != 'cancelled' ${laundryFilterSimple}
     `, [today]);
     const todayOrders = parseInt(todayOrdersResult.rows[0].count);
 
-    // عدد الطلبات حسب الحالة (إجمالي)
+    // عدد الطلبات حسب الحالة
     const statusCountsResult = await query(`
-      SELECT status, COUNT(*) as count FROM orders GROUP BY status
+      SELECT status, COUNT(*) as count FROM orders 
+      WHERE 1=1 ${laundryFilterSimple}
+      GROUP BY status
     `);
-
     const statusMap = {};
     statusCountsResult.rows.forEach(s => { statusMap[s.status] = parseInt(s.count); });
 
-    // إيرادات اليوم من المدفوعات الفعلية
+    // إيرادات اليوم
     const todayPaymentsResult = await query(`
-      SELECT COALESCE(SUM(amount), 0) as total FROM payments WHERE DATE(created_at) = $1
+      SELECT COALESCE(SUM(p.amount), 0) as total 
+      FROM payments p
+      JOIN orders o ON p.order_id = o.id
+      WHERE DATE(p.created_at) = $1 ${laundryFilter}
     `, [today]);
     const todayPayments = parseFloat(todayPaymentsResult.rows[0].total);
 
@@ -41,6 +50,7 @@ router.get('/stats', async (req, res) => {
       SELECT o.id, o.status, o.total_amount, o.created_at, c.name as customer_name
       FROM orders o
       JOIN customers c ON o.customer_id = c.id
+      WHERE 1=1 ${laundryFilter}
       ORDER BY o.created_at DESC
       LIMIT 5
     `);
@@ -57,11 +67,19 @@ router.get('/stats', async (req, res) => {
       };
     }));
 
-    // إجمالي الإيرادات والديون التاريخية
+    // إجمالي الإيرادات
     const allRevenueResult = await query(
-      "SELECT COALESCE(SUM(total_amount), 0) as total, COALESCE(SUM(paid_amount), 0) as paid FROM orders WHERE status != 'cancelled'"
+      `SELECT COALESCE(SUM(total_amount), 0) as total, COALESCE(SUM(paid_amount), 0) as paid 
+       FROM orders WHERE status != 'cancelled' ${laundryFilterSimple}`
     );
     const allRevenue = allRevenueResult.rows[0];
+
+    // إحصائيات super_owner الإضافية
+    let superOwnerStats = {};
+    if (isSuperOwner) {
+      const laundriesCountResult = await query('SELECT COUNT(*) as count FROM laundries WHERE is_active = true');
+      superOwnerStats.total_laundries = parseInt(laundriesCountResult.rows[0].count);
+    }
 
     res.json({
       success: true,
@@ -72,7 +90,8 @@ router.get('/stats', async (req, res) => {
       deliveredOrders: statusMap['delivered'] || 0,
       total_revenue: parseFloat(allRevenue.paid),
       total_remaining: parseFloat(allRevenue.total) - parseFloat(allRevenue.paid),
-      recentOrders
+      recentOrders,
+      ...superOwnerStats
     });
   } catch (error) {
     console.error('Dashboard stats error:', error);
@@ -82,23 +101,22 @@ router.get('/stats', async (req, res) => {
 
 /**
  * GET /api/dashboard/revenue
- * بيانات الإيرادات للرسوم البيانية
  */
 router.get('/revenue', async (req, res) => {
   try {
     const { period = 'daily' } = req.query;
+    const isSuperOwner = req.user.role === 'super_owner';
+    const laundryFilter = isSuperOwner ? '' : `AND laundry_id = ${req.user.laundry_id}`;
 
     let revenueData;
-
     if (period === 'daily') {
-      // آخر 7 أيام
       const result = await query(`
         SELECT 
           DATE(created_at) as date,
           COALESCE(SUM(total_amount), 0) as total
         FROM orders
         WHERE created_at >= CURRENT_TIMESTAMP - INTERVAL '7 days'
-          AND status != 'cancelled'
+          AND status != 'cancelled' ${laundryFilter}
         GROUP BY DATE(created_at)
         ORDER BY date ASC
       `);
@@ -114,10 +132,12 @@ router.get('/revenue', async (req, res) => {
 
 /**
  * GET /api/dashboard/popular-services
- * الخدمات الأكثر شعبية
  */
 router.get('/popular-services', async (req, res) => {
   try {
+    const isSuperOwner = req.user.role === 'super_owner';
+    const laundryFilter = isSuperOwner ? '' : `AND s.laundry_id = ${req.user.laundry_id}`;
+
     const result = await query(`
       SELECT 
         s.name_ar as name,
@@ -125,7 +145,7 @@ router.get('/popular-services', async (req, res) => {
       FROM services s
       LEFT JOIN order_items oi ON s.id = oi.service_id
       LEFT JOIN orders o ON oi.order_id = o.id AND o.status != 'cancelled'
-      WHERE s.is_active = true
+      WHERE s.is_active = true ${laundryFilter}
       GROUP BY s.id, s.name_ar
       ORDER BY count DESC
       LIMIT 10
@@ -140,17 +160,18 @@ router.get('/popular-services', async (req, res) => {
 
 /**
  * GET /api/dashboard/overdue
- * الطلبات المتأخرة
  */
 router.get('/overdue', async (req, res) => {
   try {
+    const isSuperOwner = req.user.role === 'super_owner';
+    const laundryFilter = isSuperOwner ? '' : `AND o.laundry_id = ${req.user.laundry_id}`;
+
     const result = await query(`
-      SELECT o.id, o.expected_delivery_at,
-        c.name as customer_name
+      SELECT o.id, o.expected_delivery_at, c.name as customer_name
       FROM orders o
       JOIN customers c ON o.customer_id = c.id
       WHERE o.expected_delivery_at < CURRENT_TIMESTAMP
-        AND o.status NOT IN ('delivered', 'cancelled')
+        AND o.status NOT IN ('delivered', 'cancelled') ${laundryFilter}
       ORDER BY o.expected_delivery_at ASC
     `);
 
@@ -160,10 +181,7 @@ router.get('/overdue', async (req, res) => {
       expected_delivery_at: order.expected_delivery_at
     }));
 
-    res.json({
-      success: true,
-      data: overdueOrders
-    });
+    res.json({ success: true, data: overdueOrders });
   } catch (error) {
     console.error('Overdue orders error:', error);
     res.status(500).json({ success: false, message: 'خطأ في جلب الطلبات المتأخرة' });

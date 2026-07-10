@@ -38,10 +38,16 @@ router.get('/', async (req, res) => {
       params.push(date_to + ' 23:59:59');
     }
 
+    // فلتر المغسلة عبر الطلبات
+    if (req.user.role !== 'super_owner' && req.user.laundry_id) {
+      conditions.push(`o.laundry_id = $${paramCount++}`);
+      params.push(req.user.laundry_id);
+    }
+
     const whereClause = conditions.length > 0 ? 'WHERE ' + conditions.join(' AND ') : '';
 
     const totalResult = await query(
-      `SELECT COUNT(*) as total FROM payments p ${whereClause}`,
+      `SELECT COUNT(*) as total FROM payments p JOIN orders o ON p.order_id = o.id ${whereClause}`,
       params
     );
     const total = parseInt(totalResult.rows[0].total);

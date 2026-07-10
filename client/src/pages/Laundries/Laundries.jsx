@@ -1,0 +1,437 @@
+import { useState, useEffect } from 'react';
+import {
+  Plus, Store, Users, ShoppingBag, TrendingUp,
+  Edit2, Power, Eye, X, ChevronDown, ChevronUp,
+  Crown, MapPin, Phone, User, Lock, Mail
+} from 'lucide-react';
+import { laundriesAPI } from '../../services/api';
+import { useToast } from '../../context/ToastContext';
+import Button from '../../components/UI/Button';
+import Modal from '../../components/UI/Modal';
+import Input from '../../components/UI/Input';
+import LoadingSpinner from '../../components/UI/LoadingSpinner';
+import './Laundries.css';
+
+export default function Laundries() {
+  const { showToast } = useToast();
+  const [laundries, setLaundries] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [expandedId, setExpandedId] = useState(null);
+
+  // Modal إنشاء/تعديل
+  const [showModal, setShowModal] = useState(false);
+  const [modalMode, setModalMode] = useState('add');
+  const [selectedLaundry, setSelectedLaundry] = useState(null);
+  const [formData, setFormData] = useState({
+    name: '', address: '', phone: '',
+    admin_name: '', admin_email: '', admin_password: ''
+  });
+  const [saving, setSaving] = useState(false);
+
+  const loadLaundries = async () => {
+    setLoading(true);
+    try {
+      const res = await laundriesAPI.getAll();
+      if (res.success) setLaundries(res.data);
+    } catch (err) {
+      showToast('خطأ في جلب المغاسل', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { loadLaundries(); }, []);
+
+  const handleOpenAdd = () => {
+    setModalMode('add');
+    setSelectedLaundry(null);
+    setFormData({ name: '', address: '', phone: '', admin_name: '', admin_email: '', admin_password: '' });
+    setShowModal(true);
+  };
+
+  const handleOpenEdit = (laundry) => {
+    setModalMode('edit');
+    setSelectedLaundry(laundry);
+    setFormData({ name: laundry.name, address: laundry.address || '', phone: laundry.phone || '', admin_name: '', admin_email: '', admin_password: '' });
+    setShowModal(true);
+  };
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      let res;
+      if (modalMode === 'add') {
+        if (!formData.admin_name || !formData.admin_email || !formData.admin_password) {
+          showToast('بيانات المدير مطلوبة', 'error');
+          setSaving(false);
+          return;
+        }
+        res = await laundriesAPI.create(formData);
+      } else {
+        res = await laundriesAPI.update(selectedLaundry.id, {
+          name: formData.name, address: formData.address, phone: formData.phone
+        });
+      }
+
+      if (res.success) {
+        showToast(modalMode === 'add' ? `تم إنشاء مغسلة "${formData.name}" بنجاح! 🎉` : 'تم تحديث المغسلة بنجاح', 'success');
+        setShowModal(false);
+        loadLaundries();
+      } else {
+        showToast(res.message || 'حدث خطأ', 'error');
+      }
+    } catch (err) {
+      showToast(err.message || 'خطأ في الاتصال', 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleToggleStatus = async (laundry) => {
+    const action = laundry.is_active ? 'تعطيل' : 'تفعيل';
+    if (!window.confirm(`هل أنت متأكد من ${action} مغسلة "${laundry.name}"؟ ${laundry.is_active ? 'سيتم تعطيل جميع موظفيها.' : ''}`)) return;
+
+    try {
+      const res = await laundriesAPI.update(laundry.id, { is_active: !laundry.is_active });
+      if (res.success) {
+        showToast(`تم ${action} المغسلة بنجاح`, 'success');
+        loadLaundries();
+      }
+    } catch (err) {
+      showToast(err.message || 'خطأ', 'error');
+    }
+  };
+
+  const toggleExpand = (id) => setExpandedId(expandedId === id ? null : id);
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('ar-SA', { style: 'currency', currency: 'SAR' }).format(amount || 0);
+  };
+
+  const getLaundryGradient = (index) => {
+    const gradients = [
+      'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+      'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+      'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+      'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+      'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)',
+    ];
+    return gradients[index % gradients.length];
+  };
+
+  return (
+    <div className="page laundries-page">
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">
+            <Crown size={28} className="page-title-icon" />
+            إدارة المغاسل
+          </h1>
+          <p className="page-subtitle">
+            أنت تدير <strong>{laundries.length}</strong> مغسلة • كل مغسلة منفصلة تماماً عن الأخرى
+          </p>
+        </div>
+        <Button variant="primary" onClick={handleOpenAdd} id="add-laundry-btn">
+          <Plus size={18} style={{ marginLeft: '8px' }} />
+          إضافة مغسلة جديدة
+        </Button>
+      </div>
+
+      {/* إحصائيات سريعة */}
+      {!loading && laundries.length > 0 && (
+        <div className="laundries-summary-cards">
+          <div className="summary-card summary-card-primary">
+            <Store size={28} />
+            <div>
+              <div className="summary-card-value">{laundries.length}</div>
+              <div className="summary-card-label">إجمالي المغاسل</div>
+            </div>
+          </div>
+          <div className="summary-card summary-card-success">
+            <Power size={28} />
+            <div>
+              <div className="summary-card-value">{laundries.filter(l => l.is_active).length}</div>
+              <div className="summary-card-label">مغاسل نشطة</div>
+            </div>
+          </div>
+          <div className="summary-card summary-card-info">
+            <Users size={28} />
+            <div>
+              <div className="summary-card-value">{laundries.reduce((s, l) => s + parseInt(l.staff_count || 0), 0)}</div>
+              <div className="summary-card-label">إجمالي الموظفين</div>
+            </div>
+          </div>
+          <div className="summary-card summary-card-warning">
+            <TrendingUp size={28} />
+            <div>
+              <div className="summary-card-value">{formatCurrency(laundries.reduce((s, l) => s + parseFloat(l.total_revenue || 0), 0))}</div>
+              <div className="summary-card-label">إجمالي الإيرادات</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {loading ? (
+        <div className="flex justify-center items-center" style={{ height: '300px' }}>
+          <LoadingSpinner />
+        </div>
+      ) : laundries.length === 0 ? (
+        <div className="laundries-empty">
+          <div className="laundries-empty-icon">🏪</div>
+          <h3>لا توجد مغاسل بعد</h3>
+          <p>ابدأ بإنشاء أول مغسلة وتعيين مدير لها</p>
+          <Button variant="primary" onClick={handleOpenAdd}>
+            <Plus size={18} style={{ marginLeft: '8px' }} />
+            إنشاء المغسلة الأولى
+          </Button>
+        </div>
+      ) : (
+        <div className="laundries-grid">
+          {laundries.map((laundry, index) => (
+            <div
+              key={laundry.id}
+              className={`laundry-card ${!laundry.is_active ? 'laundry-card-inactive' : ''}`}
+            >
+              {/* رأس البطاقة */}
+              <div className="laundry-card-header" style={{ background: getLaundryGradient(index) }}>
+                <div className="laundry-card-header-content">
+                  <div className="laundry-card-icon">
+                    <Store size={32} />
+                  </div>
+                  <div>
+                    <h3 className="laundry-card-name">{laundry.name}</h3>
+                    <div className="laundry-card-status">
+                      <span className={`status-dot ${laundry.is_active ? 'active' : 'inactive'}`} />
+                      {laundry.is_active ? 'نشطة' : 'معطلة'}
+                    </div>
+                  </div>
+                </div>
+                <div className="laundry-card-actions">
+                  <button className="laundry-icon-btn" onClick={() => handleOpenEdit(laundry)} title="تعديل">
+                    <Edit2 size={16} />
+                  </button>
+                  <button
+                    className={`laundry-icon-btn ${laundry.is_active ? 'danger' : 'success'}`}
+                    onClick={() => handleToggleStatus(laundry)}
+                    title={laundry.is_active ? 'تعطيل' : 'تفعيل'}
+                  >
+                    <Power size={16} />
+                  </button>
+                </div>
+              </div>
+
+              {/* تفاصيل المغسلة */}
+              <div className="laundry-card-body">
+                {laundry.address && (
+                  <div className="laundry-info-row">
+                    <MapPin size={14} />
+                    <span>{laundry.address}</span>
+                  </div>
+                )}
+                {laundry.phone && (
+                  <div className="laundry-info-row">
+                    <Phone size={14} />
+                    <span>{laundry.phone}</span>
+                  </div>
+                )}
+
+                {/* إحصائيات سريعة */}
+                <div className="laundry-stats-grid">
+                  <div className="laundry-stat">
+                    <div className="laundry-stat-value">{laundry.admin_count || 0}</div>
+                    <div className="laundry-stat-label">مدراء</div>
+                  </div>
+                  <div className="laundry-stat">
+                    <div className="laundry-stat-value">{laundry.staff_count || 0}</div>
+                    <div className="laundry-stat-label">موظفون</div>
+                  </div>
+                  <div className="laundry-stat">
+                    <div className="laundry-stat-value">{laundry.customers_count || 0}</div>
+                    <div className="laundry-stat-label">عملاء</div>
+                  </div>
+                  <div className="laundry-stat">
+                    <div className="laundry-stat-value">{laundry.active_orders_count || 0}</div>
+                    <div className="laundry-stat-label">طلبات نشطة</div>
+                  </div>
+                </div>
+
+                <div className="laundry-revenue">
+                  <TrendingUp size={16} />
+                  <span>إجمالي الإيرادات: <strong>{formatCurrency(laundry.total_revenue)}</strong></span>
+                </div>
+
+                {/* زر التوسيع لعرض الموظفين */}
+                <button
+                  className="laundry-expand-btn"
+                  onClick={() => toggleExpand(laundry.id)}
+                >
+                  {expandedId === laundry.id ? (
+                    <><ChevronUp size={16} /> إخفاء الفريق</>
+                  ) : (
+                    <><ChevronDown size={16} /> عرض الفريق</>
+                  )}
+                </button>
+              </div>
+
+              {/* قائمة الموظفين المطوية */}
+              {expandedId === laundry.id && (
+                <LaundryStaffPanel laundryId={laundry.id} />
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Modal إنشاء/تعديل */}
+      <Modal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        title={modalMode === 'add' ? '🏪 إضافة مغسلة جديدة' : `✏️ تعديل: ${selectedLaundry?.name}`}
+      >
+        <form onSubmit={handleSave} noValidate>
+          {/* بيانات المغسلة */}
+          <div className="modal-section-title">
+            <Store size={16} />
+            بيانات المغسلة
+          </div>
+
+          <Input
+            id="laundry-name"
+            label="اسم المغسلة *"
+            type="text"
+            required
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            placeholder="مثال: مغسلة النظافة الذهبية"
+          />
+          <Input
+            id="laundry-address"
+            label="العنوان"
+            type="text"
+            value={formData.address}
+            onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+            placeholder="المدينة، الحي"
+          />
+          <Input
+            id="laundry-phone"
+            label="رقم الهاتف"
+            type="tel"
+            value={formData.phone}
+            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+            placeholder="05xxxxxxxx"
+          />
+
+          {/* بيانات المدير - فقط عند الإنشاء */}
+          {modalMode === 'add' && (
+            <>
+              <div className="modal-section-title" style={{ marginTop: '20px' }}>
+                <Crown size={16} />
+                حساب مدير المغسلة
+              </div>
+              <div className="modal-section-note">
+                سيتم إنشاء حساب مدير (Admin) لهذه المغسلة تلقائياً
+              </div>
+
+              <Input
+                id="admin-name"
+                label="اسم المدير *"
+                type="text"
+                required
+                value={formData.admin_name}
+                onChange={(e) => setFormData({ ...formData, admin_name: e.target.value })}
+                placeholder="مثال: أحمد محمد"
+              />
+              <Input
+                id="admin-email"
+                label="البريد الإلكتروني للمدير *"
+                type="email"
+                required
+                value={formData.admin_email}
+                onChange={(e) => setFormData({ ...formData, admin_email: e.target.value })}
+                placeholder="admin@example.com"
+              />
+              <Input
+                id="admin-password"
+                label="كلمة مرور المدير *"
+                type="password"
+                required
+                value={formData.admin_password}
+                onChange={(e) => setFormData({ ...formData, admin_password: e.target.value })}
+                placeholder="••••••••"
+              />
+            </>
+          )}
+
+          <div className="flex justify-between mt-md">
+            <Button variant="secondary" type="button" onClick={() => setShowModal(false)}>
+              إلغاء
+            </Button>
+            <Button variant="primary" type="submit" disabled={saving}>
+              {saving ? 'جاري الحفظ...' : modalMode === 'add' ? 'إنشاء المغسلة' : 'حفظ التعديلات'}
+            </Button>
+          </div>
+        </form>
+      </Modal>
+    </div>
+  );
+}
+
+/**
+ * مكون عرض موظفي المغسلة
+ */
+function LaundryStaffPanel({ laundryId }) {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    laundriesAPI.getById(laundryId)
+      .then(res => { if (res.success) setData(res.data); })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [laundryId]);
+
+  const roleColors = {
+    admin: { bg: '#EEF2FF', color: '#4F46E5', label: 'مدير' },
+    cashier: { bg: '#ECFDF5', color: '#059669', label: 'استقبال' },
+    worker: { bg: '#FFFBEB', color: '#D97706', label: 'عامل' },
+  };
+
+  if (loading) return <div className="laundry-staff-loading"><div className="mini-spinner" /></div>;
+
+  const users = data?.users || [];
+
+  return (
+    <div className="laundry-staff-panel">
+      <div className="laundry-staff-title">
+        <Users size={14} />
+        الفريق ({users.length} شخص)
+      </div>
+      {users.length === 0 ? (
+        <div className="laundry-staff-empty">لا يوجد موظفون بعد</div>
+      ) : (
+        <div className="laundry-staff-list">
+          {users.map(u => {
+            const roleInfo = roleColors[u.role] || { bg: '#F3F4F6', color: '#6B7280', label: u.role };
+            return (
+              <div key={u.id} className={`laundry-staff-item ${!u.is_active ? 'inactive' : ''}`}>
+                <div className="staff-avatar" style={{ background: roleInfo.bg, color: roleInfo.color }}>
+                  {u.name?.charAt(0)}
+                </div>
+                <div className="staff-info">
+                  <div className="staff-name">{u.name}</div>
+                  <div className="staff-email">{u.email}</div>
+                </div>
+                <span className="staff-role-tag" style={{ background: roleInfo.bg, color: roleInfo.color }}>
+                  {roleInfo.label}
+                </span>
+                {!u.is_active && <span className="staff-inactive-badge">معطل</span>}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}

@@ -9,6 +9,71 @@
   padding: 24px 16px;
 }
 
+/* Login Hints */
+.login-hints {
+  margin-top: 20px;
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+}
+
+.login-hints details summary {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  cursor: pointer;
+  user-select: none;
+  padding: 4px 0;
+}
+
+.login-hints-content {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hint-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+}
+
+.hint-row span {
+  color: var(--text-muted);
+  min-width: 110px;
+  flex-shrink: 0;
+}
+
+.hint-row code {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  color: var(--text-secondary);
+  flex: 1;
+}
+
+.hint-row code:hover {
+  background: var(--primary-light, #EEF2FF);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.super-owner-hint code {
+  background: #FFFBEB;
+  border-color: #F59E0B;
+  color: #92400E;
+}
+
+.super-owner-hint code:hover {
+  background: #FEF3C7;
+  border-color: #D97706;
+  color: #78350F;
+}
+
 .login-page::before,
 .login-page::after {
   content: '';

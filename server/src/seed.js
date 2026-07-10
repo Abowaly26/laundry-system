@@ -1,102 +1,176 @@
-// ملف تهيئة البيانات - Database Seeding for PostgreSQL
+// ملف تهيئة البيانات - Database Seeding for PostgreSQL (Multi-Laundry)
 const bcrypt = require('bcryptjs');
 const { query } = require('./config/database');
 
 async function seedDatabase() {
-  console.log('🌱 Starting database seeding...');
+  console.log('🌱 Starting database seeding (Multi-Laundry)...');
 
   try {
-    // التحقق من قاعدة البيانات أولاً
-    const usersCountResult = await query('SELECT COUNT(*) as count FROM users');
-    const usersCountBefore = parseInt(usersCountResult.rows[0].count);
-    console.log(`👥 Current users count: ${usersCountBefore}`);
+    // ==============================
+    // 1. إنشاء المغاسل الافتراضية
+    // ==============================
+    console.log('🏪 Seeding laundries...');
+    const insertLaundryQuery = `
+      INSERT INTO laundries (name, address, phone)
+      VALUES ($1, $2, $3)
+      ON CONFLICT DO NOTHING
+      RETURNING id
+    `;
 
-    // 1. إضافة المستخدمين الافتراضيين
-    console.log('🔄 Seeding users...');
+    const laundry1Result = await query(insertLaundryQuery, [
+      'المغسلة الرئيسية',
+      'الرياض، حي الياسمين',
+      '0500000001'
+    ]);
+
+    const laundry2Result = await query(insertLaundryQuery, [
+      'فرع جدة',
+      'جدة، حي الروضة',
+      '0500000002'
+    ]);
+
+    // الحصول على IDs المغاسل (سواء تم إنشاؤها أو كانت موجودة)
+    const laundry1IdResult = await query(
+      "SELECT id FROM laundries WHERE name = 'المغسلة الرئيسية' LIMIT 1"
+    );
+    const laundry2IdResult = await query(
+      "SELECT id FROM laundries WHERE name = 'فرع جدة' LIMIT 1"
+    );
+
+    const laundry1Id = laundry1IdResult.rows[0]?.id;
+    const laundry2Id = laundry2IdResult.rows[0]?.id;
+
+    console.log(`✅ Laundries ready: [1]=${laundry1Id}, [2]=${laundry2Id}`);
+
+    // ==============================
+    // 2. إضافة المستخدمين
+    // ==============================
+    console.log('👥 Seeding users...');
+
+    const superOwnerPasswordHash = bcrypt.hashSync('owner123', 10);
     const adminPasswordHash = bcrypt.hashSync('admin123', 10);
+    const admin2PasswordHash = bcrypt.hashSync('admin123', 10);
     const cashierPasswordHash = bcrypt.hashSync('cashier123', 10);
     const workerPasswordHash = bcrypt.hashSync('worker123', 10);
 
-    // إدخال المستخدمين إذا لم يكونوا موجودين (باستخدام ON CONFLICT)
     const insertUserQuery = `
-      INSERT INTO users (name, email, password_hash, role, is_active)
-      VALUES ($1, $2, $3, $4, true)
+      INSERT INTO users (name, email, password_hash, role, laundry_id, is_active)
+      VALUES ($1, $2, $3, $4, $5, true)
       ON CONFLICT (email) DO NOTHING
       RETURNING id
     `;
 
-    const adminResult = await query(insertUserQuery, [
-      'صاحب المغسلة (المدير)',
-      'admin@laundry.com',
-      adminPasswordHash,
-      'admin'
+    // صاحب السيستم (بدون مغسلة)
+    const superOwnerResult = await query(insertUserQuery, [
+      'صاحب النظام',
+      'owner@system.com',
+      superOwnerPasswordHash,
+      'super_owner',
+      null
     ]);
 
+    // أدمن مغسلة 1
+    const admin1Result = await query(insertUserQuery, [
+      'مدير المغسلة الرئيسية',
+      'admin@laundry.com',
+      adminPasswordHash,
+      'admin',
+      laundry1Id
+    ]);
+
+    // أدمن مغسلة 2
+    const admin2Result = await query(insertUserQuery, [
+      'مدير فرع جدة',
+      'admin2@laundry2.com',
+      admin2PasswordHash,
+      'admin',
+      laundry2Id
+    ]);
+
+    // موظف استقبال مغسلة 1
     const cashierResult = await query(insertUserQuery, [
       'موظف الاستقبال',
       'cashier@laundry.com',
       cashierPasswordHash,
-      'cashier'
+      'cashier',
+      laundry1Id
     ]);
 
+    // عامل مغسلة 1
     const workerResult = await query(insertUserQuery, [
       'عامل التشغيل',
       'worker@laundry.com',
       workerPasswordHash,
-      'worker'
+      'worker',
+      laundry1Id
     ]);
 
-    const usersCountAfterResult = await query('SELECT COUNT(*) as count FROM users');
-    const usersCountAfter = parseInt(usersCountAfterResult.rows[0].count);
-    
-    console.log(`✅ Users seeded successfully. Total users: ${usersCountAfter}`);
-    console.log(`   - Admin inserted: ${adminResult.rows.length > 0}`);
-    console.log(`   - Cashier inserted: ${cashierResult.rows.length > 0}`);
-    console.log(`   - Worker inserted: ${workerResult.rows.length > 0}`);
+    const usersCountResult = await query('SELECT COUNT(*) as count FROM users');
+    console.log(`✅ Users seeded. Total: ${usersCountResult.rows[0].count}`);
+    console.log(`   - Super Owner: ${superOwnerResult.rows.length > 0 ? '✅ new' : '⏭️ exists'}`);
+    console.log(`   - Admin (Laundry 1): ${admin1Result.rows.length > 0 ? '✅ new' : '⏭️ exists'}`);
+    console.log(`   - Admin (Laundry 2): ${admin2Result.rows.length > 0 ? '✅ new' : '⏭️ exists'}`);
 
-    // 2. إضافة الخدمات الافتراضية
-    console.log('🔄 Seeding services...');
+    // ==============================
+    // 3. الخدمات الافتراضية (لكل مغسلة)
+    // ==============================
+    console.log('✨ Seeding services...');
+
     const servicesCountResult = await query('SELECT COUNT(*) as count FROM services');
-    const servicesCount = parseInt(servicesCountResult.rows[0].count);
-
-    if (servicesCount === 0) {
+    if (parseInt(servicesCountResult.rows[0].count) === 0) {
       const insertServiceQuery = `
-        INSERT INTO services (name, name_ar, price, unit, estimated_hours, is_active)
-        VALUES ($1, $2, $3, $4, $5, true)
+        INSERT INTO services (name, name_ar, price, unit, estimated_hours, is_active, laundry_id)
+        VALUES ($1, $2, $3, $4, $5, true, $6)
       `;
 
-      await query(insertServiceQuery, ['Regular Wash', 'غسيل عادي', 10.0, 'piece', 24]);
-      await query(insertServiceQuery, ['Dry Clean', 'غسيل جاف', 25.0, 'piece', 48]);
-      await query(insertServiceQuery, ['Ironing', 'كي فقط', 5.0, 'piece', 12]);
-      await query(insertServiceQuery, ['Carpet Cleaning', 'تنظيف سجاد', 15.0, 'kg', 72]);
-      await query(insertServiceQuery, ['Blanket Cleaning', 'تنظيف بطانيات', 30.0, 'piece', 48]);
+      const defaultServices = [
+        ['Regular Wash', 'غسيل عادي', 10.0, 'piece', 24],
+        ['Dry Clean', 'غسيل جاف', 25.0, 'piece', 48],
+        ['Ironing', 'كي فقط', 5.0, 'piece', 12],
+        ['Carpet Cleaning', 'تنظيف سجاد', 15.0, 'kg', 72],
+        ['Blanket Cleaning', 'تنظيف بطانيات', 30.0, 'piece', 48],
+      ];
 
-      console.log('✅ Services seeded successfully.');
+      // إضافة الخدمات لكل مغسلة
+      for (const service of defaultServices) {
+        await query(insertServiceQuery, [...service, laundry1Id]);
+        if (laundry2Id) {
+          await query(insertServiceQuery, [...service, laundry2Id]);
+        }
+      }
+
+      console.log('✅ Services seeded for all laundries.');
     } else {
       console.log('⏭️  Services already exist. Skipping.');
     }
 
-    // 3. إضافة عملاء افتراضيين لتجربة النظام
-    console.log('🔄 Seeding customers...');
+    // ==============================
+    // 4. عملاء تجريبيون (لكل مغسلة)
+    // ==============================
+    console.log('👤 Seeding customers...');
     const customersCountResult = await query('SELECT COUNT(*) as count FROM customers');
-    const customersCount = parseInt(customersCountResult.rows[0].count);
-
-    if (customersCount === 0) {
+    if (parseInt(customersCountResult.rows[0].count) === 0) {
       const insertCustomerQuery = `
-        INSERT INTO customers (name, phone, address)
-        VALUES ($1, $2, $3)
+        INSERT INTO customers (name, phone, address, laundry_id) VALUES ($1, $2, $3, $4)
       `;
 
-      await query(insertCustomerQuery, ['محمد أحمد', '0501234567', 'الرياض، الياسمين']);
-      await query(insertCustomerQuery, ['أحمد خالد', '0557654321', 'جدة، الروضة']);
-      await query(insertCustomerQuery, ['سارة علي', '0549998887', 'الدمام، الزهور']);
+      await query(insertCustomerQuery, ['محمد أحمد', '0501234567', 'الرياض، الياسمين', laundry1Id]);
+      await query(insertCustomerQuery, ['أحمد خالد', '0557654321', 'الرياض، العليا', laundry1Id]);
+      await query(insertCustomerQuery, ['سارة علي', '0549998887', 'جدة، الروضة', laundry2Id]);
 
-      console.log('✅ Customers seeded successfully.');
+      console.log('✅ Customers seeded.');
     } else {
       console.log('⏭️  Customers already exist. Skipping.');
     }
 
-    console.log('✅ Database seeding finished successfully!');
+    console.log('\n✅ Database seeding finished successfully!');
+    console.log('\n📋 Default Accounts:');
+    console.log('   👑 Super Owner: owner@system.com / owner123');
+    console.log('   🏪 Admin (Laundry 1): admin@laundry.com / admin123');
+    console.log('   🏪 Admin (Laundry 2): admin2@laundry2.com / admin123');
+    console.log('   👤 Cashier: cashier@laundry.com / cashier123');
+    console.log('   🔧 Worker: worker@laundry.com / worker123');
+
     return true;
 
   } catch (error) {
@@ -105,17 +179,10 @@ async function seedDatabase() {
   }
 }
 
-// تشغيل الـ seed إذا تم تشغيل الملف مباشرة
 if (require.main === module) {
   seedDatabase()
-    .then(() => {
-      console.log('✅ Seeding completed. Exiting...');
-      process.exit(0);
-    })
-    .catch((error) => {
-      console.error('❌ Seeding failed:', error);
-      process.exit(1);
-    });
+    .then(() => { console.log('✅ Seeding completed.'); process.exit(0); })
+    .catch((error) => { console.error('❌ Seeding failed:', error); process.exit(1); });
 }
 
 module.exports = seedDatabase;

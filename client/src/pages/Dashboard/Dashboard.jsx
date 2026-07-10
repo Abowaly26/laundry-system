@@ -28,6 +28,7 @@ import {
 } from 'chart.js';
 import { Line, Doughnut } from 'react-chartjs-2';
 import { dashboardAPI } from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 import StatusBadge from '../../components/UI/StatusBadge';
 import LoadingSpinner from '../../components/UI/LoadingSpinner';
 import './Dashboard.css';
@@ -41,6 +42,7 @@ export default function Dashboard() {
   const [overdue, setOverdue] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { isSuperOwner, laundryName } = useAuth();
 
   const revenueList = Array.isArray(revenue) ? revenue : [];
   const popularServicesList = Array.isArray(popularServices) ? popularServices : [];

@@ -1,4 +1,4 @@
-// مسارات الخدمات - Service Routes
+// مسارات الخدمات - Service Routes (Multi-Laundry)
 const express = require('express');
 const { query } = require('../config/database');
 const authMiddleware = require('../middleware/auth');
@@ -8,18 +8,27 @@ const router = express.Router();
 
 /**
  * GET /api/services
- * عرض جميع الخدمات النشطة
+ * عرض الخدمات مفلترة بالمغسلة
  */
 router.get('/', authMiddleware, async (req, res) => {
   try {
     const { all } = req.query;
-    
-    // إذا طلب المدير عرض الكل بما فيها غير النشطة
+    const isSuperOwner = req.user.role === 'super_owner';
+    const isAdmin = req.user.role === 'admin';
+    const laundryId = req.user.laundry_id;
+
     let result;
-    if (all === 'true' && req.user.role === 'admin') {
-      result = await query('SELECT * FROM services ORDER BY created_at DESC');
+    const showAll = all === 'true' && (isAdmin || isSuperOwner);
+
+    if (isSuperOwner) {
+      // super_owner يرى كل الخدمات
+      result = await query('SELECT * FROM services ORDER BY laundry_id, name_ar ASC');
+    } else if (showAll) {
+      // admin يرى كل خدمات مغسلته
+      result = await query('SELECT * FROM services WHERE laundry_id = $1 ORDER BY created_at DESC', [laundryId]);
     } else {
-      result = await query('SELECT * FROM services WHERE is_active = true ORDER BY name_ar ASC');
+      // الباقي يرون الخدمات النشطة لمغسلتهم
+      result = await query('SELECT * FROM services WHERE is_active = true AND laundry_id = $1 ORDER BY name_ar ASC', [laundryId]);
     }
 
     res.json({ success: true, data: result.rows });
@@ -31,11 +40,18 @@ router.get('/', authMiddleware, async (req, res) => {
 
 /**
  * GET /api/services/:id
- * عرض خدمة واحدة
  */
 router.get('/:id', authMiddleware, async (req, res) => {
   try {
-    const result = await query('SELECT * FROM services WHERE id = $1', [req.params.id]);
+    const isSuperOwner = req.user.role === 'super_owner';
+    let result;
+
+    if (isSuperOwner) {
+      result = await query('SELECT * FROM services WHERE id = $1', [req.params.id]);
+    } else {
+      result = await query('SELECT * FROM services WHERE id = $1 AND laundry_id = $2', [req.params.id, req.user.laundry_id]);
+    }
+
     if (result.rows.length === 0) {
       return res.status(404).json({ success: false, message: 'الخدمة غير موجودة' });
     }
@@ -48,31 +64,22 @@ router.get('/:id', authMiddleware, async (req, res) => {
 
 /**
  * POST /api/services
- * إنشاء خدمة جديدة (المدير فقط)
+ * إنشاء خدمة (المدير فقط) - مرتبطة بمغسلته
  */
 router.post('/', authMiddleware, authorizeRoles('admin'), async (req, res) => {
   try {
     const { name, name_ar, price, unit, estimated_hours } = req.body;
 
     if (!name || !name_ar || price === undefined) {
-      return res.status(400).json({
-        success: false,
-        message: 'اسم الخدمة والسعر مطلوبان'
-      });
+      return res.status(400).json({ success: false, message: 'اسم الخدمة والسعر مطلوبان' });
     }
 
     const result = await query(
-      'INSERT INTO services (name, name_ar, price, unit, estimated_hours) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-      [name, name_ar, price, unit || 'piece', estimated_hours || 24]
+      'INSERT INTO services (name, name_ar, price, unit, estimated_hours, laundry_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+      [name, name_ar, price, unit || 'piece', estimated_hours || 24, req.user.laundry_id]
     );
 
-    const service = result.rows[0];
-
-    res.status(201).json({
-      success: true,
-      message: 'تم إنشاء الخدمة بنجاح',
-      data: service
-    });
+    res.status(201).json({ success: true, message: 'تم إنشاء الخدمة بنجاح', data: result.rows[0] });
   } catch (error) {
     console.error('Create service error:', error);
     res.status(500).json({ success: false, message: 'خطأ في إنشاء الخدمة' });
@@ -81,41 +88,37 @@ router.post('/', authMiddleware, authorizeRoles('admin'), async (req, res) => {
 
 /**
  * PUT /api/services/:id
- * تحديث خدمة (المدير فقط)
  */
 router.put('/:id', authMiddleware, authorizeRoles('admin'), async (req, res) => {
   try {
     const { id } = req.params;
     const { name, name_ar, price, unit, estimated_hours, is_active } = req.body;
 
-    const existingResult = await query('SELECT * FROM services WHERE id = $1', [id]);
+    let existingResult;
+    if (req.user.role === 'super_owner') {
+      existingResult = await query('SELECT * FROM services WHERE id = $1', [id]);
+    } else {
+      existingResult = await query('SELECT * FROM services WHERE id = $1 AND laundry_id = $2', [id, req.user.laundry_id]);
+    }
+
     if (existingResult.rows.length === 0) {
       return res.status(404).json({ success: false, message: 'الخدمة غير موجودة' });
     }
-    const existing = existingResult.rows[0];
 
+    const existing = existingResult.rows[0];
     await query(`
       UPDATE services 
       SET name = $1, name_ar = $2, price = $3, unit = $4, estimated_hours = $5, is_active = $6
       WHERE id = $7
     `, [
-      name || existing.name,
-      name_ar || existing.name_ar,
+      name || existing.name, name_ar || existing.name_ar,
       price !== undefined ? price : existing.price,
-      unit || existing.unit,
-      estimated_hours || existing.estimated_hours,
-      is_active !== undefined ? is_active : existing.is_active,
-      id
+      unit || existing.unit, estimated_hours || existing.estimated_hours,
+      is_active !== undefined ? is_active : existing.is_active, id
     ]);
 
     const serviceResult = await query('SELECT * FROM services WHERE id = $1', [id]);
-    const service = serviceResult.rows[0];
-
-    res.json({
-      success: true,
-      message: 'تم تحديث الخدمة بنجاح',
-      data: service
-    });
+    res.json({ success: true, message: 'تم تحديث الخدمة بنجاح', data: serviceResult.rows[0] });
   } catch (error) {
     console.error('Update service error:', error);
     res.status(500).json({ success: false, message: 'خطأ في تحديث الخدمة' });
@@ -124,24 +127,24 @@ router.put('/:id', authMiddleware, authorizeRoles('admin'), async (req, res) => 
 
 /**
  * DELETE /api/services/:id
- * حذف ناعم للخدمة (تعطيل) - المدير فقط
  */
 router.delete('/:id', authMiddleware, authorizeRoles('admin'), async (req, res) => {
   try {
     const { id } = req.params;
 
-    const existingResult = await query('SELECT * FROM services WHERE id = $1', [id]);
+    let existingResult;
+    if (req.user.role === 'super_owner') {
+      existingResult = await query('SELECT * FROM services WHERE id = $1', [id]);
+    } else {
+      existingResult = await query('SELECT * FROM services WHERE id = $1 AND laundry_id = $2', [id, req.user.laundry_id]);
+    }
+
     if (existingResult.rows.length === 0) {
       return res.status(404).json({ success: false, message: 'الخدمة غير موجودة' });
     }
 
-    // حذف ناعم - تعطيل الخدمة فقط
     await query('UPDATE services SET is_active = false WHERE id = $1', [id]);
-
-    res.json({
-      success: true,
-      message: 'تم تعطيل الخدمة بنجاح'
-    });
+    res.json({ success: true, message: 'تم تعطيل الخدمة بنجاح' });
   } catch (error) {
     console.error('Delete service error:', error);
     res.status(500).json({ success: false, message: 'خطأ في تعطيل الخدمة' });

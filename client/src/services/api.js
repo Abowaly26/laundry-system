@@ -200,4 +200,20 @@ export const portalAPI = {
     request(`/portal/track${buildQuery(query)}`),
 };
 
+// ===== Laundries (Super Owner) =====
+export const laundriesAPI = {
+  getAll: () =>
+    request('/laundries'),
+  getById: (id) =>
+    request(`/laundries/${id}`),
+  create: (data) =>
+    request('/laundries', { method: 'POST', body: data }),
+  update: (id, data) =>
+    request(`/laundries/${id}`, { method: 'PUT', body: data }),
+  delete: (id) =>
+    request(`/laundries/${id}`, { method: 'DELETE' }),
+  getStats: (id) =>
+    request(`/laundries/${id}/stats`),
+};
+
 export default request;

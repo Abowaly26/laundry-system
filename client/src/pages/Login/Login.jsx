@@ -101,6 +101,33 @@ export default function Login() {
             </Button>
           </div>
         </form>
+
+        {/* تلميح حسابات تجريبية */}
+        <div className="login-hints">
+          <details>
+            <summary>👑 حسابات تجريبية</summary>
+            <div className="login-hints-content">
+              <div className="hint-row super-owner-hint">
+                <span>صاحب النظام:</span>
+                <code onClick={() => { setEmail('owner@system.com'); setPassword('owner123'); }}>
+                  owner@system.com / owner123
+                </code>
+              </div>
+              <div className="hint-row">
+                <span>أدمن مغسلة 1:</span>
+                <code onClick={() => { setEmail('admin@laundry.com'); setPassword('admin123'); }}>
+                  admin@laundry.com / admin123
+                </code>
+              </div>
+              <div className="hint-row">
+                <span>أدمن مغسلة 2:</span>
+                <code onClick={() => { setEmail('admin2@laundry2.com'); setPassword('admin123'); }}>
+                  admin2@laundry2.com / admin123
+                </code>
+              </div>
+            </div>
+          </details>
+        </div>
       </div>
     </div>
   );

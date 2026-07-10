@@ -87,3 +87,14 @@
     display: none;
   }
 }
+
+/* اسم المغسلة في الهيدر */
+.header-laundry-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+

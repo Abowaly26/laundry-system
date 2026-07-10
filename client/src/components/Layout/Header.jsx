@@ -1,9 +1,9 @@
-import { Menu } from 'lucide-react';
+import { Menu, Building2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import './Header.css';
 
 export default function Header({ title, onMenuClick }) {
-  const { user } = useAuth();
+  const { user, laundryName, isSuperOwner } = useAuth();
 
   const getInitials = (name) => {
     if (!name) return '؟';
@@ -16,7 +16,15 @@ export default function Header({ title, onMenuClick }) {
         <button className="header-menu-btn" onClick={onMenuClick}>
           <Menu size={24} />
         </button>
-        <h1 className="header-title">{title}</h1>
+        <div>
+          <h1 className="header-title">{title}</h1>
+          {!isSuperOwner && laundryName && (
+            <div className="header-laundry-badge">
+              <Building2 size={11} />
+              {laundryName}
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="header-left">

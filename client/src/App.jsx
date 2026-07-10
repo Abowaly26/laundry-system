@@ -17,6 +17,7 @@ import Finance from './pages/Finance/Finance';
 import Users from './pages/Users/Users';
 import Settings from './pages/Settings/Settings';
 import CustomerPortal from './pages/CustomerPortal/CustomerPortal';
+import Laundries from './pages/Laundries/Laundries';
 
 function App() {
   return (
@@ -70,6 +71,16 @@ function App() {
                 element={
                   <ProtectedRoute adminOnly>
                     <Settings />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* إدارة المغاسل (صاحب النظام فقط) */}
+              <Route
+                path="laundries"
+                element={
+                  <ProtectedRoute superOwnerOnly>
+                    <Laundries />
                   </ProtectedRoute>
                 }
               />

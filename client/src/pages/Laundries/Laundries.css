@@ -1,0 +1,451 @@
+/* ========================
+   صفحة إدارة المغاسل
+======================== */
+
+.laundries-page .page-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.page-title-icon {
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+/* ========================
+   بطاقات الملخص العلوية
+======================== */
+.laundries-summary-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.summary-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 24px;
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.summary-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.summary-card svg {
+  padding: 10px;
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+
+.summary-card-primary svg { background: #EEF2FF; color: #4F46E5; }
+.summary-card-success svg { background: #ECFDF5; color: #059669; }
+.summary-card-info svg { background: #EFF6FF; color: #3B82F6; }
+.summary-card-warning svg { background: #FFFBEB; color: #D97706; }
+
+.summary-card-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.summary-card-label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* ========================
+   حالة فارغة
+======================== */
+.laundries-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  text-align: center;
+  gap: 16px;
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  border: 2px dashed var(--border);
+}
+
+.laundries-empty-icon {
+  font-size: 4rem;
+  line-height: 1;
+}
+
+.laundries-empty h3 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.laundries-empty p {
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* ========================
+   شبكة البطاقات
+======================== */
+.laundries-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 24px;
+}
+
+/* ========================
+   بطاقة المغسلة
+======================== */
+.laundry-card {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.laundry-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+}
+
+.laundry-card-inactive {
+  opacity: 0.65;
+}
+
+/* رأس البطاقة الملوّن */
+.laundry-card-header {
+  padding: 20px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.laundry-card-header-content {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.laundry-card-icon {
+  width: 52px;
+  height: 52px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.laundry-card-name {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 6px;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.laundry-card-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.9);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-dot.active { background: #34D399; box-shadow: 0 0 0 3px rgba(52,211,153,0.3); }
+.status-dot.inactive { background: #F87171; }
+
+.laundry-card-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.laundry-icon-btn {
+  width: 34px;
+  height: 34px;
+  background: rgba(255,255,255,0.2);
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.laundry-icon-btn:hover { background: rgba(255,255,255,0.35); }
+.laundry-icon-btn.danger { background: rgba(239,68,68,0.3); }
+.laundry-icon-btn.danger:hover { background: rgba(239,68,68,0.5); }
+.laundry-icon-btn.success { background: rgba(52,211,153,0.3); }
+.laundry-icon-btn.success:hover { background: rgba(52,211,153,0.5); }
+
+/* جسم البطاقة */
+.laundry-card-body {
+  padding: 20px;
+}
+
+.laundry-info-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin-bottom: 8px;
+}
+
+.laundry-info-row svg { color: var(--text-muted); flex-shrink: 0; }
+
+/* شبكة الإحصائيات */
+.laundry-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin: 16px 0;
+  padding: 14px;
+  background: var(--bg);
+  border-radius: var(--radius-md);
+}
+
+.laundry-stat {
+  text-align: center;
+}
+
+.laundry-stat-value {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.laundry-stat-label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.laundry-revenue {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  padding: 10px 12px;
+  background: #ECFDF5;
+  border-radius: var(--radius-md);
+  margin-bottom: 14px;
+}
+
+.laundry-revenue svg { color: #059669; }
+.laundry-revenue strong { color: #047857; }
+
+.laundry-expand-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px;
+  background: transparent;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.laundry-expand-btn:hover {
+  background: var(--bg);
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+/* ========================
+   لوحة الموظفين
+======================== */
+.laundry-staff-panel {
+  border-top: 1px solid var(--border);
+  padding: 16px 20px;
+  background: var(--bg);
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.laundry-staff-loading {
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.mini-spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.laundry-staff-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+
+.laundry-staff-empty {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  padding: 12px;
+}
+
+.laundry-staff-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.laundry-staff-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+}
+
+.laundry-staff-item.inactive {
+  opacity: 0.5;
+}
+
+.staff-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.staff-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.staff-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.staff-email {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.staff-role-tag {
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.staff-inactive-badge {
+  padding: 2px 8px;
+  background: #FEF2F2;
+  color: #DC2626;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+/* ========================
+   Modal Sections
+======================== */
+.modal-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--primary-light, #EEF2FF);
+}
+
+.modal-section-note {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  background: var(--bg);
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  border: 1px dashed var(--border);
+  margin-bottom: 16px;
+}
+
+/* ========================
+   Responsive
+======================== */
+@media (max-width: 768px) {
+  .laundries-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .laundries-summary-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .laundry-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

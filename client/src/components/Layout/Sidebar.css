@@ -211,3 +211,25 @@
   object-fit: contain;
   padding: 4px;
 }
+
+/* ===== Super Owner Special Styles ===== */
+.super-owner-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: linear-gradient(135deg, #F59E0B, #D97706);
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  margin-top: 3px;
+  width: fit-content;
+}
+
+.super-owner-avatar {
+  background: linear-gradient(135deg, #F59E0B, #D97706) !important;
+  color: #fff !important;
+  border-color: rgba(245, 158, 11, 0.4) !important;
+}
+
