@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, Navigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   ClipboardList,
   Loader,
@@ -36,6 +37,7 @@ import './Dashboard.css';
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Title, Tooltip, Legend, Filler);
 
 export default function Dashboard() {
+  const { t, i18n } = useTranslation();
   const [stats, setStats] = useState(null);
   const [revenue, setRevenue] = useState([]);
   const [popularServices, setPopularServices] = useState([]);
@@ -55,7 +57,7 @@ export default function Dashboard() {
   const formatDate = (dateStr) => {
     if (!dateStr) return '-';
     const d = new Date(dateStr);
-    return isNaN(d.getTime()) ? '-' : d.toLocaleDateString('ar-EG');
+    return isNaN(d.getTime()) ? '-' : d.toLocaleDateString(i18n.language === 'en' ? 'en-US' : 'ar-EG');
   };
 
   useEffect(() => {
@@ -98,13 +100,13 @@ export default function Dashboard() {
     const recentOrdersList = Array.isArray(stats?.recentOrders) ? stats.recentOrders : [];
     if (recentOrdersList.length === 0) return;
     
-    const headers = ['رقم الطلب', 'العميل', 'عدد القطع', 'الحالة', 'الإجمالي (ر.س)', 'تاريخ الطلب'];
+    const headers = [t('dashboard.orderId'), t('dashboard.customer'), t('dashboard.items'), t('dashboard.status'), t('dashboard.amount'), t('dashboard.date')];
     
     const rows = recentOrdersList.map(order => [
-      order?.id,
-      order?.customer?.name || '-',
+      order?.id || order?.orderId,
+      order?.customer?.name || order?.customerName || '-',
       order?.items?.length || 0,
-      order?.status === 'pending' ? 'قيد الانتظار' : order?.status === 'processing' ? 'قيد المعالجة' : order?.status === 'ready' ? 'جاهز للتسليم' : order?.status === 'delivered' ? 'تم التسليم' : 'ملغي',
+      t(`status.${order?.status}`) || order?.status,
       order?.totalAmount || order?.total_amount || 0,
       formatDate(order?.createdAt || order?.created_at)
     ]);
@@ -129,31 +131,31 @@ export default function Dashboard() {
 
   const statCards = [
     {
-      label: 'طلبات اليوم',
+      label: t('dashboard.todayOrders'),
       value: stats?.todayOrders ?? 0,
       icon: ClipboardList,
       color: 'teal',
     },
     {
-      label: 'قيد المعالجة',
+      label: t('dashboard.processing'),
       value: stats?.processingOrders ?? 0,
       icon: Loader,
       color: 'blue',
     },
     {
-      label: 'جاهز للتسليم',
+      label: t('dashboard.ready'),
       value: stats?.readyOrders ?? 0,
       icon: CheckCircle2,
       color: 'green',
     },
     {
-      label: 'تم التسليم',
+      label: t('dashboard.delivered'),
       value: stats?.deliveredOrders ?? 0,
       icon: Package,
       color: 'amber',
     },
     {
-      label: 'إيراد اليوم',
+      label: t('dashboard.todayRevenue'),
       value: stats?.todayRevenue ?? 0,
       icon: Banknote,
       color: 'teal',
@@ -247,6 +249,19 @@ export default function Dashboard() {
 
   return (
     <div className="dashboard">
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">{t('dashboard.title')}</h1>
+          <p className="page-subtitle">{formatDate(new Date())}</p>
+        </div>
+        <div className="header-actions">
+          <button className="btn btn-outline" onClick={exportToCSV}>
+            <Download size={18} />
+            <span>{t('dashboard.exportReport')}</span>
+          </button>
+        </div>
+      </div>
+
       {/* Quick Actions Bar */}
       <div className="quick-actions-bar">
         <button className="quick-action-btn primary" onClick={() => navigate('/orders/new')}>
