@@ -406,6 +406,18 @@
   }
 }
 
+@media (max-width: 768px) {
+  .orders-list-table-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .orders-export-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
 /* Orders Table Card & Export Header (Matching Dashboard recent-orders style exactly) */
 .orders-list-table-card {
   background: var(--bg-card);

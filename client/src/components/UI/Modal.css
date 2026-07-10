@@ -78,3 +78,30 @@
   padding: var(--space-md) var(--space-lg);
   border-top: 1px solid var(--border);
 }
+
+@media (max-width: 768px) {
+  .modal-overlay {
+    padding: var(--space-sm);
+  }
+  
+  .modal {
+    max-height: 95vh;
+  }
+  
+  .modal-header {
+    padding: var(--space-md);
+  }
+  
+  .modal-body {
+    padding: var(--space-md);
+  }
+  
+  .modal-footer {
+    padding: var(--space-md);
+    flex-direction: column-reverse;
+  }
+  
+  .modal-footer button {
+    width: 100%;
+  }
+}

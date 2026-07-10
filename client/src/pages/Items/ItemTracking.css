@@ -397,6 +397,16 @@
   }
 }
 
+@media (max-width: 480px) {
+  .manual-input-row {
+    flex-direction: column;
+  }
+  
+  .manual-input-row button {
+    width: 100%;
+  }
+}
+
 .qr-scanner-shell {
   width: 100%;
   max-width: 560px;

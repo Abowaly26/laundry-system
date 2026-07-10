@@ -758,6 +758,40 @@
   }
 }
 
+@media (max-width: 768px) {
+  .services-grid {
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  }
+  
+  .service-card {
+    padding: var(--space-sm);
+  }
+  
+  .service-icon {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .items-sizes-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .cart-item-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .cart-item-info {
+    width: 100%;
+  }
+  
+  .cart-item-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
 /* Chart Styles as Day Selectors */
 .weekly-workload-mini-chart {
   background: var(--bg-card);
