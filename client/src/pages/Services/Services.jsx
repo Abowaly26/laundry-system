@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Plus, Edit2, Trash2, Sparkles, Tags, ShieldAlert, X, Download, Search } from 'lucide-react';
 import { servicesAPI, itemTypesAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
@@ -11,6 +12,7 @@ import EmptyState from '../../components/UI/EmptyState';
 import './Services.css';
 
 export default function Services() {
+  const { t, i18n } = useTranslation();
   const { isAdmin } = useAuth();
   const { showToast } = useToast();
   
@@ -175,7 +177,7 @@ export default function Services() {
     if (!cleanSizeName) return;
     
     if (itemTypeFormData.sizes.includes(cleanSizeName)) {
-      showToast('هذا الحجم مضاف بالفعل للقطعة', 'warning');
+      showToast(t('services.sizeExists') || 'هذا الحجم مضاف بالفعل للقطعة', 'warning');
       return;
     }
 
@@ -198,7 +200,7 @@ export default function Services() {
 
   const handleRemoveSizeChip = (sizeName) => {
     if (itemTypeFormData.sizes.length === 1) {
-      showToast('يجب الاحتفاظ بحجم واحد على الأقل للقطعة', 'warning');
+      showToast(t('services.minOneSize') || 'يجب الاحتفاظ بحجم واحد على الأقل للقطعة', 'warning');
       return;
     }
     const updatedSizes = itemTypeFormData.sizes.filter(s => s !== sizeName);
@@ -227,12 +229,12 @@ export default function Services() {
   const handleSaveItemType = async (e) => {
     e.preventDefault();
     if (!isAdmin) {
-      showToast('عذراً، هذا الإجراء يتطلب صلاحيات مدير النظام', 'error');
+      showToast(t('services.adminRequired') || 'عذراً، هذا الإجراء يتطلب صلاحيات مدير النظام', 'error');
       return;
     }
 
     if (!itemTypeFormData.name_ar.trim()) {
-      showToast('الرجاء إدخال اسم القطعة بالعربية', 'warning');
+      showToast(t('services.nameArRequired') || 'الرجاء إدخال اسم القطعة بالعربية', 'warning');
       return;
     }
 
@@ -262,51 +264,51 @@ export default function Services() {
       }
 
       if (res.success) {
-        showToast(itemTypeModalMode === 'add' ? 'تم إضافة نوع القطعة وشبكة الأسعار بنجاح' : 'تم تحديث نوع القطعة بنجاح', 'success');
+        showToast(itemTypeModalMode === 'add' ? t('services.addSuccess') || 'تم إضافة نوع القطعة وشبكة الأسعار بنجاح' : t('services.updateSuccess') || 'تم تحديث نوع القطعة بنجاح', 'success');
         setShowItemTypeModal(false);
         loadItemTypes();
       } else {
-        showToast(res.message || 'حدث خطأ أثناء الحفظ', 'error');
+        showToast(res.message || t('customers.saveFail') || 'حدث خطأ أثناء الحفظ', 'error');
       }
     } catch (err) {
-      showToast(err.message || 'حدث خطأ في الاتصال بالخادم', 'error');
+      showToast(err.message || t('customers.networkError') || 'حدث خطأ في الاتصال بالخادم', 'error');
     }
   };
 
   const handleDeleteItemType = async (id) => {
     if (!isAdmin) {
-      showToast('عذراً، هذا الإجراء يتطلب صلاحيات مدير النظام', 'error');
+      showToast(t('services.adminRequired') || 'عذراً، هذا الإجراء يتطلب صلاحيات مدير النظام', 'error');
       return;
     }
-    if (!window.confirm('هل أنت متأكد من رغبتك في حذف نوع القطعة هذا بالكامل؟ سيتم مسح الأحجام والأسعار المرتبطة بها!')) {
+    if (!window.confirm(t('services.confirmDelete') || 'هل أنت متأكد من رغبتك في حذف نوع القطعة هذا بالكامل؟ سيتم مسح الأحجام والأسعار المرتبطة بها!')) {
       return;
     }
     try {
       const res = await itemTypesAPI.delete(id);
       if (res.success) {
-        showToast('تم حذف نوع القطعة بنجاح', 'success');
+        showToast(t('services.deleteSuccess') || 'تم حذف نوع القطعة بنجاح', 'success');
         loadItemTypes();
       } else {
-        showToast(res.message || 'فشل في حذف نوع القطعة', 'error');
+        showToast(res.message || t('services.deleteFail') || 'فشل في حذف نوع القطعة', 'error');
       }
     } catch (err) {
-      showToast(err.message || 'خطأ أثناء حذف نوع القطعة', 'error');
+      showToast(err.message || t('services.deleteError') || 'خطأ أثناء حذف نوع القطعة', 'error');
     }
   };
 
   const exportToCSV = () => {
     const typesToExport = Array.isArray(itemTypes) ? itemTypes : [];
     if (typesToExport.length === 0) {
-      showToast('لا توجد قطع ملابس لتصديرها', 'warning');
+      showToast(t('services.exportEmpty') || 'لا توجد قطع ملابس لتصديرها', 'warning');
       return;
     }
 
     const activeServices = (Array.isArray(services) ? services : []).filter(s => s.is_active);
     const headers = [
-      'رقم القطعة',
-      'اسم القطعة بالعربية',
-      'اسم القطعة بالإنجليزية',
-      'الحجم',
+      t('services.colId') || 'رقم القطعة',
+      t('services.colNameAr') || 'اسم القطعة بالعربية',
+      t('services.colNameEn') || 'اسم القطعة بالإنجليزية',
+      t('services.colSize') || 'الحجم',
       ...activeServices.map(svc => svc.name_ar)
     ];
 
@@ -324,7 +326,7 @@ export default function Services() {
           formatCSVField(`#${itemType.id}`),
           formatCSVField(itemType.name_ar || '-'),
           formatCSVField(itemType.name_en || '-'),
-          formatCSVField('عام'),
+          formatCSVField(t('services.generalSize') || 'عام'),
           ...activeServices.map(() => formatCSVField('0.00'))
         ]);
       } else {
@@ -360,7 +362,7 @@ export default function Services() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    showToast('تم تصدير شبكة أسعار القطع والأحجام بنجاح إلى ملف إكسل (CSV) 📊', 'success');
+    showToast(t('services.exportSuccess') || 'تم تصدير شبكة أسعار القطع والأحجام بنجاح إلى ملف إكسل (CSV) 📊', 'success');
   };
 
   return (
@@ -368,8 +370,8 @@ export default function Services() {
       <div className="page-header-container">
         <div className="page-header">
           <div>
-            <h1 className="page-title">إدارة أنواع الملابس والأحجام</h1>
-            <p className="page-subtitle">تحديد أنواع الملابس والأحجام وشبكة الأسعار للخدمات المختلفة</p>
+            <h1 className="page-title">{t('services.title') || 'إدارة أنواع الملابس والأحجام'}</h1>
+            <p className="page-subtitle">{t('services.subtitle') || 'تحديد أنواع الملابس والأحجام وشبكة الأسعار للخدمات المختلفة'}</p>
           </div>
           <div className="flex gap-sm items-center">
             <Button
@@ -378,7 +380,7 @@ export default function Services() {
               style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
             >
               <Download size={18} />
-              تصدير ملف إكسل
+              {t('services.exportCSVBtn') || 'تصدير ملف إكسل'}
             </Button>
             {isAdmin && (
               <Button 
@@ -386,7 +388,7 @@ export default function Services() {
                 onClick={handleOpenAddItemType}
               >
                 <Plus size={18} style={{ marginLeft: '8px' }} />
-                إضافة نوع قطعة جديد
+                {t('services.addNewBtn') || 'إضافة نوع قطعة جديد'}
               </Button>
             )}
           </div>
@@ -404,8 +406,8 @@ export default function Services() {
                 <Tags size={22} />
               </div>
               <div className="kpi-content">
-                <span className="kpi-label">أنواع الملابس المُعرفة</span>
-                <h4 className="kpi-value">{itemTypes.length} <small>قطعة</small></h4>
+                <span className="kpi-label">{t('services.definedTypes') || 'أنواع الملابس المُعرفة'}</span>
+                <h4 className="kpi-value">{itemTypes.length} <small>{t('services.piece') || 'قطعة'}</small></h4>
               </div>
             </div>
 
@@ -414,8 +416,8 @@ export default function Services() {
                 <Sparkles size={22} />
               </div>
               <div className="kpi-content">
-                <span className="kpi-label">إجمالي الأحجام والخيارات</span>
-                <h4 className="kpi-value">{totalSizesCount} <small>حجم في الشبكة</small></h4>
+                <span className="kpi-label">{t('services.totalSizes') || 'إجمالي الأحجام والخيارات'}</span>
+                <h4 className="kpi-value">{totalSizesCount} <small>{t('services.sizeInMatrix') || 'حجم في الشبكة'}</small></h4>
               </div>
             </div>
 
@@ -424,8 +426,8 @@ export default function Services() {
                 <ShieldAlert size={22} />
               </div>
               <div className="kpi-content">
-                <span className="kpi-label">الخدمات المتاحة للغسيل</span>
-                <h4 className="kpi-value">{activeServicesCount} <small>خدمة نشطة</small></h4>
+                <span className="kpi-label">{t('services.availableServices') || 'الخدمات المتاحة للغسيل'}</span>
+                <h4 className="kpi-value">{activeServicesCount} <small>{t('services.activeService') || 'خدمة نشطة'}</small></h4>
               </div>
             </div>
           </div>
@@ -439,7 +441,7 @@ export default function Services() {
           <input
             type="text"
             className="search-input-clean"
-            placeholder="ابحث سريعاً باسم القطعة أو الحجم (مثال: بدلة، بطانية، سجاد، عادي)..."
+            placeholder={t('services.searchPlaceholder') || 'ابحث سريعاً باسم القطعة أو الحجم (مثال: بدلة، بطانية، سجاد، عادي)...'}
             value={itemTypeSearch}
             onChange={(e) => setItemTypeSearch(e.target.value)}
           />
@@ -448,7 +450,7 @@ export default function Services() {
               type="button" 
               className="clear-search-btn" 
               onClick={() => setItemTypeSearch('')}
-              title="مسح البحث"
+              title={t('services.clearSearch') || "مسح البحث"}
             >
               <X size={16} />
             </button>
@@ -462,8 +464,8 @@ export default function Services() {
         </div>
       ) : !Array.isArray(itemTypes) || itemTypes.length === 0 ? (
         <EmptyState 
-          title="لا توجد قطع ملابس" 
-          message="لم نجد أي أنواع قطع ملابس معرفة بالنظام حالياً. اضغط لإضافة نوع قطعة جديد."
+          title={t('services.emptyStateTitle') || 'لا توجد قطع ملابس'} 
+          message={t('services.emptyStateMsg') || 'لم نجد أي أنواع قطع ملابس معرفة بالنظام حالياً. اضغط لإضافة نوع قطعة جديد.'}
         />
       ) : (() => {
         const filteredItemTypes = itemTypes.filter(itemType => {
@@ -477,8 +479,8 @@ export default function Services() {
 
         return filteredItemTypes.length === 0 ? (
           <EmptyState 
-            title="لا توجد نتائج" 
-            message="لم نجد أي قطع ملابس أو أحجام تطابق بحثك الحالي."
+            title={t('services.noResultsTitle') || 'لا توجد نتائج'} 
+            message={t('services.noResultsMsg') || 'لم نجد أي قطع ملابس أو أحجام تطابق بحثك الحالي.'}
           />
         ) : (
           <div className="services-grid mt-md">
@@ -493,21 +495,21 @@ export default function Services() {
                         <Tags size={22} />
                       </div>
                       <div>
-                        <h3 className="card-item-title">{itemType.name_ar}</h3>
-                        <span className="card-item-subtitle">{itemType.name_en || 'Item Type'}</span>
+                        <h3 className="card-item-title">{i18n.language === 'en' && itemType.name_en ? itemType.name_en : itemType.name_ar}</h3>
+                        <span className="card-item-subtitle">{i18n.language === 'ar' ? itemType.name_en : itemType.name_ar}</span>
                       </div>
                     </div>
 
                     <div className="header-actions-right">
                       <span className="size-count-pill">
-                        {sortedCardSizes.length} {sortedCardSizes.length === 1 ? 'حجم' : 'أحجام'}
+                        {sortedCardSizes.length} {sortedCardSizes.length === 1 ? (t('services.sizeSingular') || 'حجم') : (t('services.sizePlural') || 'أحجام')}
                       </span>
                       {isAdmin && (
                         <button
                           type="button"
                           className="quick-delete-icon-btn"
                           onClick={() => handleDeleteItemType(itemType.id)}
-                          title="حذف هذا النوع بالكامل"
+                          title={t('services.deleteItemTypeTitle') || "حذف هذا النوع بالكامل"}
                         >
                           <Trash2 size={16} />
                         </button>
@@ -517,7 +519,7 @@ export default function Services() {
 
                   {/* Sizes Section */}
                   <div className="card-sizes-section mt-sm">
-                    <span className="section-mini-label">الأحجام المتوفرة للقطعة:</span>
+                    <span className="section-mini-label">{t('services.availableSizes') || 'الأحجام المتوفرة للقطعة:'}</span>
                     <div className="size-badges-container">
                       {sortedCardSizes.map(sz => {
                         const sName = typeof sz === 'object' && sz !== null ? (sz.size_name || '-') : String(sz);
@@ -531,9 +533,9 @@ export default function Services() {
                     <table className="price-preview-table">
                       <thead>
                         <tr>
-                          <th style={{ minWidth: '75px' }}>الحجم</th>
+                          <th style={{ minWidth: '75px' }}>{t('services.colSize') || 'الحجم'}</th>
                           {services.filter(s => s.is_active).map(svc => (
-                            <th key={svc.id} style={{ minWidth: '95px', textAlign: 'center' }}>{svc.name_ar}</th>
+                            <th key={svc.id} style={{ minWidth: '95px', textAlign: 'center' }}>{i18n.language === 'en' && svc.name_en ? svc.name_en : svc.name_ar}</th>
                           ))}
                         </tr>
                       </thead>
@@ -551,7 +553,7 @@ export default function Services() {
                                   <td key={svc.id} style={{ textAlign: 'center' }}>
                                     {priceVal > 0 ? (
                                       <span className="price-badge-active">
-                                        {priceVal.toFixed(2)} <small>ر.س</small>
+                                        {priceVal.toFixed(2)} <small>{t('currency') || 'ر.س'}</small>
                                       </span>
                                     ) : (
                                       <span className="price-badge-zero">—</span>
@@ -575,7 +577,7 @@ export default function Services() {
                         onClick={() => handleOpenEditItemType(itemType)}
                       >
                         <Edit2 size={16} />
-                        <span>تعديل الأسعار والأحجام</span>
+                        <span>{t('services.editPricesBtn') || 'تعديل الأسعار والأحجام'}</span>
                       </Button>
                     </div>
                   )}
@@ -590,38 +592,38 @@ export default function Services() {
       <Modal
         isOpen={showItemTypeModal}
         onClose={() => setShowItemTypeModal(false)}
-        title={itemTypeModalMode === 'add' ? 'إضافة قطعة وشبكة أسعار جديدة' : 'تعديل أسعار القطعة وأحجامها'}
+        title={itemTypeModalMode === 'add' ? (t('services.addModalTitle') || 'إضافة قطعة وشبكة أسعار جديدة') : (t('services.editModalTitle') || 'تعديل أسعار القطعة وأحجامها')}
         width="940px"
         size="xl"
       >
         <form onSubmit={handleSaveItemType}>
           <div className="form-row">
             <div className="form-group">
-              <label className="form-label">اسم القطعة بالعربية *</label>
+              <label className="form-label">{t('services.nameArLabel') || 'اسم القطعة بالعربية *'}</label>
               <input
                 type="text"
                 className="form-input"
                 required
                 value={itemTypeFormData.name_ar}
                 onChange={(e) => setItemTypeFormData({ ...itemTypeFormData, name_ar: e.target.value })}
-                placeholder="مثال: سجادة، بطانية، فستان"
+                placeholder={t('services.nameArPlaceholder') || 'مثال: سجادة، بطانية، فستان'}
               />
             </div>
             <div className="form-group">
-              <label className="form-label">الاسم بالإنجليزية</label>
+              <label className="form-label">{t('services.nameEnLabel') || 'الاسم بالإنجليزية'}</label>
               <input
                 type="text"
                 className="form-input"
                 value={itemTypeFormData.name_en}
                 onChange={(e) => setItemTypeFormData({ ...itemTypeFormData, name_en: e.target.value })}
-                placeholder="مثال: Carpet, Blanket, Dress"
+                placeholder={t('services.nameEnPlaceholder') || 'مثال: Carpet, Blanket, Dress'}
               />
             </div>
           </div>
 
           {/* Dynamic Sizes management input tags chips */}
           <div className="form-group">
-            <label className="form-label">الأحجام المتوفرة للقطعة (اضغط Enter لإضافة الحجم) *</label>
+            <label className="form-label">{t('services.sizesLabel') || 'الأحجام المتوفرة للقطعة (اضغط Enter لإضافة الحجم) *'}</label>
             <div className="size-chips-input-container">
               <div className="chips-wrapper">
                 {itemTypeFormData.sizes.map(sz => (
@@ -643,7 +645,7 @@ export default function Services() {
                   className="form-input size-add-input"
                   value={newSizeInput}
                   onChange={(e) => setNewSizeInput(e.target.value)}
-                  placeholder="اكتب اسم الحجم (مثال: كبير، صغير، 3x4 متر)"
+                  placeholder={t('services.sizePlaceholder') || 'اكتب اسم الحجم (مثال: كبير، صغير، 3x4 متر)'}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       handleAddSizeChip(e);
@@ -651,7 +653,7 @@ export default function Services() {
                   }}
                 />
                 <Button variant="secondary" type="button" onClick={handleAddSizeChip}>
-                  إضافة
+                  {t('services.addBtn') || 'إضافة'}
                 </Button>
               </div>
             </div>
@@ -661,20 +663,20 @@ export default function Services() {
           <div className="form-group mt-md">
             <label className="form-label font-bold text-primary flex items-center">
               <ShieldAlert size={16} style={{ marginLeft: '6px' }} />
-              شبكة أسعار الخدمات لكل حجم مضاف (ر.س)
+              {t('services.matrixLabel') || 'شبكة أسعار الخدمات لكل حجم مضاف (ر.س)'}
             </label>
             
             <div className="pricing-grid-matrix-container mt-sm">
               {itemTypeFormData.sizes.length === 0 ? (
-                <p className="text-secondary text-sm">الرجاء إدخال حجم واحد على الأقل لتحديد الأسعار له.</p>
+                <p className="text-secondary text-sm">{t('services.matrixEmpty') || 'الرجاء إدخال حجم واحد على الأقل لتحديد الأسعار له.'}</p>
               ) : (
                 <div className="matrix-scroll-wrapper">
                   <table className="pricing-matrix-table">
                     <thead>
                       <tr>
-                        <th>الحجم</th>
+                        <th>{t('services.colSize') || 'الحجم'}</th>
                         {services.filter(s => s.is_active).map(svc => (
-                          <th key={svc.id}>{svc.name_ar}</th>
+                          <th key={svc.id}>{i18n.language === 'en' && svc.name_en ? svc.name_en : svc.name_ar}</th>
                         ))}
                       </tr>
                     </thead>
@@ -711,10 +713,10 @@ export default function Services() {
 
           <div className="flex justify-between mt-lg">
             <Button variant="secondary" type="button" onClick={() => setShowItemTypeModal(false)}>
-              إلغاء
+              {t('services.cancelBtn') || 'إلغاء'}
             </Button>
             <Button variant="primary" type="submit">
-              حفظ القطعة والأسعار
+              {t('services.saveBtn') || 'حفظ القطعة والأسعار'}
             </Button>
           </div>
         </form>

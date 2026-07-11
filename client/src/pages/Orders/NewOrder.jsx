@@ -1,5 +1,6 @@
 import { Fragment, useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Plus, Trash2, Search, UserPlus, Printer, ArrowRight, Save, FileText, ChevronLeft, ChevronRight } from 'lucide-react';
 import { customersAPI, servicesAPI, ordersAPI, itemTypesAPI } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
@@ -47,6 +48,7 @@ const TIME_OPTIONS = [
 ];
 
 export default function NewOrder() {
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { showToast } = useToast();
   const { settings } = useSettings();
@@ -595,7 +597,7 @@ export default function NewOrder() {
         <div className="new-order-top-row">
           <div className="layout-card-wrapper">
             <Card 
-              title="بيانات العميل"
+              title={t('orders.customerData') || 'بيانات العميل'}
             >
               {!selectedCustomer ? (
                 <div className="customer-selector">
@@ -603,7 +605,7 @@ export default function NewOrder() {
                     <input
                       type="text"
                       className="form-input"
-                      placeholder="ابحث بالاسم أو رقم الهاتف..."
+                      placeholder={t('orders.searchCustomer') || 'ابحث بالاسم أو رقم الهاتف...'}
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                     />
@@ -625,33 +627,33 @@ export default function NewOrder() {
                     )}
                   </div>
 
-                  <div className="divider-or"><span>أو</span></div>
+                  <div className="divider-or"><span>{t('orders.or') || 'أو'}</span></div>
 
                   <Button variant="secondary" className="w-full" onClick={() => setShowAddCustomerModal(true)}>
-                    <UserPlus size={18} style={{ marginLeft: '8px' }} />
-                    إضافة عميل جديد
+                    <UserPlus size={18} style={{ marginInlineStart: '8px' }} />
+                    {t('orders.addNewCustomer') || 'إضافة عميل جديد'}
                   </Button>
                 </div>
               ) : (
                 <div className="selected-customer-card">
                   <div className="customer-info-detail">
                     <h3>{selectedCustomer.name}</h3>
-                    <p>رقم الهاتف: {selectedCustomer.phone}</p>
-                    {selectedCustomer.address && <p>العنوان: {selectedCustomer.address}</p>}
+                    <p>{t('orders.phone') || 'رقم الهاتف'}: {selectedCustomer.phone}</p>
+                    {selectedCustomer.address && <p>{t('orders.address') || 'العنوان'}: {selectedCustomer.address}</p>}
                   </div>
                   <Button variant="ghost" className="text-error mt-sm w-full" onClick={() => setSelectedCustomer(null)}>
-                    تغيير العميل
+                    {t('orders.changeCustomer') || 'تغيير العميل'}
                   </Button>
                 </div>
               )}
 
               <div className="form-group mt-sm">
-                <label className="form-label label-compact">ملاحظات الطلب</label>
+                <label className="form-label label-compact">{t('orders.orderNotes') || 'ملاحظات الطلب'}</label>
                 <textarea
                   className="form-textarea form-textarea-compact"
                   value={orderNotes}
                   onChange={(e) => setOrderNotes(e.target.value)}
-                  placeholder="ملاحظات عامة حول الطلب..."
+                  placeholder={t('orders.orderNotesPlaceholder') || 'ملاحظات عامة حول الطلب...'}
                   rows={2}
                 />
               </div>
@@ -659,12 +661,12 @@ export default function NewOrder() {
           </div>
 
           <div className="layout-card-wrapper">
-            <Card title="تفاصيل التسليم والجدولة">
+            <Card title={t('orders.deliveryDetails') || 'تفاصيل التسليم والجدولة'}>
               <div className="form-group">
                 {weeklyWorkload && weeklyWorkload.length > 0 && (
                   <div className="weekly-workload-cards-section">
                     <span className="help-text-label font-bold mb-xs" style={{ display: 'block', fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
-                      اختر يوم التسليم (مقياس ضغط العمل للـ 7 أيام القادمة):
+                      {t('orders.chooseDeliveryDate') || 'اختر يوم التسليم (مقياس ضغط العمل للـ 7 أيام القادمة):'}
                     </span>
                     <div className="workload-days-grid">
                       {weeklyWorkload.map((day) => {
@@ -686,7 +688,7 @@ export default function NewOrder() {
                             <span className="day-date">{getFormattedDayDate(day.date)}</span>
                             <div className={`workload-status-badge ${level.className}`}>
                               <span className="status-dot"></span>
-                              <span className="status-count">{day.count} قطعة</span>
+                              <span className="status-count">{day.count} {t('dashboard.items', 'قطعة')}</span>
                             </div>
                           </div>
                         );
@@ -700,28 +702,28 @@ export default function NewOrder() {
                     <div className="scheduler-fields-grid">
                       {/* أزرار الفترات الزمنية السريعة */}
                       <div>
-                        <span className="help-text">فترة التسليم</span>
+                        <span className="help-text">{t('orders.deliveryPeriod') || 'فترة التسليم'}</span>
                         <div className="schedule-presets-grid">
                           <button 
                             type="button" 
                             className={`preset-pill ${(activeTimePreset === 'morning') ? 'active' : ''}`}
                             onClick={() => applyTimePreset('morning')}
                           >
-                            صباحاً (10 ص)
+                            {t('orders.morning') || 'صباحاً (10 ص)'}
                           </button>
                           <button 
                             type="button" 
                             className={`preset-pill ${(activeTimePreset === 'afternoon') ? 'active' : ''}`}
                             onClick={() => applyTimePreset('afternoon')}
                           >
-                            عصراً (4 م)
+                            {t('orders.afternoon') || 'عصراً (4 م)'}
                           </button>
                           <button 
                             type="button" 
                             className={`preset-pill ${(activeTimePreset === 'evening') ? 'active' : ''}`}
                             onClick={() => applyTimePreset('evening')}
                           >
-                            مساءً (8 م)
+                            {t('orders.evening') || 'مساءً (8 م)'}
                           </button>
                           {activeTimePreset === 'custom' ? (
                             <button 
@@ -729,7 +731,7 @@ export default function NewOrder() {
                               className="preset-pill active"
                               onClick={() => applyTimePreset('rush3')}
                             >
-                              آخر
+                              {t('orders.other') || 'آخر'}
                             </button>
                           ) : (
                             <button 
@@ -737,7 +739,7 @@ export default function NewOrder() {
                               className={`preset-pill preset-pill-rush ${(activeTimePreset === 'rush3') ? 'active' : ''}`}
                               onClick={() => applyTimePreset('rush3')}
                             >
-                              مستعجل (3س)
+                              {t('orders.rush') || 'مستعجل (3س)'}
                             </button>
                           )}
                         </div>
@@ -745,7 +747,7 @@ export default function NewOrder() {
 
                       {/* ساعة التسليم الدقيقة */}
                       <div>
-                        <span className="help-text">ساعة التسليم</span>
+                        <span className="help-text">{t('orders.deliveryTime') || 'ساعة التسليم'}</span>
                         <div className="custom-time-select-container" ref={quickTimeRef}>
                           <button
                             type="button"
@@ -779,14 +781,14 @@ export default function NewOrder() {
                     <div className="custom-datetime-container">
                       <div className="flex gap-sm">
                         <div style={{ flex: 1 }}>
-                          <span className="help-text">تاريخ التسليم</span>
+                          <span className="help-text">{t('orders.deliveryDate') || 'تاريخ التسليم'}</span>
                           <div className="custom-date-select-container" ref={dateRef}>
                             <button
                               type="button"
                               className="date-select-trigger"
                               onClick={() => setShowDateDropdown(!showDateDropdown)}
                             >
-                              {getFormattedDateLabel(deliveryDate) || 'اختر التاريخ...'}
+                              {getFormattedDateLabel(deliveryDate) || t('orders.chooseDate') || 'اختر التاريخ...'}
                             </button>
                             {showDateDropdown && (
                               <div className="date-select-dropdown">
@@ -896,16 +898,16 @@ export default function NewOrder() {
         {/* الصف السفلي: قطع الملابس والملخص المالي */}
         <div className="new-order-bottom-row">
           <div className="bottom-items-wrapper">
-            <Card title="قطع الملابس / السجاد المضافة للطلب">
+            <Card title={t('orders.itemsAdded') || 'قطع الملابس / السجاد المضافة للطلب'}>
               <div className="items-table-container">
                 <table className="new-order-items-table">
                   <thead>
                     <tr>
-                      <th style={{ width: '27%' }}>نوع القطعة</th>
-                      <th style={{ width: '16%' }}>الحجم</th>
-                      <th style={{ width: '30%' }}>الخدمة المطلوبة</th>
-                      <th style={{ width: '17%', minWidth: '110px' }}>السعر</th>
-                      <th style={{ width: '10%' }}>إجراء</th>
+                      <th style={{ width: '27%' }}>{t('orders.itemType') || 'نوع القطعة'}</th>
+                      <th style={{ width: '16%' }}>{t('orders.size') || 'الحجم'}</th>
+                      <th style={{ width: '30%' }}>{t('orders.requiredService') || 'الخدمة المطلوبة'}</th>
+                      <th style={{ width: '17%', minWidth: '110px' }}>{t('orders.price') || 'السعر'}</th>
+                      <th style={{ width: '10%' }}>{t('orders.action') || 'إجراء'}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -924,7 +926,7 @@ export default function NewOrder() {
                                 setOpenItemTypeIndex(openItemTypeIndex === index ? null : index);
                               }}
                             >
-                              {item.item_type || 'اختر القطعة...'}
+                              {item.item_type || t('orders.chooseItem') || 'اختر القطعة...'}
                             </button>
                             {openItemTypeIndex === index && (
                               <div className="table-select-dropdown">
@@ -958,7 +960,7 @@ export default function NewOrder() {
                                 setOpenSizeIndex(openSizeIndex === index ? null : index);
                               }}
                             >
-                              {item.size_name || 'عادي'}
+                              {item.size_name || t('orders.normalSize') || 'عادي'}
                             </button>
                             {openSizeIndex === index && item.item_type && (
                               <div className="table-select-dropdown">
@@ -991,7 +993,7 @@ export default function NewOrder() {
                                 setOpenServiceIndex(openServiceIndex === index ? null : index);
                               }}
                             >
-                              {services.find(s => s.id === parseInt(item.service_id))?.name_ar || 'اختر الخدمة...'}
+                              {services.find(s => s.id === parseInt(item.service_id))?.name_ar || t('orders.chooseService') || 'اختر الخدمة...'}
                             </button>
                             {openServiceIndex === index && (
                               <div className="table-select-dropdown">
@@ -1003,7 +1005,7 @@ export default function NewOrder() {
                                     setOpenServiceIndex(null);
                                   }}
                                 >
-                                  اختر الخدمة...
+                                  {t('orders.chooseService') || 'اختر الخدمة...'}
                                 </button>
                                 {services.map((s) => (
                                   <button
@@ -1033,7 +1035,7 @@ export default function NewOrder() {
                               step="any"
                               placeholder="0"
                             />
-                            <span className="price-suffix">ر.س</span>
+                            <span className="price-suffix">{t('dashboard.currency', 'ر.س')}</span>
                           </div>
                         </td>
                         <td>
@@ -1050,7 +1052,7 @@ export default function NewOrder() {
                       <tr className="item-notes-row">
                         <td colSpan={5}>
                           <div className="item-notes-field">
-                            <span className="item-notes-label">ملاحظات على القطعة</span>
+                            <span className="item-notes-label">{t('orders.itemNotes') || 'ملاحظات على القطعة'}</span>
                             <textarea
                               className="form-input form-input-compact item-notes-input"
                               value={item.notes}
@@ -1060,7 +1062,7 @@ export default function NewOrder() {
                               }}
                               onInput={(e) => fitItemNotesField(e.target)}
                               ref={fitItemNotesField}
-                              placeholder="مثال: بقعة زيت، تلف بالكم..."
+                              placeholder={t('orders.itemNotesPlaceholder') || 'مثال: بقعة زيت، تلف بالكم...'}
                               rows={1}
                             />
                           </div>
@@ -1074,21 +1076,21 @@ export default function NewOrder() {
 
               <button type="button" className="btn-add-item-dashed mt-md" onClick={addItemRow}>
                 <Plus size={16} style={{ marginLeft: '6px' }} />
-                إضافة قطعة جديدة للطلب
+                {t('orders.addNewItem') || 'إضافة قطعة جديدة للطلب'}
               </button>
             </Card>
           </div>
 
           <div className="bottom-checkout-wrapper">
             {/* تفاصيل التكلفة والدفع */}
-            <Card title="تفاصيل الفاتورة والدفع">
+            <Card title={t('orders.invoiceDetails') || 'تفاصيل الفاتورة والدفع'}>
               <div className="financials-summary-box">
                 <div className="financial-row">
-                  <span>إجمالي الطلب:</span>
+                  <span>{t('orders.totalOrder') || 'إجمالي الطلب:'}</span>
                   <span className="amount-val-total">{totalAmount.toFixed(2)} {settings.currency}</span>
                 </div>
                 <div className="financial-row">
-                  <span>المبلغ المدفوع (مقدم):</span>
+                  <span>{t('orders.paidAmount') || 'المبلغ المدفوع (مقدم):'}</span>
                   <div className="input-with-suffix">
                     <input
                       type="number"
@@ -1104,14 +1106,14 @@ export default function NewOrder() {
                   </div>
                 </div>
                 <div className="financial-row">
-                  <span>المتبقي عند التسليم:</span>
+                  <span>{t('orders.remainingAmount') || 'المتبقي عند التسليم:'}</span>
                   <span className={`amount-badge ${remainingAmount > 0 ? 'unpaid' : 'paid'}`}>
                     {remainingAmount.toFixed(2)} {settings.currency}
                   </span>
                 </div>
 
                 <div className="financial-row">
-                  <span>طريقة الدفع:</span>
+                  <span>{t('orders.paymentMethod') || 'طريقة الدفع:'}</span>
                   <div className="payment-method-toggle">
                     <label className={`method-option ${paymentMethod === 'cash' ? 'active' : ''}`}>
                       <input
@@ -1122,7 +1124,7 @@ export default function NewOrder() {
                         onChange={() => setPaymentMethod('cash')}
                         className="sr-only"
                       />
-                      نقدي (كاش)
+                      {t('orders.cash') || 'نقدي (كاش)'}
                     </label>
                     <label className={`method-option ${paymentMethod === 'electronic' ? 'active' : ''}`}>
                       <input
@@ -1133,7 +1135,7 @@ export default function NewOrder() {
                         onChange={() => setPaymentMethod('electronic')}
                         className="sr-only"
                       />
-                      إلكتروني
+                      {t('orders.electronic') || 'إلكتروني'}
                     </label>
                   </div>
                 </div>
@@ -1148,7 +1150,7 @@ export default function NewOrder() {
                   disabled={isSubmitting}
                 >
                   <Save size={18} style={{ marginLeft: '8px' }} />
-                  {isSubmitting ? 'جاري الحفظ...' : 'حفظ الطلب وتوليد الفاتورة'}
+                  {isSubmitting ? t('orders.saving') || 'جاري الحفظ...' : t('orders.saveOrder') || 'حفظ الطلب وتوليد الفاتورة'}
                 </Button>
               </div>
             </Card>
@@ -1160,48 +1162,48 @@ export default function NewOrder() {
       <Modal
         isOpen={showAddCustomerModal}
         onClose={() => setShowAddCustomerModal(false)}
-        title="إضافة عميل جديد للنظام"
+        title={t('orders.addCustomerModalTitle') || 'إضافة عميل جديد للنظام'}
       >
         <form onSubmit={handleAddCustomer}>
           {customerError && <div className="alert-message error mb-sm">{customerError}</div>}
           <div className="form-group">
-            <label className="form-label">اسم العميل *</label>
+            <label className="form-label">{t('orders.customerNameLabel') || 'اسم العميل *'}</label>
             <input
               type="text"
               className="form-input"
               required
               value={newCustomer.name}
               onChange={(e) => setNewCustomer({ ...newCustomer, name: e.target.value })}
-              placeholder="مثال: عبد الرحمن محمد"
+              placeholder={t('orders.customerNamePlaceholder') || 'مثال: عبد الرحمن محمد'}
             />
           </div>
           <div className="form-group">
-            <label className="form-label">رقم الجوال *</label>
+            <label className="form-label">{t('orders.phoneLabel') || 'رقم الجوال *'}</label>
             <input
               type="text"
               className="form-input"
               required
               value={newCustomer.phone}
               onChange={(e) => setNewCustomer({ ...newCustomer, phone: e.target.value })}
-              placeholder="مثال: 0500000000"
+              placeholder={t('orders.phonePlaceholder') || 'مثال: 0500000000'}
             />
           </div>
           <div className="form-group">
-            <label className="form-label">العنوان (اختياري)</label>
+            <label className="form-label">{t('orders.addressOptional') || 'العنوان (اختياري)'}</label>
             <input
               type="text"
               className="form-input"
               value={newCustomer.address}
               onChange={(e) => setNewCustomer({ ...newCustomer, address: e.target.value })}
-              placeholder="مثال: حي الصحافة، الرياض"
+              placeholder={t('orders.addressPlaceholder') || 'مثال: حي الصحافة، الرياض'}
             />
           </div>
           <div className="flex justify-between mt-md">
             <Button variant="secondary" type="button" onClick={() => setShowAddCustomerModal(false)}>
-              إلغاء
+              {t('orders.cancel') || 'إلغاء'}
             </Button>
             <Button variant="primary" type="submit">
-              حفظ وتحديد العميل
+              {t('orders.saveSelectCustomer') || 'حفظ وتحديد العميل'}
             </Button>
           </div>
         </form>
@@ -1215,30 +1217,30 @@ export default function NewOrder() {
             setShowPrintModal(false);
             navigate('/orders');
           }}
-          title="تم حفظ الطلب بنجاح"
+          title={t('orders.orderSavedSuccess') || 'تم حفظ الطلب بنجاح'}
           size="medium"
         >
           <div className="print-modal-content">
             <div className="success-banner text-center mb-md">
               <div className="success-icon-wrapper">✓</div>
-              <h2>رقم الطلب: #{createdOrder.id}</h2>
-              <p>تم تسجيل الطلب وإدخال {createdOrder.items?.length || 0} قطع بنجاح</p>
+              <h2>{t('orders.orderNum', { id: createdOrder.id }) || `رقم الطلب: #${createdOrder.id}`}</h2>
+              <p>{t('orders.orderSavedMsg', { count: createdOrder.items?.length || 0 }) || `تم تسجيل الطلب وإدخال ${createdOrder.items?.length || 0} قطع بنجاح`}</p>
             </div>
 
             <div className="print-options-grid">
               <Button variant="primary" className="print-option-btn" onClick={handlePrintInvoice}>
                 <Printer size={20} style={{ marginLeft: '8px' }} />
-                طباعة الفاتورة
+                {t('orders.printInvoice') || 'طباعة الفاتورة'}
               </Button>
               <Button variant="secondary" className="print-option-btn" onClick={handlePrintLabels}>
                 <FileText size={20} style={{ marginLeft: '8px' }} />
-                طباعة ملصقات القطع
+                {t('orders.printLabels') || 'طباعة ملصقات القطع'}
               </Button>
               <Button variant="secondary" onClick={() => {
                 setShowPrintModal(false);
                 navigate('/orders');
               }}>
-                الذهاب لقائمة الطلبات
+                {t('orders.goToOrdersList') || 'الذهاب لقائمة الطلبات'}
               </Button>
             </div>
 

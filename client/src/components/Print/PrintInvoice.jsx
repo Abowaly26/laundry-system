@@ -1,9 +1,11 @@
 import React from 'react';
 import { QRCodeCanvas } from 'qrcode.react';
+import { useTranslation } from 'react-i18next';
 import { useSettings } from '../../context/SettingsContext';
 
 export default function PrintInvoice({ order }) {
   const { settings } = useSettings();
+  const { t, i18n } = useTranslation();
   if (!order) return null;
 
   const formatDate = (dateStr) => {
@@ -23,15 +25,15 @@ export default function PrintInvoice({ order }) {
 
   const getItemTypeAr = (type) => {
     const mapping = {
-      shirt: 'قميص / تيشرت',
-      pants: 'بنطلون / جينز',
-      thobe: 'ثوب',
-      dress: 'فستان',
-      suit: 'بدلة كاملة',
-      jacket: 'جاكيت / معطف',
-      blanket: 'بطانية',
-      carpet: 'سجادة',
-      other: 'أخرى'
+      shirt: t('items.typeShirt') || 'قميص / تيشرت',
+      pants: t('items.typePants') || 'بنطلون / جينز',
+      thobe: t('items.typeThobe') || 'ثوب',
+      dress: t('items.typeDress') || 'فستان',
+      suit: t('items.typeSuit') || 'بدلة كاملة',
+      jacket: t('items.typeJacket') || 'جاكيت / معطف',
+      blanket: t('items.typeBlanket') || 'بطانية',
+      carpet: t('items.typeCarpet') || 'سجادة',
+      other: t('items.typeOther') || 'أخرى'
     };
     return mapping[type] || type;
   };
@@ -44,26 +46,26 @@ export default function PrintInvoice({ order }) {
 
   const getPaymentMethodAr = (method) => {
     const mapping = {
-      cash: 'نقدي (كاش)',
-      electronic: 'إلكتروني (مدى/شبكة)'
+      cash: t('payment.cash') || 'نقدي (كاش)',
+      electronic: t('payment.electronic') || 'إلكتروني (مدى/شبكة)'
     };
     return mapping[method] || method || '';
   };
 
   return (
-    <div className="print-receipt print-receipt-80" style={{ direction: 'rtl', fontFamily: 'Cairo, sans-serif', padding: '4px' }}>
-      {/* Header section */}
-      <div className="receipt-header" style={{ textAlign: 'center', marginBottom: '12px' }}>
-        <h1 style={{ margin: '0 0 6px 0', fontSize: '20px', fontWeight: '900', color: '#000' }}>{settings.laundryName}</h1>
-        {settings.laundryAddress && <p style={{ margin: '0 0 3px 0', fontSize: '11px', color: '#333' }}>{settings.laundryAddress}</p>}
-        <p style={{ margin: '0 0 4px 0', fontSize: '11px', color: '#333' }}>هاتف: {settings.laundryPhone}</p>
-        {settings.taxNumber && (
-          <div style={{ marginTop: '6px' }}>
-            <span style={{ fontSize: '11px', fontWeight: 'bold', border: '1px solid #000', padding: '3px 8px', borderRadius: '3px', display: 'inline-block' }}>
-              الرقم الضريبي: {settings.taxNumber}
-            </span>
-          </div>
-        )}
+      <div className="print-receipt print-receipt-80" style={{ direction: i18n.language === 'ar' ? 'rtl' : 'ltr', fontFamily: i18n.language === 'ar' ? 'Cairo, sans-serif' : 'Inter, sans-serif', padding: '4px' }}>
+        {/* Header section */}
+        <div className="receipt-header" style={{ textAlign: 'center', marginBottom: '12px' }}>
+          <h1 style={{ margin: '0 0 6px 0', fontSize: '20px', fontWeight: '900', color: '#000' }}>{settings.laundryName}</h1>
+          {settings.laundryAddress && <p style={{ margin: '0 0 3px 0', fontSize: '11px', color: '#333' }}>{settings.laundryAddress}</p>}
+          <p style={{ margin: '0 0 4px 0', fontSize: '11px', color: '#333' }}>{t('print.phone') || 'هاتف:'} {settings.laundryPhone}</p>
+          {settings.taxNumber && (
+            <div style={{ marginTop: '6px' }}>
+              <span style={{ fontSize: '11px', fontWeight: 'bold', border: '1px solid #000', padding: '3px 8px', borderRadius: '3px', display: 'inline-block' }}>
+                {t('print.taxNumber') || 'الرقم الضريبي:'} {settings.taxNumber}
+              </span>
+            </div>
+          )}
       </div>
 
       <div style={{ borderBottom: '1px dashed #000', margin: '8px 0' }} />
@@ -71,26 +73,26 @@ export default function PrintInvoice({ order }) {
       {/* Metadata section */}
       <div style={{ paddingBottom: '4px', fontSize: '12px', lineHeight: '1.6' }}>
         <div className="receipt-row">
-          <strong style={{ color: '#444' }}>رقم الطلب:</strong> 
+          <strong style={{ color: '#444' }}>{t('print.orderNo') || 'رقم الطلب:'}</strong> 
           <span style={{ fontWeight: 'bold' }}>#{order.id}</span>
         </div>
         <div className="receipt-row">
-          <strong style={{ color: '#444' }}>التاريخ:</strong> 
+          <strong style={{ color: '#444' }}>{t('print.date') || 'التاريخ:'}</strong> 
           <span>{formatDate(order.created_at || new Date())}</span>
         </div>
         {order.expected_delivery_at && (
           <div className="receipt-row">
-            <strong style={{ color: '#444' }}>التسليم المتوقع:</strong> 
+            <strong style={{ color: '#444' }}>{t('print.expectedDelivery') || 'التسليم المتوقع:'}</strong> 
             <span>{formatDate(order.expected_delivery_at)}</span>
           </div>
         )}
         <div className="receipt-row">
-          <strong style={{ color: '#444' }}>العميل:</strong> 
-          <span style={{ fontWeight: 'bold' }}>{order.customer_name || (order.customer && order.customer.name) || 'عميل عام'}</span>
+          <strong style={{ color: '#444' }}>{t('print.customer') || 'العميل:'}</strong> 
+          <span style={{ fontWeight: 'bold' }}>{order.customer_name || (order.customer && order.customer.name) || (t('print.generalCustomer') || 'عميل عام')}</span>
         </div>
         {(order.customer_phone || (order.customer && order.customer.phone)) && (
           <div className="receipt-row">
-            <strong style={{ color: '#444' }}>الجوال:</strong> 
+            <strong style={{ color: '#444' }}>{t('print.phoneLabel') || 'الجوال:'}</strong> 
             <span style={{ direction: 'ltr' }}>{order.customer_phone || (order.customer && order.customer.phone)}</span>
           </div>
         )}
@@ -101,8 +103,8 @@ export default function PrintInvoice({ order }) {
       {/* Items List (POS Style) */}
       <div style={{ padding: '4px 0' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '12px', paddingBottom: '6px', borderBottom: '1px solid #000', marginBottom: '8px' }}>
-          <span>الصنف والخدمة</span>
-          <span>السعر</span>
+          <span>{t('print.itemService') || 'الصنف والخدمة'}</span>
+          <span>{t('print.price') || 'السعر'}</span>
         </div>
         
         {order.items && order.items.map((item, index) => (
@@ -126,39 +128,39 @@ export default function PrintInvoice({ order }) {
         {settings.vatPercent > 0 && (
           <>
             <div className="receipt-row" style={{ fontSize: '11px', color: '#444' }}>
-              <span>الإجمالي الخاضع للضريبة:</span>
+              <span>{t('print.subtotal') || 'الإجمالي الخاضع للضريبة:'}</span>
               <span>{formatAmount(order.total_amount / (1 + settings.vatPercent / 100))} {settings.currency}</span>
             </div>
             <div className="receipt-row" style={{ fontSize: '11px', color: '#444', marginBottom: '4px' }}>
-              <span>ضريبة القيمة المضافة ({settings.vatPercent}%):</span>
+              <span>{t('print.vat', { percent: settings.vatPercent }) || `ضريبة القيمة المضافة (${settings.vatPercent}%):`}</span>
               <span>{formatAmount(order.total_amount - (order.total_amount / (1 + settings.vatPercent / 100)))} {settings.currency}</span>
             </div>
           </>
         )}
         
         <div className="receipt-total receipt-row" style={{ fontSize: '15px', fontWeight: '950', borderTop: '1px solid #000', borderBottom: '1px solid #000', padding: '6px 0', margin: '6px 0' }}>
-          <span>الإجمالي شامل الضريبة:</span>
+          <span>{t('print.totalWithTax') || 'الإجمالي شامل الضريبة:'}</span>
           <span>{formatAmount(order.total_amount)} {settings.currency}</span>
         </div>
         
         <div className="receipt-row" style={{ color: '#444' }}>
-          <span>المدفوع:</span>
+          <span>{t('print.paid') || 'المدفوع:'}</span>
           <span>{formatAmount(order.paid_amount)} {settings.currency}</span>
         </div>
         <div className="receipt-row" style={{ fontWeight: 'bold', fontSize: '13px' }}>
-          <span>المتبقي:</span>
+          <span>{t('print.remaining') || 'المتبقي:'}</span>
           <span>{formatAmount(order.remaining_amount)} {settings.currency}</span>
         </div>
         
         {order.payment_method && (
           <div className="receipt-row" style={{ marginTop: '4px', fontSize: '11px', color: '#555' }}>
-            <span>طريقة الدفع:</span>
+            <span>{t('print.paymentMethod') || 'طريقة الدفع:'}</span>
             <span>{getPaymentMethodAr(order.payment_method)}</span>
           </div>
         )}
         {order.notes && (
           <div style={{ padding: '6px 0', fontSize: '11px', borderTop: '1px dotted #ccc', marginTop: '6px', color: '#444' }}>
-            <strong>ملاحظات:</strong> {order.notes}
+            <strong>{t('print.notes') || 'ملاحظات:'}</strong> {order.notes}
           </div>
         )}
       </div>
@@ -167,8 +169,8 @@ export default function PrintInvoice({ order }) {
 
       {/* Footer and QR Code */}
       <div style={{ textAlign: 'center', fontSize: '12px' }}>
-        <p style={{ margin: '0 0 4px 0', fontWeight: 'bold', fontSize: '13px' }}>شكراً لزيارتكم!</p>
-        <p style={{ margin: '0', color: '#333' }}>يرجى الاحتفاظ بالإيصال لاستلام الملابس</p>
+        <p style={{ margin: '0 0 4px 0', fontWeight: 'bold', fontSize: '13px' }}>{t('print.thanks') || 'شكراً لزيارتكم!'}</p>
+        <p style={{ margin: '0', color: '#333' }}>{t('print.keepReceipt') || 'يرجى الاحتفاظ بالإيصال لاستلام الملابس'}</p>
       </div>
 
       <div style={{ textAlign: 'center', marginTop: '15px' }}>
@@ -179,7 +181,7 @@ export default function PrintInvoice({ order }) {
             level="M"
           />
         </div>
-        <p style={{ margin: '4px 0 0', fontSize: '10px', fontWeight: 'bold', color: '#444' }}>كود تتبع الطلب سريع الكاشير</p>
+        <p style={{ margin: '4px 0 0', fontSize: '10px', fontWeight: 'bold', color: '#444' }}>{t('print.qrTrackHint') || 'كود تتبع الطلب سريع الكاشير'}</p>
       </div>
     </div>
   );

@@ -1,9 +1,11 @@
 import { useEffect, useState, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Html5Qrcode } from 'html5-qrcode';
 import { Camera, SwitchCamera, ImageIcon, AlertCircle } from 'lucide-react';
 import Button from '../UI/Button';
 
 export default function QRScanner({ onScanSuccess, onScanFailure }) {
+  const { t } = useTranslation();
   const [cameras, setCameras] = useState([]);
   const [activeCameraId, setActiveCameraId] = useState(null);
   const [isScanning, setIsScanning] = useState(false);
@@ -17,7 +19,7 @@ export default function QRScanner({ onScanSuccess, onScanFailure }) {
   useEffect(() => {
     if (window.isSecureContext === false) {
       setIsSecure(false);
-      setErrorMsg('المتصفح يمنع الكاميرا لأن الاتصال غير آمن. يجب استخدام HTTPS.');
+      setErrorMsg(t('qr.insecureContext') || 'المتصفح يمنع الكاميرا لأن الاتصال غير آمن. يجب استخدام HTTPS.');
     }
 
     scannerRef.current = new Html5Qrcode(readerId);
@@ -50,7 +52,7 @@ export default function QRScanner({ onScanSuccess, onScanFailure }) {
             selectedCameraId = backCamera ? backCamera.id : devices[0].id;
           }
         } else {
-          throw new Error('لم يتم العثور على أي كاميرا في جهازك.');
+          throw new Error(t('qr.noCameraFound') || 'لم يتم العثور على أي كاميرا في جهازك.');
         }
       } else if (!selectedCameraId) {
         selectedCameraId = cameras[0].id;
@@ -82,13 +84,13 @@ export default function QRScanner({ onScanSuccess, onScanFailure }) {
       
       const errMsg = err?.message || err?.name || '';
       if (errMsg.includes('NotAllowedError') || errMsg.includes('Permission')) {
-        setErrorMsg('رفض المتصفح الوصول للكاميرا. يرجى منح الصلاحية من إعدادات المتصفح وإعادة المحاولة.');
+        setErrorMsg(t('qr.permissionDenied') || 'رفض المتصفح الوصول للكاميرا. يرجى منح الصلاحية من إعدادات المتصفح وإعادة المحاولة.');
       } else if (errMsg.includes('NotFoundError') || errMsg.includes('Requested device not found')) {
-        setErrorMsg('لم يتم العثور على الكاميرا المحددة في جهازك.');
+        setErrorMsg(t('qr.cameraNotFound') || 'لم يتم العثور على الكاميرا المحددة في جهازك.');
       } else if (errMsg.includes('NotSupportedError') || errMsg.includes('HTTPS')) {
-        setErrorMsg('المتصفح لا يدعم تشغيل الكاميرا هنا أو يتطلب HTTPS.');
+        setErrorMsg(t('qr.notSupportedHTTPS') || 'المتصفح لا يدعم تشغيل الكاميرا هنا أو يتطلب HTTPS.');
       } else {
-        setErrorMsg(`فشل تشغيل الكاميرا: ${errMsg}`);
+        setErrorMsg((t('qr.cameraStartFail') || 'فشل تشغيل الكاميرا: ') + errMsg);
       }
     }
   };
@@ -125,7 +127,7 @@ export default function QRScanner({ onScanSuccess, onScanFailure }) {
       if (onScanSuccess) onScanSuccess(decodedText);
     } catch (err) {
       console.error("File scan error", err);
-      setErrorMsg('لم يتم التعرف على رمز QR في هذه الصورة. يرجى التأكد من وضوح الصورة والرمز.');
+      setErrorMsg(t('qr.fileScanError') || 'لم يتم التعرف على رمز QR في هذه الصورة. يرجى التأكد من وضوح الصورة والرمز.');
       if (onScanFailure) onScanFailure(err);
     }
     
@@ -167,7 +169,7 @@ export default function QRScanner({ onScanSuccess, onScanFailure }) {
               boxShadow: '0 0 8px #22c55e',
               animation: 'pulse 2s infinite'
             }}></span>
-            قم بتوجيه الباركود داخل الإطار
+            {t('qr.pointBarcode') || 'قم بتوجيه الباركود داخل الإطار'}
           </div>
         )}
 
@@ -186,9 +188,9 @@ export default function QRScanner({ onScanSuccess, onScanFailure }) {
             }}>
               <Camera size={36} strokeWidth={1.5} />
             </div>
-            <h4 style={{ margin: '0 0 8px 0', color: '#1e293b', fontSize: '1.15rem', fontWeight: '600' }}>الماسح الضوئي الذكي</h4>
+            <h4 style={{ margin: '0 0 8px 0', color: '#1e293b', fontSize: '1.15rem', fontWeight: '600' }}>{t('qr.smartScanner') || 'الماسح الضوئي الذكي'}</h4>
             <p style={{ margin: 0, color: '#64748b', fontSize: '0.9rem', lineHeight: '1.6', maxWidth: '240px' }}>
-              انقر هنا لفتح الكاميرا والتركيز على الباركود الخاص بالقطعة لتسجيلها فوراً
+              {t('qr.scannerHint') || 'انقر هنا لفتح الكاميرا والتركيز على الباركود الخاص بالقطعة لتسجيلها فوراً'}
             </p>
           </div>
         )}
@@ -204,17 +206,17 @@ export default function QRScanner({ onScanSuccess, onScanFailure }) {
       <div className="qr-controls" style={{ marginTop: '15px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
         {!isScanning ? (
           <Button variant="primary" onClick={() => startScanning()} style={{ flex: 1 }}>
-            <Camera size={18} /> الكاميرا
+            <Camera size={18} /> {t('qr.cameraBtn') || 'الكاميرا'}
           </Button>
         ) : (
           <Button variant="danger" onClick={stopScanning} style={{ flex: 1 }}>
-            إيقاف
+            {t('qr.stopBtn') || 'إيقاف'}
           </Button>
         )}
 
         {cameras.length > 1 && isScanning && (
           <Button variant="secondary" onClick={switchCamera} style={{ flex: 1 }}>
-            <SwitchCamera size={18} /> تبديل
+            <SwitchCamera size={18} /> {t('qr.switchBtn') || 'تبديل'}
           </Button>
         )}
 
@@ -223,7 +225,7 @@ export default function QRScanner({ onScanSuccess, onScanFailure }) {
           onClick={() => fileInputRef.current?.click()}
           style={{ flex: 1 }}
         >
-          <ImageIcon size={18} /> المعرض
+          <ImageIcon size={18} /> {t('qr.galleryBtn') || 'المعرض'}
         </Button>
         
         <input

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Search, RefreshCw, Shirt } from 'lucide-react';
 import { ordersAPI } from '../../services/api';
 import Button from '../../components/UI/Button';
@@ -7,14 +8,15 @@ import StatusBadge from '../../components/UI/StatusBadge';
 import LoadingSpinner from '../../components/UI/LoadingSpinner';
 import './CustomerPortal.css';
 
-const ITEM_STATUS_STEPS = [
-  { key: 'pending', label: 'قيد الانتظار' },
-  { key: 'processing', label: 'قيد التنفيذ' },
-  { key: 'ready', label: 'جاهز للاستلام' },
-  { key: 'delivered', label: 'تم التسليم' }
-];
-
 export default function CustomerPortal() {
+  const { t } = useTranslation();
+
+  const ITEM_STATUS_STEPS = [
+    { key: 'pending', label: t('customerPortal.stepPending') || 'قيد الانتظار' },
+    { key: 'processing', label: t('customerPortal.stepProcessing') || 'قيد التنفيذ' },
+    { key: 'ready', label: t('customerPortal.stepReady') || 'جاهز للاستلام' },
+    { key: 'delivered', label: t('customerPortal.stepDelivered') || 'تم التسليم' }
+  ];
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [orders, setOrders] = useState([]);
@@ -42,10 +44,10 @@ export default function CustomerPortal() {
       if (res.success && res.data && res.data.length > 0) {
         setOrders(res.data);
       } else {
-        setErrorMsg('لم نجد أي طلب تطابق القيمة المدخلة.');
+        setErrorMsg(t('customerPortal.notFoundQuery') || 'لم نجد أي طلب تطابق القيمة المدخلة.');
       }
     } catch (err) {
-      setErrorMsg(err.message || 'حدث خطأ في الاتصال بالخادم.');
+      setErrorMsg(err.message || t('customerPortal.serverError') || 'حدث خطأ في الاتصال بالخادم.');
     } finally {
       setLoading(false);
     }
@@ -66,10 +68,10 @@ export default function CustomerPortal() {
       if (res.success && res.data && res.data.length > 0) {
         setOrders(res.data);
       } else {
-        setErrorMsg('لم نجد أي طلب تطابق القيمة المدخلة. يرجى التأكد من رقم الطلب أو رقم الجوال.');
+        setErrorMsg(t('customerPortal.notFoundDetail') || 'لم نجد أي طلب تطابق القيمة المدخلة. يرجى التأكد من رقم الطلب أو رقم الجوال.');
       }
     } catch (err) {
-      setErrorMsg(err.message || 'حدث خطأ في الاتصال بالخادم، يرجى المحاولة لاحقاً.');
+      setErrorMsg(err.message || t('customerPortal.serverErrorRetry') || 'حدث خطأ في الاتصال بالخادم، يرجى المحاولة لاحقاً.');
     } finally {
       setLoading(false);
     }
@@ -87,15 +89,15 @@ export default function CustomerPortal() {
 
   const getItemTypeAr = (type) => {
     const mapping = {
-      shirt: 'قميص / تيشرت',
-      pants: 'بنطلون / جينز',
-      thobe: 'ثوب',
-      dress: 'فستان',
-      suit: 'بدلة كاملة',
-      jacket: 'جاكيت / معطف',
-      blanket: 'بطانية',
-      carpet: 'سجادة',
-      other: 'أخرى'
+      shirt: t('items.typeShirt') || 'قميص / تيشرت',
+      pants: t('items.typePants') || 'بنطلون / جينز',
+      thobe: t('items.typeThobe') || 'ثوب',
+      dress: t('items.typeDress') || 'فستان',
+      suit: t('items.typeSuit') || 'بدلة كاملة',
+      jacket: t('items.typeJacket') || 'جاكيت / معطف',
+      blanket: t('items.typeBlanket') || 'بطانية',
+      carpet: t('items.typeCarpet') || 'سجادة',
+      other: t('items.typeOther') || 'أخرى'
     };
     return mapping[type] || type;
   };
@@ -107,27 +109,27 @@ export default function CustomerPortal() {
         <div className="portal-logo-wrapper">
           <Shirt size={32} />
         </div>
-        <h1>بوابة العملاء للمغسلة الذكية</h1>
-        <p className="text-secondary">تتبع حالة غسيل ملابسك وسجادك لحظة بلحظة</p>
+        <h1>{t('customerPortal.title') || 'بوابة العملاء للمغسلة الذكية'}</h1>
+        <p className="text-secondary">{t('customerPortal.subtitle') || 'تتبع حالة غسيل ملابسك وسجادك لحظة بلحظة'}</p>
       </div>
 
       {/* نموذج البحث */}
       <Card className="portal-search-card">
         <form onSubmit={handleTrack}>
           <div className="form-group">
-            <label className="form-label text-center">أدخل رقم الطلب أو رقم الجوال الخاص بك</label>
+            <label className="form-label text-center">{t('customerPortal.searchLabel') || 'أدخل رقم الطلب أو رقم الجوال الخاص بك'}</label>
             <div className="portal-search-row">
               <input
                 type="text"
                 className="form-input text-center"
-                placeholder="مثال: رقم الطلب: 12 أو الجوال: 05XXXXXXXX"
+                placeholder={t('customerPortal.searchPlaceholder') || 'مثال: رقم الطلب: 12 أو الجوال: 05XXXXXXXX'}
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 required
               />
               <Button variant="primary" type="submit" disabled={loading}>
                 {loading ? <RefreshCw size={18} className="spin" /> : <Search size={18} />}
-                <span>استعلم الآن</span>
+                <span>{t('customerPortal.searchBtn') || 'استعلم الآن'}</span>
               </Button>
             </div>
           </div>
@@ -148,13 +150,13 @@ export default function CustomerPortal() {
               {/* رأس كارت الطلب */}
               <div className="order-result-header flex justify-between items-center flex-wrap gap-sm">
                 <div>
-                  <h3>طلب رقم #{order.id}</h3>
+                  <h3>{t('customerPortal.orderTitle', { id: order.id }) || `طلب رقم #${order.id}`}</h3>
                   <p className="text-secondary" style={{ fontSize: '0.85rem' }}>
-                    تاريخ الطلب: {formatDate(order.created_at)}
+                    {t('customerPortal.orderDate') || 'تاريخ الطلب:'} {formatDate(order.created_at)}
                   </p>
                 </div>
                 <div className="flex items-center gap-sm">
-                  <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>حالة الطلب:</span>
+                  <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>{t('customerPortal.orderStatus') || 'حالة الطلب:'}</span>
                   <StatusBadge status={order.status} type="order" />
                 </div>
               </div>
@@ -162,31 +164,31 @@ export default function CustomerPortal() {
               {/* تفاصيل التكلفة والمواعيد */}
               <div className="order-result-meta-grid mt-md">
                 <div className="meta-box">
-                  <span className="lbl">التسليم المتوقع</span>
+                  <span className="lbl">{t('customerPortal.expectedDelivery') || 'التسليم المتوقع'}</span>
                   <span className="val">{formatDate(order.expected_delivery_at)}</span>
                 </div>
                 <div className="meta-box">
-                  <span className="lbl">إجمالي التكلفة</span>
-                  <span className="val">{parseFloat(order.total_amount).toFixed(2)} ر.س</span>
+                  <span className="lbl">{t('customerPortal.totalCost') || 'إجمالي التكلفة'}</span>
+                  <span className="val">{parseFloat(order.total_amount).toFixed(2)}</span>
                 </div>
                 <div className="meta-box">
-                  <span className="lbl">المبلغ المتبقي</span>
+                  <span className="lbl">{t('customerPortal.remainingAmount') || 'المبلغ المتبقي'}</span>
                   <span className={`val font-bold ${order.remaining_amount > 0 ? 'text-warning' : 'text-success'}`}>
-                    {parseFloat(order.remaining_amount).toFixed(2)} ر.س
+                    {parseFloat(order.remaining_amount).toFixed(2)}
                   </span>
                 </div>
               </div>
 
               {/* عناصر الطلب والقطع المشمولة */}
               <div className="order-result-items mt-lg">
-                <h4>القطع المشمولة في الطلب ({order.items?.length || 0})</h4>
+                <h4>{t('customerPortal.itemsIncluded', { count: order.items?.length || 0 }) || `القطع المشمولة في الطلب (${order.items?.length || 0})`}</h4>
                 <div className="portal-items-list mt-sm">
                   {order.items?.map((item) => (
                     <div key={item.id} className="portal-item-row">
                       <div className="item-info">
                         <span className="item-code">{item.qr_code}</span>
                         <strong className="item-name">{getItemTypeAr(item.item_type)}{item.size_name ? ` (${item.size_name})` : ''}</strong>
-                        <span className="item-service text-secondary">- {item.service_name || 'تنظيف'}</span>
+                        <span className="item-service text-secondary">- {item.service_name || (t('customerPortal.cleaning') || 'تنظيف')}</span>
                       </div>
                       
                       {/* عرض حالة القطعة للعميل خطوة بخطوة */}
@@ -219,7 +221,7 @@ export default function CustomerPortal() {
         </div>
       ) : searched ? (
         <div className="text-center mt-lg text-secondary">
-          <p>لا توجد بيانات متاحة للعرض.</p>
+          <p>{t('customerPortal.noData') || 'لا توجد بيانات متاحة للعرض.'}</p>
         </div>
       ) : null}
     </div>

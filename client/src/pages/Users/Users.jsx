@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Plus, User, Edit2, Building2 } from 'lucide-react';
 import { usersAPI, laundriesAPI } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
@@ -12,6 +13,7 @@ import EmptyState from '../../components/UI/EmptyState';
 import './Users.css';
 
 export default function Users() {
+  const { t } = useTranslation();
   const { showToast } = useToast();
   const { isSuperOwner } = useAuth();
   const [laundries, setLaundries] = useState([]);
@@ -123,7 +125,7 @@ export default function Users() {
 
       if (modalMode === 'add') {
         if (!dataToSave.password) {
-          showToast('يرجى إدخال كلمة مرور للمستخدم الجديد', 'error');
+          showToast(t('usersList.passwordRequired') || 'يرجى إدخال كلمة مرور للمستخدم الجديد', 'error');
           return;
         }
         res = await usersAPI.create(dataToSave);
@@ -132,42 +134,42 @@ export default function Users() {
       }
 
       if (res.success) {
-        showToast(modalMode === 'add' ? 'تم إضافة المستخدم بنجاح' : 'تم تحديث بيانات المستخدم بنجاح', 'success');
+        showToast(modalMode === 'add' ? t('usersList.addSuccess') || 'تم إضافة المستخدم بنجاح' : t('usersList.updateSuccess') || 'تم تحديث بيانات المستخدم بنجاح', 'success');
         setShowModal(false);
         loadUsers();
       } else {
-        showToast(res.message || 'حدث خطأ أثناء حفظ المستخدم', 'error');
+        showToast(res.message || t('usersList.saveError') || 'حدث خطأ أثناء حفظ المستخدم', 'error');
       }
     } catch (err) {
-      showToast(err.message || 'حدث خطأ في الاتصال بالخادم', 'error');
+      showToast(err.message || t('usersList.networkError') || 'حدث خطأ في الاتصال بالخادم', 'error');
     }
   };
 
   const handleToggleActive = async (user) => {
     const newStatus = user.is_active ? 0 : 1;
-    if (!window.confirm(`هل أنت متأكد من رغبتك في ${newStatus === 1 ? 'تفعيل' : 'تعطيل'} حساب المستخدم: ${user.name}؟`)) {
+    if (!window.confirm(t('usersList.confirmToggleStatus', { action: newStatus === 1 ? (t('usersList.activate') || 'تفعيل') : (t('usersList.deactivate') || 'تعطيل'), name: user.name }) || `هل أنت متأكد من رغبتك في ${newStatus === 1 ? 'تفعيل' : 'تعطيل'} حساب المستخدم: ${user.name}؟`)) {
       return;
     }
 
     try {
       const res = await usersAPI.update(user.id, { is_active: newStatus });
       if (res.success) {
-        showToast(`تم ${newStatus === 1 ? 'تفعيل' : 'تعطيل'} حساب المستخدم بنجاح`, 'success');
+        showToast(t('usersList.statusSuccess', { action: newStatus === 1 ? (t('usersList.activate') || 'تفعيل') : (t('usersList.deactivate') || 'تعطيل') }) || `تم ${newStatus === 1 ? 'تفعيل' : 'تعطيل'} حساب المستخدم بنجاح`, 'success');
         loadUsers();
       } else {
-        showToast(res.message || 'فشل في تغيير حالة المستخدم', 'error');
+        showToast(res.message || t('usersList.statusError') || 'فشل في تغيير حالة المستخدم', 'error');
       }
     } catch (err) {
-      showToast(err.message || 'خطأ أثناء تغيير حالة المستخدم', 'error');
+      showToast(err.message || t('usersList.statusNetworkError') || 'خطأ أثناء تغيير حالة المستخدم', 'error');
     }
   };
 
   const getRoleAr = (role) => {
     const rolesMapping = {
-      super_owner: '👑 صاحب النظام',
-      admin: 'مدير النظام (Admin)',
-      cashier: 'موظف استقبال (Cashier)',
-      worker: 'عامل تشغيل (Worker)'
+      super_owner: t('roles.super_owner') || '👑 صاحب النظام',
+      admin: t('roles.admin') || 'مدير النظام (Admin)',
+      cashier: t('roles.cashier') || 'موظف استقبال (Cashier)',
+      worker: t('roles.worker') || 'عامل تشغيل (Worker)'
     };
     return rolesMapping[role] || role;
   };
@@ -176,12 +178,12 @@ export default function Users() {
     <div className="page users-page">
       <div className="page-header">
         <div>
-          <h1 className="page-title">إدارة مستخدمي النظام</h1>
-          <p className="page-subtitle">إضافة وتعديل موظفي الاستقبال والعمال والمدراء وتعيين الصلاحيات</p>
+          <h1 className="page-title">{t('usersList.title') || 'إدارة مستخدمي النظام'}</h1>
+          <p className="page-subtitle">{t('usersList.subtitle') || 'إضافة وتعديل موظفي الاستقبال والعمال والمدراء وتعيين الصلاحيات'}</p>
         </div>
         <Button variant="primary" onClick={handleOpenAdd}>
           <Plus size={18} style={{ marginLeft: '8px' }} />
-          إضافة موظف جديد
+          {t('usersList.addNewBtn') || 'إضافة موظف جديد'}
         </Button>
       </div>
 
@@ -191,20 +193,20 @@ export default function Users() {
         </div>
       ) : users.length === 0 ? (
         <EmptyState 
-          title="لا يوجد مستخدمون" 
-          message="لم نجد أي مستخدمين مسجلين."
+          title={t('usersList.emptyStateTitle') || 'لا يوجد مستخدمون'} 
+          message={t('usersList.emptyStateMsg') || 'لم نجد أي مستخدمين مسجلين.'}
         />
       ) : (
         <div className="table-container">
           <table>
             <thead>
               <tr>
-                <th>اسم الموظف</th>
-                <th>البريد الإلكتروني</th>
-                {isSuperOwner && <th><Building2 size={14} style={{verticalAlign:'middle', marginLeft:'4px'}}/>المغسلة</th>}
-                <th>الصلاحية (الدور)</th>
-                <th>الحالة</th>
-                <th style={{ width: '180px', textAlign: 'center' }}>العمليات</th>
+                <th>{t('usersList.colName') || 'اسم الموظف'}</th>
+                <th>{t('usersList.colEmail') || 'البريد الإلكتروني'}</th>
+                {isSuperOwner && <th><Building2 size={14} style={{verticalAlign:'middle', marginLeft:'4px'}}/>{t('usersList.colLaundry') || 'المغسلة'}</th>}
+                <th>{t('usersList.colRole') || 'الصلاحية (الدور)'}</th>
+                <th>{t('usersList.colStatus') || 'الحالة'}</th>
+                <th style={{ width: '180px', textAlign: 'center' }}>{t('usersList.colActions') || 'العمليات'}</th>
               </tr>
             </thead>
             <tbody>
@@ -242,18 +244,18 @@ export default function Users() {
                   </td>
                   <td>
                     {user.is_active ? (
-                      <span className="user-active-badge text-success">نشط</span>
+                      <span className="user-active-badge text-success">{t('usersList.statusActive') || 'نشط'}</span>
                     ) : (
-                      <span className="user-inactive-badge text-error">معطل</span>
+                      <span className="user-inactive-badge text-error">{t('usersList.statusInactive') || 'معطل'}</span>
                     )}
                   </td>
                   <td className="text-center">
                     <div className="flex justify-center gap-sm">
                       <Button variant="secondary" size="small" onClick={() => handleOpenEdit(user)}>
                         <Edit2 size={14} style={{ marginLeft: '4px' }} />
-                        تعديل
+                        {t('usersList.editBtn') || 'تعديل'}
                       </Button>
-                      <div className="flex items-center" title={user.is_active ? 'تعطيل الحساب' : 'تفعيل الحساب'}>
+                      <div className="flex items-center" title={user.is_active ? (t('usersList.deactivateTitle') || 'تعطيل الحساب') : (t('usersList.activateTitle') || 'تفعيل الحساب')}>
                         <Switch 
                           checked={user.is_active ? true : false} 
                           onChange={() => handleToggleActive(user)} 
@@ -272,32 +274,32 @@ export default function Users() {
       <Modal
         isOpen={showModal}
         onClose={() => setShowModal(false)}
-        title={modalMode === 'add' ? 'إضافة موظف جديد' : 'تعديل موظف'}
+        title={modalMode === 'add' ? (t('usersList.addModalTitle') || 'إضافة موظف جديد') : (t('usersList.editModalTitle') || 'تعديل موظف')}
       >
         <form onSubmit={handleSave} noValidate>
           <Input
             id="user-name"
-            label="الاسم بالكامل *"
+            label={t('usersList.nameLabel') || 'الاسم بالكامل *'}
             type="text"
             required
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            placeholder="مثال: أحمد عبد الله"
+            placeholder={t('usersList.namePlaceholder') || 'مثال: أحمد عبد الله'}
           />
           
           <Input
             id="user-email"
-            label="البريد الإلكتروني *"
+            label={t('usersList.emailLabel') || 'البريد الإلكتروني *'}
             type="email"
             required
             value={formData.email}
             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            placeholder="أدخل بريدك الإلكتروني"
+            placeholder={t('usersList.emailPlaceholder') || 'أدخل بريدك الإلكتروني'}
           />
 
           <Input
             id="user-password"
-            label={`كلمة المرور ${modalMode === 'edit' ? '(اتركها فارغة إذا لم ترغب بتغييرها)' : ''}`}
+            label={`${t('usersList.passwordLabel') || 'كلمة المرور'} ${modalMode === 'edit' ? (t('usersList.passwordEditDesc') || '(اتركها فارغة إذا لم ترغب بتغييرها)') : ''}`}
             type="password"
             value={formData.password}
             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
@@ -306,22 +308,22 @@ export default function Users() {
           />
 
           <div className="form-group">
-            <label className="form-label">الصلاحية (الدور)</label>
+            <label className="form-label">{t('usersList.roleLabel') || 'الصلاحية (الدور)'}</label>
             <select
               className="form-select"
               value={formData.role}
               onChange={(e) => setFormData({ ...formData, role: e.target.value })}
             >
-              <option value="worker">عامل تشغيل (Worker) - لتحديث القطع فقط</option>
-              <option value="cashier">موظف استقبال (Cashier) - تسجيل طلبات وفواتير</option>
-              <option value="admin">مدير النظام (Admin) - صلاحيات كاملة</option>
+              <option value="worker">{t('roles.workerDesc') || 'عامل تشغيل (Worker) - لتحديث القطع فقط'}</option>
+              <option value="cashier">{t('roles.cashierDesc') || 'موظف استقبال (Cashier) - تسجيل طلبات وفواتير'}</option>
+              <option value="admin">{t('roles.adminDesc') || 'مدير النظام (Admin) - صلاحيات كاملة'}</option>
             </select>
           </div>
 
           {/* super_owner يحدد المغسلة */}
           {isSuperOwner && laundries.length > 0 && (
             <div className="form-group">
-              <label className="form-label">المغسلة</label>
+              <label className="form-label">{t('usersList.laundryLabel') || 'المغسلة'}</label>
               <select
                 className="form-select"
                 value={formData.laundry_id}
@@ -335,23 +337,23 @@ export default function Users() {
           )}
 
           <div className="form-group">
-            <label className="form-label">الحالة</label>
+            <label className="form-label">{t('usersList.statusLabel') || 'الحالة'}</label>
             <select
               className="form-select"
               value={formData.is_active}
               onChange={(e) => setFormData({ ...formData, is_active: parseInt(e.target.value) })}
             >
-              <option value="1">نشط</option>
-              <option value="0">معطل</option>
+              <option value="1">{t('usersList.statusActive') || 'نشط'}</option>
+              <option value="0">{t('usersList.statusInactive') || 'معطل'}</option>
             </select>
           </div>
 
           <div className="flex justify-between mt-md">
             <Button variant="secondary" type="button" onClick={() => setShowModal(false)}>
-              إلغاء
+              {t('usersList.cancelBtn') || 'إلغاء'}
             </Button>
             <Button variant="primary" type="submit">
-              حفظ البيانات
+              {t('usersList.saveBtn') || 'حفظ البيانات'}
             </Button>
           </div>
         </form>

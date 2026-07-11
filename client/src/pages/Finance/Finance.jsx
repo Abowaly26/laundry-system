@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Wallet, CreditCard, TrendingUp, Download, Search } from 'lucide-react';
 import { paymentsAPI, dashboardAPI } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
@@ -6,9 +7,12 @@ import Card from '../../components/UI/Card';
 import Button from '../../components/UI/Button';
 import LoadingSpinner from '../../components/UI/LoadingSpinner';
 import EmptyState from '../../components/UI/EmptyState';
+import { useSettings } from '../../context/SettingsContext';
 import './Finance.css';
 
 export default function Finance() {
+  const { t, i18n } = useTranslation();
+  const { settings } = useSettings();
   const { showToast } = useToast();
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -80,7 +84,7 @@ export default function Finance() {
   const formatDate = (dateStr) => {
     if (!dateStr) return '-';
     const date = new Date(dateStr);
-    return isNaN(date.getTime()) ? '-' : date.toLocaleString('ar-EG', {
+    return isNaN(date.getTime()) ? '-' : date.toLocaleString(i18n.language === 'ar' ? 'ar-EG' : 'en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -90,13 +94,13 @@ export default function Finance() {
   };
 
   const getPaymentMethodLabel = (method) => {
-    return method === 'cash' ? 'نقدي (كاش)' : 'إلكتروني (شبكة)';
+    return method === 'cash' ? t('finance.methodCash') || 'نقدي (كاش)' : t('finance.methodCard') || 'إلكتروني (شبكة)';
   };
 
   const getPaymentTypeLabel = (type) => {
-    if (type === 'deposit') return 'دفعة مقدمة';
-    if (type === 'balance') return 'متبقي الطلب';
-    return 'سداد كامل';
+    if (type === 'deposit') return t('finance.typeDeposit') || 'دفعة مقدمة';
+    if (type === 'balance') return t('finance.typeBalance') || 'متبقي الطلب';
+    return t('finance.typeFull') || 'سداد كامل';
   };
 
   // تصفية إضافية بالبحث الفوري داخل المدفوعات المجلوبة
@@ -117,19 +121,19 @@ export default function Finance() {
 
   const exportToCSV = () => {
     if (filteredPayments.length === 0) {
-      showToast('لا توجد عمليات تحصيل لتصديرها في الوقت الحالي', 'warning');
+      showToast(t('finance.exportEmpty') || 'لا توجد عمليات تحصيل لتصديرها في الوقت الحالي', 'warning');
       return;
     }
 
     const headers = [
-      'رقم العملية',
-      'رقم الطلب',
-      'اسم العميل',
-      'المبلغ المحصل (ر.س)',
-      'طريقة الدفع',
-      'نوع الدفعة',
-      'الموظف المسؤول',
-      'التاريخ والوقت'
+      t('finance.opId') || 'رقم العملية',
+      t('finance.orderId') || 'رقم الطلب',
+      t('finance.custName') || 'اسم العميل',
+      `${t('finance.collectedAmount')} (${settings?.currency || 'ر.س'})`,
+      t('finance.paymentMethod') || 'طريقة الدفع',
+      t('finance.paymentType') || 'نوع الدفعة',
+      t('finance.employee') || 'الموظف المسؤول',
+      t('finance.dateTime') || 'التاريخ والوقت'
     ];
 
     const formatCSVField = (field) => {
@@ -141,11 +145,11 @@ export default function Finance() {
     const rows = filteredPayments.map(p => {
       const paymentId = `#${p?.id || '-'}`;
       const orderId = `#${p?.order_id || '-'}`;
-      const customerName = p?.customer_name || 'عميل عام';
+      const customerName = p?.customer_name || t('orders.generalCustomer') || 'عميل عام';
       const amount = parseFloat(p?.amount || 0).toFixed(2);
       const method = getPaymentMethodLabel(p?.method);
       const type = getPaymentTypeLabel(p?.type);
-      const userName = p?.created_by_name || p?.user_name || 'موظف الاستقبال';
+      const userName = p?.created_by_name || p?.user_name || t('finance.receptionist') || 'موظف الاستقبال';
       const dateStr = formatDate(p?.created_at);
 
       return [
@@ -162,10 +166,10 @@ export default function Finance() {
 
     // إضافة صف الإجمالي في نهاية ملف الإكسل
     rows.push([
-      formatCSVField('إجمالي المبالغ المحصلة (المصفاة)'),
+      formatCSVField(t('finance.totalCollected') || 'إجمالي المبالغ المحصلة (المصفاة)'),
       formatCSVField(''),
       formatCSVField(''),
-      formatCSVField(`+${filteredTotal.toFixed(2)} ر.س`),
+      formatCSVField(`+${filteredTotal.toFixed(2)} ${settings?.currency || 'ر.س'}`),
       formatCSVField(''),
       formatCSVField(''),
       formatCSVField(''),
@@ -187,15 +191,15 @@ export default function Finance() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    showToast('تم تصدير سجل المدفوعات والتحصيلات بنجاح إلى ملف إكسل (CSV) 📊', 'success');
+    showToast(t('finance.exportSuccess') || 'تم تصدير سجل المدفوعات والتحصيلات بنجاح إلى ملف إكسل (CSV) 📊', 'success');
   };
 
   return (
     <div className="page finance-page">
       <div className="page-header">
         <div>
-          <h1 className="page-title">الحسابات والتقارير المالية</h1>
-          <p className="page-subtitle">متابعة التحصيلات اليومية، سجل المدفوعات والديون المتبقية</p>
+          <h1 className="page-title">{t('finance.title') || 'الحسابات والتقارير المالية'}</h1>
+          <p className="page-subtitle">{t('finance.subtitle') || 'متابعة التحصيلات اليومية، سجل المدفوعات والديون المتبقية'}</p>
         </div>
         <div className="flex gap-sm items-center">
           <Button
@@ -205,7 +209,7 @@ export default function Finance() {
             style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
           >
             <Download size={18} />
-            تصدير ملف إكسل
+            {t('finance.exportCSVBtn') || 'تصدير ملف إكسل'}
           </Button>
         </div>
       </div>
@@ -217,8 +221,8 @@ export default function Finance() {
             <TrendingUp size={24} />
           </div>
           <div className="stat-info">
-            <span className="stat-label">دخل اليوم (المحصل)</span>
-            <h2 className="stat-value text-success">{financeStats.today_revenue.toFixed(2)} ر.س</h2>
+            <span className="stat-label">{t('finance.todayRevenue') || 'دخل اليوم (المحصل)'}</span>
+            <h2 className="stat-value text-success">{financeStats.today_revenue.toFixed(2)} {settings?.currency || 'ر.س'}</h2>
           </div>
         </Card>
 
@@ -227,8 +231,8 @@ export default function Finance() {
             <Wallet size={24} />
           </div>
           <div className="stat-info">
-            <span className="stat-label">المبالغ المعلقة (ديون متبقية)</span>
-            <h2 className="stat-value text-warning">{financeStats.pending_revenue.toFixed(2)} ر.س</h2>
+            <span className="stat-label">{t('finance.pendingRevenue') || 'المبالغ المعلقة (ديون متبقية)'}</span>
+            <h2 className="stat-value text-warning">{financeStats.pending_revenue.toFixed(2)} {settings?.currency || 'ر.س'}</h2>
           </div>
         </Card>
 
@@ -237,8 +241,8 @@ export default function Finance() {
             <CreditCard size={24} />
           </div>
           <div className="stat-info">
-            <span className="stat-label">إجمالي الدخل التاريخي</span>
-            <h2 className="stat-value text-primary">{financeStats.total_revenue.toFixed(2)} ر.س</h2>
+            <span className="stat-label">{t('finance.totalRevenue') || 'إجمالي الدخل التاريخي'}</span>
+            <h2 className="stat-value text-primary">{financeStats.total_revenue.toFixed(2)} {settings?.currency || 'ر.س'}</h2>
           </div>
         </Card>
       </div>
@@ -247,12 +251,12 @@ export default function Finance() {
       <Card className="mb-md">
         <div className="finance-filters-grid">
           <div className="form-group" style={{ gridColumn: 'span 1' }}>
-            <label className="form-label">بحث سريع في التحصيلات</label>
+            <label className="form-label">{t('finance.quickSearch') || 'بحث سريع في التحصيلات'}</label>
             <div className="search-box" style={{ margin: 0 }}>
               <input
                 type="text"
                 className="form-input"
-                placeholder="رقم العملية، الطلب، العميل، أو الموظف..."
+                placeholder={t('finance.searchPlaceholder') || 'رقم العملية، الطلب، العميل، أو الموظف...'}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -261,20 +265,20 @@ export default function Finance() {
           </div>
 
           <div className="form-group">
-            <label className="form-label">طريقة الدفع</label>
+            <label className="form-label">{t('finance.paymentMethod') || 'طريقة الدفع'}</label>
             <select
               className="form-select"
               value={filters.method}
               onChange={(e) => setFilters({ ...filters, method: e.target.value })}
             >
-              <option value="">كل الطرق</option>
-              <option value="cash">نقدي (كاش)</option>
-              <option value="electronic">إلكتروني (شبكة)</option>
+              <option value="">{t('finance.allMethods') || 'كل الطرق'}</option>
+              <option value="cash">{t('finance.methodCash') || 'نقدي (كاش)'}</option>
+              <option value="electronic">{t('finance.methodCard') || 'إلكتروني (شبكة)'}</option>
             </select>
           </div>
 
           <div className="form-group">
-            <label className="form-label">تاريخ البداية</label>
+            <label className="form-label">{t('finance.startDate') || 'تاريخ البداية'}</label>
             <input
               type="date"
               className="form-input"
@@ -284,7 +288,7 @@ export default function Finance() {
           </div>
 
           <div className="form-group">
-            <label className="form-label">تاريخ النهاية</label>
+            <label className="form-label">{t('finance.endDate') || 'تاريخ النهاية'}</label>
             <input
               type="date"
               className="form-input"
@@ -295,7 +299,7 @@ export default function Finance() {
 
           <div className="flex items-end" style={{ paddingBottom: '16px' }}>
             <Button variant="ghost" className="text-secondary" onClick={handleResetFilters}>
-              إعادة تعيين
+              {t('finance.resetFilters') || 'إعادة تعيين'}
             </Button>
           </div>
         </div>
@@ -303,8 +307,8 @@ export default function Finance() {
 
       {/* جدول الدفعات والتحصيلات */}
       <div className="filtered-total-summary mb-sm flex justify-between items-center">
-        <span>إجمالي الدفعات المصفاة:</span>
-        <strong className="text-primary" style={{ fontSize: '1.25rem' }}>{filteredTotal.toFixed(2)} ر.س</strong>
+        <span>{t('finance.filteredTotal') || 'إجمالي الدفعات المصفاة:'}</span>
+        <strong className="text-primary" style={{ fontSize: '1.25rem' }}>{filteredTotal.toFixed(2)} {settings?.currency || 'ر.س'}</strong>
       </div>
 
       {loading ? (
@@ -313,22 +317,22 @@ export default function Finance() {
         </div>
       ) : filteredPayments.length === 0 ? (
         <EmptyState 
-          title="لا توجد عمليات تحصيل" 
-          message="لم نجد أي حركات دفع مسجلة تطابق التصفية أو البحث المحدد."
+          title={t('finance.emptyStateTitle') || 'لا توجد عمليات تحصيل'} 
+          message={t('finance.emptyStateMsg') || 'لم نجد أي حركات دفع مسجلة تطابق التصفية أو البحث المحدد.'}
         />
       ) : (
         <div className="table-container">
           <table>
             <thead>
               <tr>
-                <th>رقم العملية</th>
-                <th>رقم الطلب</th>
-                <th>اسم العميل</th>
-                <th>المبلغ المحصل</th>
-                <th>طريقة الدفع</th>
-                <th>نوع الدفعة</th>
-                <th>الموظف المسؤول</th>
-                <th>التاريخ والوقت</th>
+                <th>{t('finance.opId') || 'رقم العملية'}</th>
+                <th>{t('finance.orderId') || 'رقم الطلب'}</th>
+                <th>{t('finance.custName') || 'اسم العميل'}</th>
+                <th>{t('finance.collectedAmount') || 'المبلغ المحصل'}</th>
+                <th>{t('finance.paymentMethod') || 'طريقة الدفع'}</th>
+                <th>{t('finance.paymentType') || 'نوع الدفعة'}</th>
+                <th>{t('finance.employee') || 'الموظف المسؤول'}</th>
+                <th>{t('finance.dateTime') || 'التاريخ والوقت'}</th>
               </tr>
             </thead>
             <tbody>
@@ -336,14 +340,14 @@ export default function Finance() {
                 <tr key={p?.id}>
                   <td><strong>#{p?.id}</strong></td>
                   <td><a href={`/orders/${p?.order_id}`} className="text-primary font-semibold">#{p?.order_id}</a></td>
-                  <td>{p?.customer_name || 'عميل عام'}</td>
-                  <td className="font-bold text-success">+{parseFloat(p?.amount || 0).toFixed(2)} ر.س</td>
-                  <td>{p?.method === 'cash' ? 'نقدي (كاش)' : 'إلكتروني (شبكة)'}</td>
+                  <td>{p?.customer_name || t('orders.generalCustomer') || 'عميل عام'}</td>
+                  <td className="font-bold text-success">+{parseFloat(p?.amount || 0).toFixed(2)} {settings?.currency || 'ر.س'}</td>
+                  <td>{p?.method === 'cash' ? t('finance.methodCash') || 'نقدي (كاش)' : t('finance.methodCard') || 'إلكتروني (شبكة)'}</td>
                   <td>
-                    {p?.type === 'deposit' ? 'دفعة مقدمة' : 
-                     p?.type === 'balance' ? 'متبقي الطلب' : 'سداد كامل'}
+                    {p?.type === 'deposit' ? t('finance.typeDeposit') || 'دفعة مقدمة' : 
+                     p?.type === 'balance' ? t('finance.typeBalance') || 'متبقي الطلب' : t('finance.typeFull') || 'سداد كامل'}
                   </td>
-                  <td>{p?.created_by_name || p?.user_name || 'موظف الاستقبال'}</td>
+                  <td>{p?.created_by_name || p?.user_name || t('finance.receptionist') || 'موظف الاستقبال'}</td>
                   <td>{formatDate(p?.created_at)}</td>
                 </tr>
               ))}

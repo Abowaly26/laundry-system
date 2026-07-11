@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Printer, Wallet, ArrowRight, CheckCircle2, User, Calendar, CreditCard, Clock, FileText, MessageSquare, Copy, QrCode } from 'lucide-react';
 import { QRCodeCanvas } from 'qrcode.react';
 import { ordersAPI, paymentsAPI, itemsAPI } from '../../services/api';
@@ -15,6 +16,7 @@ import PrintQRLabels from '../../components/Print/PrintQRLabels';
 import './OrderDetails.css';
 
 export default function OrderDetails() {
+  const { t, i18n } = useTranslation();
   const { id } = useParams();
   const navigate = useNavigate();
   const { showToast } = useToast();
@@ -35,10 +37,10 @@ export default function OrderDetails() {
   const [qrModalItem, setQrModalItem] = useState(null);
 
   const ITEM_STATUS_OPTIONS = [
-    { value: 'pending', label: 'قيد الانتظار' },
-    { value: 'processing', label: 'قيد التنفيذ' },
-    { value: 'ready', label: 'جاهز للاستلام' },
-    { value: 'delivered', label: 'تم التسليم' }
+    { value: 'pending', label: t('status.pending') || 'قيد الانتظار' },
+    { value: 'processing', label: t('status.processing') || 'قيد التنفيذ' },
+    { value: 'ready', label: t('status.ready') || 'جاهز للاستلام' },
+    { value: 'delivered', label: t('status.delivered') || 'تم التسليم' }
   ];
 
   const loadOrderDetails = async () => {
@@ -49,12 +51,12 @@ export default function OrderDetails() {
         setOrder(res.data);
         setPaymentAmount(res.data.remaining_amount || 0);
       } else {
-        showToast('لم يتم العثور على الطلب', 'error');
+        showToast(t('orderDetails.notFound') || 'لم يتم العثور على الطلب', 'error');
         navigate('/orders');
       }
     } catch (err) {
       console.error(err);
-      showToast('خطأ في تحميل تفاصيل الطلب', 'error');
+      showToast(t('orderDetails.loadError') || 'خطأ في تحميل تفاصيل الطلب', 'error');
     } finally {
       setLoading(false);
     }
@@ -62,7 +64,7 @@ export default function OrderDetails() {
 
   const handleCopyText = (text) => {
     navigator.clipboard.writeText(text);
-    showToast('تم نسخ كود القطعة بنجاح! 📋', 'success');
+    showToast(t('orders.copySuccess') || 'تم نسخ كود القطعة بنجاح! 📋', 'success');
   };
 
   useEffect(() => {
@@ -98,11 +100,11 @@ export default function OrderDetails() {
   const handleSavePayment = async (e) => {
     e.preventDefault();
     if (paymentAmount <= 0) {
-      showToast('الرجاء إدخال مبلغ صحيح', 'warning');
+      showToast(t('orderDetails.invalidAmount') || 'الرجاء إدخال مبلغ صحيح', 'warning');
       return;
     }
     if (paymentAmount > order.remaining_amount) {
-      showToast('المبلغ المدفوع أكبر من المبلغ المتبقي على الطلب', 'warning');
+      showToast(t('orderDetails.amountTooLarge') || 'المبلغ المدفوع أكبر من المبلغ المتبقي على الطلب', 'warning');
       return;
     }
 
@@ -117,13 +119,13 @@ export default function OrderDetails() {
 
       if (res.success) {
         setShowPaymentModal(false);
-        showToast('تم تسجيل الدفعة بنجاح! 💸', 'success');
+        showToast(t('orderDetails.paymentSuccess') || 'تم تسجيل الدفعة بنجاح! 💸', 'success');
         loadOrderDetails();
       } else {
-        showToast(res.message || 'فشل في حفظ الدفعة', 'error');
+        showToast(res.message || t('orderDetails.paymentFail') || 'فشل في حفظ الدفعة', 'error');
       }
     } catch (err) {
-      showToast(err.message || 'خطأ في الاتصال بالخادم', 'error');
+      showToast(err.message || t('orderDetails.serverError') || 'خطأ في الاتصال بالخادم', 'error');
     } finally {
       setSavingPayment(false);
     }
@@ -146,13 +148,13 @@ export default function OrderDetails() {
     try {
       const res = await itemsAPI.updateStatus(itemId, newStatus);
       if (res.success) {
-        showToast('تم تحديث حالة القطعة بنجاح!', 'success');
+        showToast(t('orderDetails.statusUpdateSuccess') || 'تم تحديث حالة القطعة بنجاح!', 'success');
         loadOrderDetails();
       } else {
-        showToast(res.message || 'فشل في تحديث حالة القطعة', 'error');
+        showToast(res.message || t('orderDetails.statusUpdateFail') || 'فشل في تحديث حالة القطعة', 'error');
       }
     } catch (err) {
-      showToast(err.message || 'خطأ أثناء التحديث', 'error');
+      showToast(err.message || t('orderDetails.updateError') || 'خطأ أثناء التحديث', 'error');
     } finally {
       setOpenItemStatusDropdownId(null);
     }
@@ -163,13 +165,13 @@ export default function OrderDetails() {
     try {
       const res = await itemsAPI.advanceStatus(itemId);
       if (res.success) {
-        showToast('تم تحديث حالة القطعة بنجاح!', 'success');
+        showToast(t('orderDetails.statusUpdateSuccess') || 'تم تحديث حالة القطعة بنجاح!', 'success');
         loadOrderDetails();
       } else {
-        showToast(res.message || 'فشل في تحديث حالة القطعة', 'error');
+        showToast(res.message || t('orderDetails.statusUpdateFail') || 'فشل في تحديث حالة القطعة', 'error');
       }
     } catch (err) {
-      showToast(err.message || 'خطأ أثناء التحديث', 'error');
+      showToast(err.message || t('orderDetails.updateError') || 'خطأ أثناء التحديث', 'error');
     }
   };
 
@@ -178,14 +180,14 @@ export default function OrderDetails() {
     // التأكد من أن كل القطع جاهزة
     const allReady = order.items.every(item => item.status === 'ready' || item.status === 'delivered');
     if (!allReady) {
-      if (!window.confirm('تنبيه: بعض القطع ليست جاهزة بعد. هل تريد المتابعة وتسليم الطلب بأكمله؟')) {
+      if (!window.confirm(t('orderDetails.confirmDeliverIncomplete') || 'تنبيه: بعض القطع ليست جاهزة بعد. هل تريد المتابعة وتسليم الطلب بأكمله؟')) {
         return;
       }
     }
 
     // إذا كان هناك متبقي مالي، يجب دفعه أولاً أو تأكيد ذلك يدوياً
     if (order.remaining_amount > 0) {
-      if (!window.confirm(`يوجد مبلغ متبقي (${order.remaining_amount} ${settings.currency}). هل تريد تحصيل المبلغ وتسليم الطلب الآن؟`)) {
+      if (!window.confirm(t('orderDetails.confirmDeliverUnpaid', { remaining: order.remaining_amount, currency: settings.currency }) || `يوجد مبلغ متبقي (${order.remaining_amount} ${settings.currency}). هل تريد تحصيل المبلغ وتسليم الطلب الآن؟`)) {
         setShowPaymentModal(true);
         setPaymentType('balance');
         setPaymentAmount(order.remaining_amount);
@@ -202,7 +204,7 @@ export default function OrderDetails() {
           type: 'balance'
         });
       } catch (err) {
-        showToast('حدث خطأ أثناء تسجيل الدفعة المتبقية: ' + err.message, 'error');
+        showToast((t('orderDetails.errorRemainingPayment') || 'حدث خطأ أثناء تسجيل الدفعة المتبقية: ') + err.message, 'error');
         setDelivering(false);
         return;
       }
@@ -212,13 +214,13 @@ export default function OrderDetails() {
       setDelivering(true);
       const res = await ordersAPI.update(id, { status: 'delivered' });
       if (res.success) {
-        showToast('تم تسليم الطلب وإغلاقه بنجاح! ✓', 'success');
+        showToast(t('orderDetails.deliverSuccess') || 'تم تسليم الطلب وإغلاقه بنجاح! ✓', 'success');
         loadOrderDetails();
       } else {
-        showToast(res.message || 'فشل في تحديث حالة الطلب', 'error');
+        showToast(res.message || t('orderDetails.deliverFail') || 'فشل في تحديث حالة الطلب', 'error');
       }
     } catch (err) {
-      showToast(err.message || 'خطأ أثناء تحديث الطلب', 'error');
+      showToast(err.message || t('orderDetails.deliverError') || 'خطأ أثناء تحديث الطلب', 'error');
     } finally {
       setDelivering(false);
     }
@@ -226,7 +228,7 @@ export default function OrderDetails() {
 
   const handleShareWhatsApp = () => {
     if (!order) return;
-    const customerName = order.customer_name || order.customer?.name || 'عميل';
+    const customerName = order.customer_name || order.customer?.name || t('orders.generalCustomer') || 'عميل';
     const customerPhone = order.customer_phone || order.customer?.phone || '';
     const orderId = order.id;
     const itemsCount = order.items?.length || 0;
@@ -292,7 +294,7 @@ export default function OrderDetails() {
   const formatDate = (dateStr) => {
     if (!dateStr) return '-';
     const date = new Date(dateStr);
-    return isNaN(date.getTime()) ? '-' : date.toLocaleString('ar-EG', {
+    return isNaN(date.getTime()) ? '-' : date.toLocaleString(i18n.language === 'ar' ? 'ar-EG' : 'en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -330,27 +332,27 @@ export default function OrderDetails() {
       <div className="page-header no-print">
         <div className="flex-col">
           <div className="flex gap-sm items-center">
-            <h1 className="page-title" style={{ margin: 0 }}>تفاصيل الطلب #{order.id}</h1>
+            <h1 className="page-title" style={{ margin: 0 }}>{t('orders.orderDetailsTitle', { id: order.id }) || `تفاصيل الطلب #${order.id}`}</h1>
             <StatusBadge status={order.status} type="order" />
           </div>
-          <p className="page-subtitle">تتبع القطع، معالجة الدفعات، وإجراءات التسليم</p>
+          <p className="page-subtitle">{t('orders.orderDetailsSubtitle') || 'تتبع القطع، معالجة الدفعات، وإجراءات التسليم'}</p>
         </div>
         <div className="flex gap-sm items-center" style={{ flexWrap: 'wrap', justifyContent: 'flex-start', marginTop: '10px' }}>
           <Button variant="secondary" onClick={() => navigate('/orders')}>
             <ArrowRight size={16} style={{ marginLeft: '6px' }} />
-            الرجوع للطلبات
+            {t('orders.backToOrders') || 'الرجوع للطلبات'}
           </Button>
           <Button variant="primary" onClick={handlePrintInvoice}>
             <Printer size={16} style={{ marginLeft: '6px' }} />
-            طباعة الفاتورة
+            {t('orders.printInvoice') || 'طباعة الفاتورة'}
           </Button>
           <Button variant="secondary" onClick={handlePrintLabels}>
             <FileText size={16} style={{ marginLeft: '6px' }} />
-            طباعة الملصقات
+            {t('orders.printLabels') || 'طباعة الملصقات'}
           </Button>
           <Button variant="success" onClick={handleShareWhatsApp}>
             <MessageSquare size={16} style={{ marginLeft: '6px' }} />
-            مشاركة واتساب
+            {t('orders.shareWhatsApp') || 'مشاركة واتساب'}
           </Button>
         </div>
       </div>
@@ -359,18 +361,18 @@ export default function OrderDetails() {
       <div className="order-details-grid">
         {/* تفاصيل العميل والماليات */}
         <div className="details-sidebar no-print">
-          <Card title="معلومات العميل">
+          <Card title={t('orders.customerInfo') || 'معلومات العميل'}>
             <div className="detail-item">
               <div className="detail-item-left">
                 <User size={16} className="detail-icon" />
-                <span className="detail-label">الاسم:</span>
+                <span className="detail-label">{t('orders.name') || 'الاسم:'}</span>
               </div>
-              <span className="detail-value">{order.customer_name || order.customer?.name || 'عميل عام'}</span>
+              <span className="detail-value">{order.customer_name || order.customer?.name || t('orders.generalCustomer') || 'عميل عام'}</span>
             </div>
             <div className="detail-item">
               <div className="detail-item-left">
                 <CreditCard size={16} className="detail-icon" />
-                <span className="detail-label">رقم الهاتف:</span>
+                <span className="detail-label">{t('orders.phoneLabel') || 'رقم الهاتف:'}</span>
               </div>
               <span className="detail-value">{order.customer_phone || order.customer?.phone || '-'}</span>
             </div>
@@ -378,25 +380,25 @@ export default function OrderDetails() {
               <div className="detail-item">
                 <div className="detail-item-left">
                   <Clock size={16} className="detail-icon" />
-                  <span className="detail-label">العنوان:</span>
+                  <span className="detail-label">{t('orders.addressLabel') || 'العنوان:'}</span>
                 </div>
                 <span className="detail-value">{order.customer_address || order.customer?.address}</span>
               </div>
             )}
           </Card>
 
-          <Card title="الملخص المالي" className="mt-md">
+          <Card title={t('orders.financialSummary') || 'الملخص المالي'} className="mt-md">
             <div className="summary-finance-rows">
               <div className="fin-row">
-                <span>الإجمالي:</span>
+                <span>{t('orders.total') || 'الإجمالي:'}</span>
                 <span style={{ fontWeight: 'bold' }}>{parseFloat(order.total_amount).toFixed(2)} {settings.currency}</span>
               </div>
               <div className="fin-row" style={{ color: 'var(--success)' }}>
-                <span>المدفوع:</span>
+                <span>{t('orders.paid') || 'المدفوع:'}</span>
                 <span style={{ fontWeight: 'bold' }}>{parseFloat(order.paid_amount).toFixed(2)} {settings.currency}</span>
               </div>
               <div className={`fin-row ${order.remaining_amount > 0 ? 'text-warning' : 'text-success'}`}>
-                <span>المتبقي:</span>
+                <span>{t('orders.remaining') || 'المتبقي:'}</span>
                 <span style={{ fontWeight: 'bold' }}>{parseFloat(order.remaining_amount).toFixed(2)} {settings.currency}</span>
               </div>
             </div>
@@ -412,7 +414,7 @@ export default function OrderDetails() {
                 }}
               >
                 <Wallet size={16} style={{ marginLeft: '6px' }} />
-                تسجيل دفعة جديدة
+                {t('orders.recordNewPayment') || 'تسجيل دفعة جديدة'}
               </Button>
             )}
 
@@ -424,23 +426,23 @@ export default function OrderDetails() {
                 disabled={delivering}
               >
                 <CheckCircle2 size={16} style={{ marginLeft: '6px' }} />
-                {delivering ? 'جاري التسليم...' : 'تسليم الطلب للعميل'}
+                {delivering ? t('orders.delivering') || 'جاري التسليم...' : t('orders.deliverOrder') || 'تسليم الطلب للعميل'}
               </Button>
             )}
           </Card>
 
-          <Card title="مواعيد وتواريخ" className="mt-md">
+          <Card title={t('orders.dates') || 'مواعيد وتواريخ'} className="mt-md">
             <div className="detail-item">
               <div className="detail-item-left">
                 <Calendar size={16} className="detail-icon" />
-                <span className="detail-label">تاريخ الاستلام:</span>
+                <span className="detail-label">{t('orders.receiveDate') || 'تاريخ الاستلام:'}</span>
               </div>
               <span className="detail-value">{formatDate(order.created_at)}</span>
             </div>
             <div className="detail-item">
               <div className="detail-item-left">
                 <Clock size={16} className="detail-icon" />
-                <span className="detail-label">موعد التسليم المتوقع:</span>
+                <span className="detail-label">{t('orders.expectedDelivery') || 'موعد التسليم المتوقع:'}</span>
               </div>
               <span className="detail-value">{formatDate(order.expected_delivery_at)}</span>
             </div>
@@ -448,14 +450,14 @@ export default function OrderDetails() {
               <div className="detail-item">
                 <div className="detail-item-left">
                   <CheckCircle2 size={16} className="detail-icon" />
-                  <span className="detail-label">تاريخ التسليم الفعلي:</span>
+                  <span className="detail-label">{t('orders.actualDelivery') || 'تاريخ التسليم الفعلي:'}</span>
                 </div>
                 <span className="detail-value">{formatDate(order.delivered_at)}</span>
               </div>
             )}
             {order.notes && (
               <div className="mt-sm pt-sm" style={{ borderTop: '1px solid var(--border)' }}>
-                <strong>ملاحظات:</strong>
+                <strong>{t('orders.notes') || 'ملاحظات:'}</strong>
                 <p style={{ fontSize: '0.85rem', marginTop: '4px' }}>{order.notes}</p>
               </div>
             )}
@@ -464,19 +466,19 @@ export default function OrderDetails() {
 
         {/* جدول تتبع القطع وسجل المدفوعات */}
         <div className="details-main no-print">
-          <Card title={`القطع المشمولة في الطلب (${order.items?.length || 0} قطع)`}>
+          <Card title={t('orders.includedItems', { count: order.items?.length || 0 }) || `القطع المشمولة في الطلب (${order.items?.length || 0} قطع)`}>
             <div className="table-container">
               <table className="items-tracking-table">
                 <thead>
                   <tr>
-                    <th>كود القطعة</th>
-                    <th style={{ textAlign: 'center' }}>رمز QR</th>
-                    <th>نوع القطعة</th>
-                    <th>الخدمة المطلوبة</th>
-                    <th>ملاحظات</th>
-                    <th>السعر</th>
-                    <th>حالة القطعة</th>
-                    <th style={{ width: '150px', textAlign: 'center' }}>تحديث الحالة</th>
+                    <th>{t('orders.itemId') || 'كود القطعة'}</th>
+                    <th style={{ textAlign: 'center' }}>{t('orders.qrCode') || 'رمز QR'}</th>
+                    <th>{t('orders.itemType') || 'نوع القطعة'}</th>
+                    <th>{t('orders.requiredService') || 'الخدمة المطلوبة'}</th>
+                    <th>{t('orders.itemNotes') || 'ملاحظات'}</th>
+                    <th>{t('orders.price') || 'السعر'}</th>
+                    <th>{t('orders.itemStatus') || 'حالة القطعة'}</th>
+                    <th style={{ width: '150px', textAlign: 'center' }}>{t('orders.updateStatus') || 'تحديث الحالة'}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -500,7 +502,7 @@ export default function OrderDetails() {
                         <button
                           type="button"
                           className="qr-action-btn"
-                          title="عرض الـ QR"
+                          title={t('orders.viewQR') || 'عرض الـ QR'}
                           style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--primary)', padding: '4px', display: 'inline-flex', alignItems: 'center', transition: 'transform 0.2s', margin: '0 auto' }}
                           onClick={() => setQrModalItem(item)}
                           onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.15)'}
@@ -559,19 +561,19 @@ export default function OrderDetails() {
           </Card>
 
           {/* سجل الدفعات المستلمة */}
-          <Card title="سجل الدفعات والتحصيل" className="mt-md">
+          <Card title={t('orders.paymentHistory') || 'سجل الدفعات والتحصيل'} className="mt-md">
             {order.payments && order.payments.length === 0 ? (
-              <p className="text-secondary" style={{ fontSize: '0.9rem' }}>لا توجد مدفوعات مسجلة بعد لهذا الطلب.</p>
+              <p className="text-secondary" style={{ fontSize: '0.9rem' }}>{t('orders.noPayments') || 'لا توجد مدفوعات مسجلة بعد لهذا الطلب.'}</p>
             ) : (
               <div className="table-container">
                 <table>
                   <thead>
                     <tr>
-                      <th>رقم الدفعة</th>
-                      <th>المبلغ</th>
-                      <th>طريقة الدفع</th>
-                      <th>نوع الدفعة</th>
-                      <th>التاريخ والوقت</th>
+                      <th>{t('orders.paymentNum') || 'رقم الدفعة'}</th>
+                      <th>{t('orders.amount') || 'المبلغ'}</th>
+                      <th>{t('orders.paymentMethod') || 'طريقة الدفع'}</th>
+                      <th>{t('orders.paymentType') || 'نوع الدفعة'}</th>
+                      <th>{t('orders.dateTime') || 'التاريخ والوقت'}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -579,10 +581,10 @@ export default function OrderDetails() {
                       <tr key={payment.id}>
                         <td>#{payment.id}</td>
                         <td className="font-bold text-success">{parseFloat(payment.amount).toFixed(2)} {settings.currency}</td>
-                        <td>{payment.method === 'cash' ? 'نقدي' : 'إلكتروني'}</td>
+                        <td>{payment.method === 'cash' ? t('orders.cash') || 'نقدي' : t('orders.electronic') || 'إلكتروني'}</td>
                         <td>
-                          {payment.type === 'deposit' ? 'دفعة مقدمة' : 
-                           payment.type === 'balance' ? 'متبقي الطلب' : 'سداد كامل'}
+                          {payment.type === 'deposit' ? t('orders.deposit') || 'دفعة مقدمة' : 
+                           payment.type === 'balance' ? t('orders.balance') || 'متبقي الطلب' : t('orders.fullPayment') || 'سداد كامل'}
                         </td>
                         <td>{formatDate(payment.created_at)}</td>
                       </tr>
@@ -599,11 +601,11 @@ export default function OrderDetails() {
       <Modal
         isOpen={showPaymentModal}
         onClose={() => setShowPaymentModal(false)}
-        title="تسجيل دفعة مالية جديدة"
+        title={t('orders.paymentModalTitle') || 'تسجيل دفعة مالية جديدة'}
       >
         <form onSubmit={handleSavePayment}>
           <div className="form-group">
-            <label className="form-label">المبلغ المراد سداده ({settings.currency})</label>
+            <label className="form-label">{t('orders.amountToPay') || 'المبلغ المراد سداده'} ({settings.currency})</label>
             <input
               type="number"
               className="form-input"
@@ -614,39 +616,39 @@ export default function OrderDetails() {
               step="any"
               required
             />
-            <span className="help-text">الحد الأقصى المتبقي: {order?.remaining_amount} {settings.currency}</span>
+            <span className="help-text">{t('orders.maxRemaining') || 'الحد الأقصى المتبقي:'} {order?.remaining_amount} {settings.currency}</span>
           </div>
 
           <div className="form-group">
-            <label className="form-label">طريقة الدفع</label>
+            <label className="form-label">{t('orders.paymentMethod') || 'طريقة الدفع'}</label>
             <select
               className="form-select"
               value={paymentMethod}
               onChange={(e) => setPaymentMethod(e.target.value)}
             >
-              <option value="cash">نقدي (كاش)</option>
-              <option value="electronic">إلكتروني (مدى/شبكة)</option>
+              <option value="cash">{t('orders.cash') || 'نقدي (كاش)'}</option>
+              <option value="electronic">{t('orders.electronic') || 'إلكتروني (مدى/شبكة)'}</option>
             </select>
           </div>
 
           <div className="form-group">
-            <label className="form-label">نوع الدفعة</label>
+            <label className="form-label">{t('orders.paymentType') || 'نوع الدفعة'}</label>
             <select
               className="form-select"
               value={paymentType}
               onChange={(e) => setPaymentType(e.target.value)}
             >
-              <option value="balance">دفع المتبقي</option>
-              <option value="deposit">دفعة مقدمة إضافية</option>
+              <option value="balance">{t('orders.balance') || 'دفع المتبقي'}</option>
+              <option value="deposit">{t('orders.deposit') || 'دفعة مقدمة إضافية'}</option>
             </select>
           </div>
 
           <div className="flex justify-between mt-md">
             <Button variant="secondary" type="button" onClick={() => setShowPaymentModal(false)}>
-              إلغاء
+              {t('orders.cancel') || 'إلغاء'}
             </Button>
             <Button variant="primary" type="submit" disabled={savingPayment}>
-              {savingPayment ? 'جاري الحفظ...' : 'حفظ الدفعة'}
+              {savingPayment ? t('orders.saving') || 'جاري الحفظ...' : t('orders.savePayment') || 'حفظ الدفعة'}
             </Button>
           </div>
         </form>
@@ -656,7 +658,7 @@ export default function OrderDetails() {
       <Modal
         isOpen={!!qrModalItem}
         onClose={() => setQrModalItem(null)}
-        title={`رمز QR للقطعة - ${qrModalItem?.qr_code || ''}`}
+        title={t('orders.itemQRTitle', { code: qrModalItem?.qr_code || '' }) || `رمز QR للقطعة - ${qrModalItem?.qr_code || ''}`}
       >
         {qrModalItem && (
           <div className="flex flex-col items-center justify-center py-md text-center" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
@@ -670,7 +672,7 @@ export default function OrderDetails() {
             </div>
             <p className="font-bold text-lg mb-xs" style={{ fontWeight: 'bold', fontSize: '1.1rem', marginBottom: '4px' }}>{qrModalItem.qr_code}</p>
             <p className="text-secondary mb-md" style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', marginBottom: '16px' }}>
-              نوع القطعة: {getItemTypeAr(qrModalItem.item_type)} {qrModalItem.size_name ? `(${qrModalItem.size_name})` : ''} | الخدمة: {qrModalItem.service_name_ar || qrModalItem.service?.name_ar}
+              {t('orders.itemTypeLabel') || 'نوع القطعة:'} {getItemTypeAr(qrModalItem.item_type)} {qrModalItem.size_name ? `(${qrModalItem.size_name})` : ''} | {t('orders.requiredService') || 'الخدمة:'} {qrModalItem.service_name_ar || qrModalItem.service?.name_ar}
             </p>
           </div>
         )}

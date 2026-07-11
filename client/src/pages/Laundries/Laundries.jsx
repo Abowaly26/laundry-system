@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Plus, Store, Users, ShoppingBag, TrendingUp,
   Edit2, Power, Eye, X, ChevronDown, ChevronUp,
@@ -13,6 +14,7 @@ import LoadingSpinner from '../../components/UI/LoadingSpinner';
 import './Laundries.css';
 
 export default function Laundries() {
+  const { t } = useTranslation();
   const { showToast } = useToast();
   const [laundries, setLaundries] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -34,7 +36,7 @@ export default function Laundries() {
       const res = await laundriesAPI.getAll();
       if (res.success) setLaundries(res.data);
     } catch (err) {
-      showToast('خطأ في جلب المغاسل', 'error');
+      showToast(t('laundriesList.fetchError') || 'خطأ في جلب المغاسل', 'error');
     } finally {
       setLoading(false);
     }
@@ -63,7 +65,7 @@ export default function Laundries() {
       let res;
       if (modalMode === 'add') {
         if (!formData.admin_name || !formData.admin_email || !formData.admin_password) {
-          showToast('بيانات المدير مطلوبة', 'error');
+          showToast(t('laundriesList.adminDataRequired') || 'بيانات المدير مطلوبة', 'error');
           setSaving(false);
           return;
         }
@@ -75,31 +77,31 @@ export default function Laundries() {
       }
 
       if (res.success) {
-        showToast(modalMode === 'add' ? `تم إنشاء مغسلة "${formData.name}" بنجاح! 🎉` : 'تم تحديث المغسلة بنجاح', 'success');
+        showToast(modalMode === 'add' ? (t('laundriesList.addSuccess', { name: formData.name }) || `تم إنشاء مغسلة "${formData.name}" بنجاح! 🎉`) : (t('laundriesList.updateSuccess') || 'تم تحديث المغسلة بنجاح'), 'success');
         setShowModal(false);
         loadLaundries();
       } else {
-        showToast(res.message || 'حدث خطأ', 'error');
+        showToast(res.message || t('laundriesList.saveError') || 'حدث خطأ', 'error');
       }
     } catch (err) {
-      showToast(err.message || 'خطأ في الاتصال', 'error');
+      showToast(err.message || t('laundriesList.networkError') || 'خطأ في الاتصال', 'error');
     } finally {
       setSaving(false);
     }
   };
 
   const handleToggleStatus = async (laundry) => {
-    const action = laundry.is_active ? 'تعطيل' : 'تفعيل';
-    if (!window.confirm(`هل أنت متأكد من ${action} مغسلة "${laundry.name}"؟ ${laundry.is_active ? 'سيتم تعطيل جميع موظفيها.' : ''}`)) return;
+    const action = laundry.is_active ? (t('laundriesList.deactivate') || 'تعطيل') : (t('laundriesList.activate') || 'تفعيل');
+    if (!window.confirm(t('laundriesList.confirmToggleStatus', { action, name: laundry.name, warning: laundry.is_active ? (t('laundriesList.disableWarning') || 'سيتم تعطيل جميع موظفيها.') : '' }) || `هل أنت متأكد من ${action} مغسلة "${laundry.name}"؟ ${laundry.is_active ? 'سيتم تعطيل جميع موظفيها.' : ''}`)) return;
 
     try {
       const res = await laundriesAPI.update(laundry.id, { is_active: !laundry.is_active });
       if (res.success) {
-        showToast(`تم ${action} المغسلة بنجاح`, 'success');
+        showToast(t('laundriesList.statusSuccess', { action }) || `تم ${action} المغسلة بنجاح`, 'success');
         loadLaundries();
       }
     } catch (err) {
-      showToast(err.message || 'خطأ', 'error');
+      showToast(err.message || t('laundriesList.statusError') || 'خطأ', 'error');
     }
   };
 
@@ -127,15 +129,15 @@ export default function Laundries() {
         <div>
           <h1 className="page-title">
             <Crown size={28} className="page-title-icon" />
-            إدارة المغاسل
+            {t('laundriesList.title') || 'إدارة المغاسل'}
           </h1>
           <p className="page-subtitle">
-            أنت تدير <strong>{laundries.length}</strong> مغسلة • كل مغسلة منفصلة تماماً عن الأخرى
+            {t('laundriesList.subtitle', { count: laundries.length }) || `أنت تدير ${laundries.length} مغسلة • كل مغسلة منفصلة تماماً عن الأخرى`}
           </p>
         </div>
         <Button variant="primary" onClick={handleOpenAdd} id="add-laundry-btn">
           <Plus size={18} style={{ marginLeft: '8px' }} />
-          إضافة مغسلة جديدة
+          {t('laundriesList.addNewBtn') || 'إضافة مغسلة جديدة'}
         </Button>
       </div>
 
@@ -146,28 +148,28 @@ export default function Laundries() {
             <Store size={28} />
             <div>
               <div className="summary-card-value">{laundries.length}</div>
-              <div className="summary-card-label">إجمالي المغاسل</div>
+              <div className="summary-card-label">{t('laundriesList.totalLaundries') || 'إجمالي المغاسل'}</div>
             </div>
           </div>
           <div className="summary-card summary-card-success">
             <Power size={28} />
             <div>
               <div className="summary-card-value">{laundries.filter(l => l.is_active).length}</div>
-              <div className="summary-card-label">مغاسل نشطة</div>
+              <div className="summary-card-label">{t('laundriesList.activeLaundries') || 'مغاسل نشطة'}</div>
             </div>
           </div>
           <div className="summary-card summary-card-info">
             <Users size={28} />
             <div>
               <div className="summary-card-value">{laundries.reduce((s, l) => s + parseInt(l.staff_count || 0), 0)}</div>
-              <div className="summary-card-label">إجمالي الموظفين</div>
+              <div className="summary-card-label">{t('laundriesList.totalEmployees') || 'إجمالي الموظفين'}</div>
             </div>
           </div>
           <div className="summary-card summary-card-warning">
             <TrendingUp size={28} />
             <div>
               <div className="summary-card-value">{formatCurrency(laundries.reduce((s, l) => s + parseFloat(l.total_revenue || 0), 0))}</div>
-              <div className="summary-card-label">إجمالي الإيرادات</div>
+              <div className="summary-card-label">{t('laundriesList.totalRevenue') || 'إجمالي الإيرادات'}</div>
             </div>
           </div>
         </div>
@@ -180,11 +182,11 @@ export default function Laundries() {
       ) : laundries.length === 0 ? (
         <div className="laundries-empty">
           <div className="laundries-empty-icon">🏪</div>
-          <h3>لا توجد مغاسل بعد</h3>
-          <p>ابدأ بإنشاء أول مغسلة وتعيين مدير لها</p>
+          <h3>{t('laundriesList.emptyTitle') || 'لا توجد مغاسل بعد'}</h3>
+          <p>{t('laundriesList.emptyMsg') || 'ابدأ بإنشاء أول مغسلة وتعيين مدير لها'}</p>
           <Button variant="primary" onClick={handleOpenAdd}>
             <Plus size={18} style={{ marginLeft: '8px' }} />
-            إنشاء المغسلة الأولى
+            {t('laundriesList.createFirstBtn') || 'إنشاء المغسلة الأولى'}
           </Button>
         </div>
       ) : (
@@ -204,18 +206,18 @@ export default function Laundries() {
                     <h3 className="laundry-card-name">{laundry.name}</h3>
                     <div className="laundry-card-status">
                       <span className={`status-dot ${laundry.is_active ? 'active' : 'inactive'}`} />
-                      {laundry.is_active ? 'نشطة' : 'معطلة'}
+                      {laundry.is_active ? (t('usersList.statusActive') || 'نشطة') : (t('usersList.statusInactive') || 'معطلة')}
                     </div>
                   </div>
                 </div>
                 <div className="laundry-card-actions">
-                  <button className="laundry-icon-btn" onClick={() => handleOpenEdit(laundry)} title="تعديل">
+                  <button className="laundry-icon-btn" onClick={() => handleOpenEdit(laundry)} title={t('usersList.editBtn') || "تعديل"}>
                     <Edit2 size={16} />
                   </button>
                   <button
                     className={`laundry-icon-btn ${laundry.is_active ? 'danger' : 'success'}`}
                     onClick={() => handleToggleStatus(laundry)}
-                    title={laundry.is_active ? 'تعطيل' : 'تفعيل'}
+                    title={laundry.is_active ? (t('usersList.deactivateTitle') || 'تعطيل') : (t('usersList.activateTitle') || 'تفعيل')}
                   >
                     <Power size={16} />
                   </button>
@@ -241,25 +243,25 @@ export default function Laundries() {
                 <div className="laundry-stats-grid">
                   <div className="laundry-stat">
                     <div className="laundry-stat-value">{laundry.admin_count || 0}</div>
-                    <div className="laundry-stat-label">مدراء</div>
+                    <div className="laundry-stat-label">{t('laundriesList.admins') || 'مدراء'}</div>
                   </div>
                   <div className="laundry-stat">
                     <div className="laundry-stat-value">{laundry.staff_count || 0}</div>
-                    <div className="laundry-stat-label">موظفون</div>
+                    <div className="laundry-stat-label">{t('laundriesList.employees') || 'موظفون'}</div>
                   </div>
                   <div className="laundry-stat">
                     <div className="laundry-stat-value">{laundry.customers_count || 0}</div>
-                    <div className="laundry-stat-label">عملاء</div>
+                    <div className="laundry-stat-label">{t('laundriesList.customers') || 'عملاء'}</div>
                   </div>
                   <div className="laundry-stat">
                     <div className="laundry-stat-value">{laundry.active_orders_count || 0}</div>
-                    <div className="laundry-stat-label">طلبات نشطة</div>
+                    <div className="laundry-stat-label">{t('laundriesList.activeOrders') || 'طلبات نشطة'}</div>
                   </div>
                 </div>
 
                 <div className="laundry-revenue">
                   <TrendingUp size={16} />
-                  <span>إجمالي الإيرادات: <strong>{formatCurrency(laundry.total_revenue)}</strong></span>
+                  <span>{t('laundriesList.totalRevenue') || 'إجمالي الإيرادات:'} <strong>{formatCurrency(laundry.total_revenue)}</strong></span>
                 </div>
 
                 {/* زر التوسيع لعرض الموظفين */}
@@ -268,9 +270,9 @@ export default function Laundries() {
                   onClick={() => toggleExpand(laundry.id)}
                 >
                   {expandedId === laundry.id ? (
-                    <><ChevronUp size={16} /> إخفاء الفريق</>
+                    <><ChevronUp size={16} /> {t('laundriesList.hideTeam') || 'إخفاء الفريق'}</>
                   ) : (
-                    <><ChevronDown size={16} /> عرض الفريق</>
+                    <><ChevronDown size={16} /> {t('laundriesList.showTeam') || 'عرض الفريق'}</>
                   )}
                 </button>
               </div>
@@ -288,35 +290,35 @@ export default function Laundries() {
       <Modal
         isOpen={showModal}
         onClose={() => setShowModal(false)}
-        title={modalMode === 'add' ? '🏪 إضافة مغسلة جديدة' : `✏️ تعديل: ${selectedLaundry?.name}`}
+        title={modalMode === 'add' ? (t('laundriesList.addModalTitle') || '🏪 إضافة مغسلة جديدة') : (t('laundriesList.editModalTitle', { name: selectedLaundry?.name }) || `✏️ تعديل: ${selectedLaundry?.name}`)}
       >
         <form onSubmit={handleSave} noValidate>
           {/* بيانات المغسلة */}
           <div className="modal-section-title">
             <Store size={16} />
-            بيانات المغسلة
+            {t('laundriesList.laundryData') || 'بيانات المغسلة'}
           </div>
 
           <Input
             id="laundry-name"
-            label="اسم المغسلة *"
+            label={t('laundriesList.nameLabel') || 'اسم المغسلة *'}
             type="text"
             required
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            placeholder="مثال: مغسلة النظافة الذهبية"
+            placeholder={t('laundriesList.namePlaceholder') || 'مثال: مغسلة النظافة الذهبية'}
           />
           <Input
             id="laundry-address"
-            label="العنوان"
+            label={t('customers.colAddress') || 'العنوان'}
             type="text"
             value={formData.address}
             onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-            placeholder="المدينة، الحي"
+            placeholder={t('laundriesList.addressPlaceholder') || 'المدينة، الحي'}
           />
           <Input
             id="laundry-phone"
-            label="رقم الهاتف"
+            label={t('customers.colPhone') || 'رقم الهاتف'}
             type="tel"
             value={formData.phone}
             onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
@@ -328,24 +330,24 @@ export default function Laundries() {
             <>
               <div className="modal-section-title" style={{ marginTop: '20px' }}>
                 <Crown size={16} />
-                حساب مدير المغسلة
+                {t('laundriesList.adminAccount') || 'حساب مدير المغسلة'}
               </div>
               <div className="modal-section-note">
-                سيتم إنشاء حساب مدير (Admin) لهذه المغسلة تلقائياً
+                {t('laundriesList.adminNote') || 'سيتم إنشاء حساب مدير (Admin) لهذه المغسلة تلقائياً'}
               </div>
 
               <Input
                 id="admin-name"
-                label="اسم المدير *"
+                label={t('laundriesList.adminNameLabel') || 'اسم المدير *'}
                 type="text"
                 required
                 value={formData.admin_name}
                 onChange={(e) => setFormData({ ...formData, admin_name: e.target.value })}
-                placeholder="مثال: أحمد محمد"
+                placeholder={t('usersList.namePlaceholder') || 'مثال: أحمد عبد الله'}
               />
               <Input
                 id="admin-email"
-                label="البريد الإلكتروني للمدير *"
+                label={t('laundriesList.adminEmailLabel') || 'البريد الإلكتروني للمدير *'}
                 type="email"
                 required
                 value={formData.admin_email}
@@ -354,7 +356,7 @@ export default function Laundries() {
               />
               <Input
                 id="admin-password"
-                label="كلمة مرور المدير *"
+                label={t('laundriesList.adminPasswordLabel') || 'كلمة مرور المدير *'}
                 type="password"
                 required
                 value={formData.admin_password}
@@ -366,10 +368,10 @@ export default function Laundries() {
 
           <div className="flex justify-between mt-md">
             <Button variant="secondary" type="button" onClick={() => setShowModal(false)}>
-              إلغاء
+              {t('usersList.cancelBtn') || 'إلغاء'}
             </Button>
             <Button variant="primary" type="submit" disabled={saving}>
-              {saving ? 'جاري الحفظ...' : modalMode === 'add' ? 'إنشاء المغسلة' : 'حفظ التعديلات'}
+              {saving ? (t('laundriesList.saving') || 'جاري الحفظ...') : modalMode === 'add' ? (t('laundriesList.createBtn') || 'إنشاء المغسلة') : (t('laundriesList.saveEditBtn') || 'حفظ التعديلات')}
             </Button>
           </div>
         </form>
@@ -382,6 +384,7 @@ export default function Laundries() {
  * مكون عرض موظفي المغسلة
  */
 function LaundryStaffPanel({ laundryId }) {
+  const { t } = useTranslation();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -393,9 +396,9 @@ function LaundryStaffPanel({ laundryId }) {
   }, [laundryId]);
 
   const roleColors = {
-    admin: { bg: '#EEF2FF', color: '#4F46E5', label: 'مدير' },
-    cashier: { bg: '#ECFDF5', color: '#059669', label: 'استقبال' },
-    worker: { bg: '#FFFBEB', color: '#D97706', label: 'عامل' },
+    admin: { bg: '#EEF2FF', color: '#4F46E5', label: t('laundriesList.roleAdmin') || 'مدير' },
+    cashier: { bg: '#ECFDF5', color: '#059669', label: t('laundriesList.roleCashier') || 'استقبال' },
+    worker: { bg: '#FFFBEB', color: '#D97706', label: t('laundriesList.roleWorker') || 'عامل' },
   };
 
   if (loading) return <div className="laundry-staff-loading"><div className="mini-spinner" /></div>;
@@ -406,10 +409,10 @@ function LaundryStaffPanel({ laundryId }) {
     <div className="laundry-staff-panel">
       <div className="laundry-staff-title">
         <Users size={14} />
-        الفريق ({users.length} شخص)
+        {t('laundriesList.teamTitle', { count: users.length }) || `الفريق (${users.length} شخص)`}
       </div>
       {users.length === 0 ? (
-        <div className="laundry-staff-empty">لا يوجد موظفون بعد</div>
+        <div className="laundry-staff-empty">{t('laundriesList.noStaff') || 'لا يوجد موظفون بعد'}</div>
       ) : (
         <div className="laundry-staff-list">
           {users.map(u => {
@@ -426,7 +429,7 @@ function LaundryStaffPanel({ laundryId }) {
                 <span className="staff-role-tag" style={{ background: roleInfo.bg, color: roleInfo.color }}>
                   {roleInfo.label}
                 </span>
-                {!u.is_active && <span className="staff-inactive-badge">معطل</span>}
+                {!u.is_active && <span className="staff-inactive-badge">{t('usersList.statusInactive') || 'معطل'}</span>}
               </div>
             );
           })}

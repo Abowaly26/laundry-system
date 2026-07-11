@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { WashingMachine } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
@@ -7,6 +8,7 @@ import Input from '../../components/UI/Input';
 import './Login.css';
 
 export default function Login() {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [emailError, setEmailError] = useState('');
@@ -27,18 +29,18 @@ export default function Login() {
     setGeneralError('');
 
     if (!email) {
-      setEmailError('يرجى إدخال البريد الإلكتروني');
+      setEmailError(t('login.emailRequired') || 'يرجى إدخال البريد الإلكتروني');
       isValid = false;
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setEmailError('صيغة البريد الإلكتروني غير صحيحة');
+      setEmailError(t('login.emailInvalid') || 'صيغة البريد الإلكتروني غير صحيحة');
       isValid = false;
     }
 
     if (!password) {
-      setPasswordError('يرجى إدخال كلمة المرور');
+      setPasswordError(t('login.passwordRequired') || 'يرجى إدخال كلمة المرور');
       isValid = false;
     } else if (password.length < 6) {
-      setPasswordError('كلمة المرور يجب أن تكون 6 أحرف على الأقل');
+      setPasswordError(t('login.passwordShort') || 'كلمة المرور يجب أن تكون 6 أحرف على الأقل');
       isValid = false;
     }
 
@@ -55,7 +57,7 @@ export default function Login() {
       await login({ email, password });
       navigate(from, { replace: true });
     } catch (err) {
-      setGeneralError(err.message || 'فشل تسجيل الدخول. تحقق من البيانات.');
+      setGeneralError(err.message || t('login.loginFailed') || 'فشل تسجيل الدخول. تحقق من البيانات.');
     } finally {
       setLoading(false);
     }
@@ -66,7 +68,7 @@ export default function Login() {
       <div className="login-card">
         <div className="login-header">
           <div className="login-logo-container">
-            <img src="/logo.png" alt="شعار نظام إدارة المغسلة" className="login-logo-image" />
+            <img src="/logo.png" alt={t('login.logoAlt') || "شعار نظام إدارة المغسلة"} className="login-logo-image" />
           </div>
         </div>
 
@@ -75,18 +77,18 @@ export default function Login() {
 
           <Input
             id="email"
-            label="البريد الإلكتروني"
+            label={t('login.emailLabel') || 'البريد الإلكتروني'}
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="أدخل بريدك الإلكتروني"
+            placeholder={t('login.emailPlaceholder') || 'أدخل بريدك الإلكتروني'}
             autoComplete="email"
             error={emailError}
           />
 
           <Input
             id="password"
-            label="كلمة المرور"
+            label={t('login.passwordLabel') || 'كلمة المرور'}
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -97,7 +99,7 @@ export default function Login() {
 
           <div className="login-submit">
             <Button type="submit" loading={loading}>
-              تسجيل الدخول
+              {t('login.submitBtn') || 'تسجيل الدخول'}
             </Button>
           </div>
         </form>

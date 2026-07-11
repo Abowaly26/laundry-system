@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Search, Plus, Filter, Eye, ChevronLeft, ChevronRight, QrCode, Copy, Download } from 'lucide-react';
 import { ordersAPI } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
@@ -13,6 +14,7 @@ import Modal from '../../components/UI/Modal';
 import './OrdersList.css';
 
 export default function OrdersList() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { showToast } = useToast();
   const [orders, setOrders] = useState([]);
@@ -29,7 +31,7 @@ export default function OrdersList() {
   const handleCopyText = (e, text) => {
     e.stopPropagation();
     navigator.clipboard.writeText(text);
-    showToast('تم نسخ كود الطلب بنجاح! 📋', 'success');
+    showToast(t('orders.copySuccess'), 'success');
   };
 
   // Dropdown & Calendar states
@@ -47,12 +49,12 @@ export default function OrdersList() {
   const WEEKDAYS = ['أح', 'اث', 'ثلا', 'أر', 'خم', 'جم', 'سب'];
 
   const STATUS_OPTIONS = [
-    { value: '', label: 'كل الحالات' },
-    { value: 'pending', label: 'قيد الانتظار' },
-    { value: 'processing', label: 'قيد التنفيذ' },
-    { value: 'ready', label: 'جاهز للاستلام' },
-    { value: 'delivered', label: 'تم التسليم' },
-    { value: 'cancelled', label: 'ملغي' }
+    { value: '', label: t('orders.statusFilter') },
+    { value: 'pending', label: t('status.pending') },
+    { value: 'processing', label: t('status.processing') },
+    { value: 'ready', label: t('status.ready') },
+    { value: 'delivered', label: t('status.delivered') },
+    { value: 'cancelled', label: t('status.cancelled') }
   ];
 
   // Click outside to close dropdowns
@@ -201,7 +203,7 @@ export default function OrdersList() {
   const formatDate = (dateStr) => {
     if (!dateStr) return '-';
     const date = new Date(dateStr);
-    return isNaN(date.getTime()) ? '-' : date.toLocaleDateString('ar-EG', {
+    return isNaN(date.getTime()) ? '-' : date.toLocaleDateString(t('layout.language') === 'English' ? 'en-US' : 'ar-EG', {
       year: 'numeric',
       month: 'short',
       day: 'numeric'
@@ -209,33 +211,26 @@ export default function OrdersList() {
   };
 
   const getOrderStatusLabel = (status) => {
-    switch (status) {
-      case 'pending': return 'قيد الانتظار';
-      case 'processing': return 'قيد التنفيذ';
-      case 'ready': return 'جاهز للاستلام';
-      case 'delivered': return 'تم التسليم';
-      case 'cancelled': return 'ملغي';
-      default: return status || '-';
-    }
+    return t(`status.${status}`) || status || '-';
   };
 
   const exportToCSV = () => {
     const ordersToExport = Array.isArray(orders) ? orders : [];
     if (ordersToExport.length === 0) {
-      showToast('لا توجد طلبات متطابقة لتصديرها', 'warning');
+      showToast(t('orders.noOrdersExport') || 'لا توجد طلبات متطابقة لتصديرها', 'warning');
       return;
     }
 
     const headers = [
-      'كود الطلب',
-      'اسم العميل',
-      'رقم الجوال',
-      'تاريخ الطلب',
-      'عدد القطع',
-      'إجمالي المبلغ (ر.س)',
-      'المتبقي (ر.س)',
-      'الحالة',
-      'تاريخ التسليم المتوقع'
+      t('orders.orderId'),
+      t('orders.customerName'),
+      t('orders.phone'),
+      t('orders.orderDate'),
+      t('orders.itemsCount'),
+      `${t('orders.totalAmount')} (${t('dashboard.currency', 'ر.س')})`,
+      `${t('orders.remaining')} (${t('dashboard.currency', 'ر.س')})`,
+      t('orders.status'),
+      t('orders.deliveryDate')
     ];
 
     const formatCSVField = (field) => {
@@ -246,7 +241,7 @@ export default function OrdersList() {
 
     const rows = ordersToExport.map(order => {
       const orderCode = `ORD-${String(order?.id || '').padStart(4, '0')}`;
-      const customerName = order?.customer_name || 'عميل عام';
+      const customerName = order?.customer_name || t('orders.generalCustomer');
       const phone = order?.customer_phone || '-';
       const orderDate = formatDate(order?.created_at);
       const itemsCount = order?.items_count || 0;
@@ -283,7 +278,7 @@ export default function OrdersList() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    showToast('تم تصدير الطلبات بنجاح إلى ملف إكسل (CSV) 📊', 'success');
+    showToast(t('orders.exportSuccess') || 'تم تصدير الطلبات بنجاح إلى ملف إكسل (CSV) 📊', 'success');
   };
 
   const hasActiveFilters = filters.status || filters.startDate || filters.endDate || searchText;
@@ -292,8 +287,8 @@ export default function OrdersList() {
     <div className="page orders-list-page">
       <div className="page-header">
         <div>
-          <h1 className="page-title">إدارة الطلبات</h1>
-          <p className="page-subtitle">استعراض وتصفية وتعديل طلبات الغسيل والتنظيف</p>
+          <h1 className="page-title">{t('orders.title')}</h1>
+          <p className="page-subtitle">{t('orders.subtitle') || 'استعراض وتصفية وتعديل طلبات الغسيل والتنظيف'}</p>
         </div>
         <div className="flex gap-sm items-center">
           <Button
@@ -303,11 +298,11 @@ export default function OrdersList() {
             style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
           >
             <Download size={18} />
-            تصدير ملف إكسل
+            {t('orders.exportData')}
           </Button>
           <Button variant="primary" onClick={() => navigate('/orders/new')}>
-            <Plus size={18} style={{ marginLeft: '8px' }} />
-            تسجيل طلب جديد
+            <Plus size={18} style={{ marginInlineStart: '8px' }} />
+            {t('orders.newOrder')}
           </Button>
         </div>
       </div>
@@ -319,7 +314,7 @@ export default function OrdersList() {
             <input
               type="text"
               className="form-input form-input-compact"
-              placeholder="ابحث برقم الطلب، اسم العميل، الجوال..."
+              placeholder={t('orders.searchPlaceholder') || 'ابحث برقم الطلب، اسم العميل، الجوال...'}
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
             />
@@ -361,7 +356,7 @@ export default function OrdersList() {
               className="date-select-trigger"
               onClick={() => setShowStartDateDropdown(!showStartDateDropdown)}
             >
-              {getFormattedDateLabel(filters.startDate, 'من تاريخ...')}
+              {getFormattedDateLabel(filters.startDate, t('orders.startDate') || 'من تاريخ...')}
             </button>
             {showStartDateDropdown && (
               <div className="date-select-dropdown">
@@ -411,7 +406,7 @@ export default function OrdersList() {
               className="date-select-trigger"
               onClick={() => setShowEndDateDropdown(!showEndDateDropdown)}
             >
-              {getFormattedDateLabel(filters.endDate, 'إلى تاريخ...')}
+              {getFormattedDateLabel(filters.endDate, t('orders.endDate') || 'إلى تاريخ...')}
             </button>
             {showEndDateDropdown && (
               <div className="date-select-dropdown">
@@ -460,7 +455,7 @@ export default function OrdersList() {
             className="btn-clear-filters text-error" 
             onClick={handleResetFilters}
           >
-            إعادة تعيين
+            {t('orders.reset')}
           </button>
         )}
       </div>
@@ -472,31 +467,31 @@ export default function OrdersList() {
         </div>
       ) : orders.length === 0 ? (
         <EmptyState 
-          title="لا توجد طلبات متطابقة" 
-          message="لم نعثر على أي طلبات تطابق معايير البحث الحالية. يمكنك تسجيل طلب جديد."
+          title={t('orders.noOrders')} 
+          message={t('orders.noOrdersMsg')}
         />
       ) : (
         <div className="orders-list-table-card">
           <div className="orders-list-table-header">
             <div className="orders-list-table-title">
-              <span>قائمة الطلبات</span>
-              <span className="orders-count-pill">{orders.length} طلب</span>
+              <span>{t('orders.orderList')}</span>
+              <span className="orders-count-pill">{t('orders.orderCount', { count: orders.length })}</span>
             </div>
           </div>
           <div className="table-container">
             <table className="orders-table">
               <thead>
                 <tr>
-                  <th>كود الطلب</th>
-                  <th style={{ textAlign: 'center' }}>رمز QR</th>
-                  <th>اسم العميل</th>
-                  <th>رقم الجوال</th>
-                  <th>تاريخ الطلب</th>
-                  <th>عدد القطع</th>
-                  <th>إجمالي المبلغ</th>
-                  <th>المتبقي</th>
-                  <th>الحالة</th>
-                  <th>تاريخ التسليم</th>
+                  <th>{t('orders.orderId')}</th>
+                  <th style={{ textAlign: 'center' }}>{t('orders.qrCode')}</th>
+                  <th>{t('orders.customerName')}</th>
+                  <th>{t('orders.phone')}</th>
+                  <th>{t('orders.orderDate')}</th>
+                  <th>{t('orders.itemsCount')}</th>
+                  <th>{t('orders.totalAmount')}</th>
+                  <th>{t('orders.remaining')}</th>
+                  <th>{t('orders.status')}</th>
+                  <th>{t('orders.deliveryDate')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -520,7 +515,7 @@ export default function OrdersList() {
                           <button
                             type="button"
                             className="copy-btn-compact"
-                            title="نسخ الكود"
+                            title={t('orders.copyCode')}
                             onClick={(e) => handleCopyText(e, orderCode)}
                             style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', padding: '4px', color: '#64748b', transition: 'color 0.2s' }}
                             onMouseEnter={(e) => e.currentTarget.style.color = '#0f172a'}
@@ -534,27 +529,27 @@ export default function OrdersList() {
                         <button
                           type="button"
                           className="qr-action-btn"
-                          title="عرض الـ QR"
+                          title={t('orders.viewQR')}
                           onClick={() => setQrModalOrder(order)}
                           style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', color: '#4f46e5' }}
                         >
                           <QrCode size={18} />
                         </button>
                       </td>
-                      <td>{order.customer_name || 'عميل عام'}</td>
+                      <td>{order.customer_name || t('orders.generalCustomer')}</td>
                       <td>{order.customer_phone || '-'}</td>
                       <td>{formatDate(order.created_at)}</td>
                       <td className="text-center font-semibold">{order.items_count || 0}</td>
-                      <td>{parseFloat(order.total_amount || 0).toFixed(2)} ر.س</td>
+                      <td>{parseFloat(order.total_amount || 0).toFixed(2)} {t('dashboard.currency', 'ر.س')}</td>
                       <td>
                         {(() => {
                           const remaining = parseFloat(order.remaining_amount || 0);
                           if (remaining > 0) {
-                            return <span className="text-error font-semibold">{remaining.toFixed(2)} ر.س</span>;
+                            return <span className="text-error font-semibold">{remaining.toFixed(2)} {t('dashboard.currency', 'ر.س')}</span>;
                           } else if (remaining < 0) {
-                            return <span className="status-badge-credit">رصيد: {Math.abs(remaining).toFixed(2)} ر.س</span>;
+                            return <span className="status-badge-credit">رصيد: {Math.abs(remaining).toFixed(2)} {t('dashboard.currency', 'ر.س')}</span>;
                           } else {
-                            return <span className="status-badge-paid">مدفوع</span>;
+                            return <span className="status-badge-paid">{t('status.paid')}</span>;
                           }
                         })()}
                       </td>
@@ -563,7 +558,7 @@ export default function OrdersList() {
                       </td>
                       <td className={isOverdue ? 'text-error font-semibold' : ''}>
                         {formatDate(order.expected_delivery_at)}
-                        {isOverdue && <span className="overdue-tag"> (متأخر)</span>}
+                        {isOverdue && <span className="overdue-tag"> {t('orders.overdue')}</span>}
                       </td>
                     </tr>
                   );
@@ -578,7 +573,7 @@ export default function OrdersList() {
       <Modal
         isOpen={!!qrModalOrder}
         onClose={() => setQrModalOrder(null)}
-        title={`رمز QR للطلب: ORD-${String(qrModalOrder?.id || '').padStart(4, '0')}`}
+        title={`${t('orders.qrModalTitle')} : ORD-${String(qrModalOrder?.id || '').padStart(4, '0')}`}
       >
         {qrModalOrder && (
           <div className="flex flex-col items-center justify-center p-md text-center">
@@ -592,7 +587,7 @@ export default function OrdersList() {
               ORD-{String(qrModalOrder.id).padStart(4, '0')}
             </strong>
             <span className="text-secondary mt-xs" style={{ display: 'block', marginTop: '6px' }}>
-              العميل: {qrModalOrder.customer_name || 'عميل عام'}
+              {t('orders.customerName')}: {qrModalOrder.customer_name || t('orders.generalCustomer')}
             </span>
           </div>
         )}
