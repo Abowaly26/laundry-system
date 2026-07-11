@@ -82,6 +82,8 @@
     "exportData": "Export",
     "noOrders": "No orders found.",
     "noOrdersMsg": "We couldn't find any orders matching the current search criteria. You can register a new order.",
+    "am": "AM",
+    "pm": "PM",
     "qrCode": "QR Code",
     "downloadQR": "Download QR Code",
     "close": "Close",

@@ -10,17 +10,18 @@ export default function PrintInvoice({ order }) {
 
   const formatDate = (dateStr) => {
     if (!dateStr) return '';
-    const date = new Date(dateStr);
-    const yyyy = date.getFullYear();
-    const mm = String(date.getMonth() + 1).padStart(2, '0');
-    const dd = String(date.getDate()).padStart(2, '0');
-    let hours = date.getHours();
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    const ampm = hours >= 12 ? 'م' : 'ص';
-    hours = hours % 12;
-    hours = hours ? hours : 12; // the hour '0' should be '12'
-    const strTime = `${hours}:${minutes} ${ampm}`;
-    return `${yyyy}/${mm}/${dd} - ${strTime}`;
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const hours = d.getHours();
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    const ampm = hours >= 12 ? (t('orders.pm') || 'م') : (t('orders.am') || 'ص');
+    const displayHours = hours % 12 || 12;
+    
+    const strTime = `${displayHours}:${minutes} ${ampm}`;
+    return `${year}-${month}-${day} ${strTime}`;
   };
 
   const getItemTypeAr = (type) => {

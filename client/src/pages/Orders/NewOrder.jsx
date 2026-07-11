@@ -12,40 +12,20 @@ import PrintInvoice from '../../components/Print/PrintInvoice';
 import PrintQRLabels from '../../components/Print/PrintQRLabels';
 import './NewOrder.css';
 
-const TIME_OPTIONS = [
-  { value: '08:00', label: '08:00 ص' },
-  { value: '08:30', label: '08:30 ص' },
-  { value: '09:00', label: '09:00 ص' },
-  { value: '09:30', label: '09:30 ص' },
-  { value: '10:00', label: '10:00 ص' },
-  { value: '10:30', label: '10:30 ص' },
-  { value: '11:00', label: '11:00 ص' },
-  { value: '11:30', label: '11:30 ص' },
-  { value: '12:00', label: '12:00 م' },
-  { value: '12:30', label: '12:30 م' },
-  { value: '13:00', label: '01:00 م' },
-  { value: '13:30', label: '01:30 م' },
-  { value: '14:00', label: '02:00 م' },
-  { value: '14:30', label: '02:30 م' },
-  { value: '15:00', label: '03:00 م' },
-  { value: '15:30', label: '03:30 م' },
-  { value: '16:00', label: '04:00 م' },
-  { value: '16:30', label: '04:30 م' },
-  { value: '17:00', label: '05:00 م' },
-  { value: '17:30', label: '05:30 م' },
-  { value: '18:00', label: '06:00 م' },
-  { value: '18:30', label: '06:30 م' },
-  { value: '19:00', label: '07:00 م' },
-  { value: '19:30', label: '07:30 م' },
-  { value: '20:00', label: '08:00 م' },
-  { value: '20:30', label: '08:30 م' },
-  { value: '21:00', label: '09:00 م' },
-  { value: '21:30', label: '09:30 م' },
-  { value: '22:00', label: '10:00 م' },
-  { value: '22:30', label: '10:30 م' },
-  { value: '23:00', label: '11:00 م' },
-  { value: '23:30', label: '11:30 م' }
-];
+const getTimeOptions = (t) => {
+  const options = [];
+  for (let h = 8; h < 24; h++) {
+    for (let m = 0; m < 60; m += 30) {
+      const isPM = h >= 12;
+      const displayH = h > 12 ? h - 12 : h;
+      const amPmStr = isPM ? (t('orders.pm') || 'م') : (t('orders.am') || 'ص');
+      const timeVal = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+      const timeLabel = `${displayH.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')} ${amPmStr}`;
+      options.push({ value: timeVal, label: timeLabel });
+    }
+  }
+  return options;
+};
 
 export default function NewOrder() {
   const { t, i18n } = useTranslation();
@@ -70,7 +50,7 @@ export default function NewOrder() {
   };
 
   const getTimeLabel = (timeVal) => {
-    const option = TIME_OPTIONS.find(opt => opt.value === timeVal);
+    const option = getTimeOptions(t).find(opt => opt.value === timeVal);
     if (option) return option.label;
     
     if (!timeVal) return '';
@@ -758,7 +738,7 @@ export default function NewOrder() {
                           </button>
                           {showQuickTimeDropdown && (
                             <div className="time-select-dropdown">
-                              {TIME_OPTIONS.map((opt) => (
+                              {getTimeOptions(t).map((opt) => (
                                 <button
                                   key={opt.value}
                                   type="button"
@@ -844,7 +824,7 @@ export default function NewOrder() {
                             </button>
                             {showCustomTimeDropdown && (
                               <div className="time-select-dropdown">
-                                {TIME_OPTIONS.map((opt) => (
+                                {getTimeOptions(t).map((opt) => (
                                   <button
                                     key={opt.value}
                                     type="button"
