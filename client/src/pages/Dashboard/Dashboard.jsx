@@ -159,7 +159,7 @@ export default function Dashboard() {
       value: stats?.todayRevenue ?? 0,
       icon: Banknote,
       color: 'teal',
-      unit: 'ر.س',
+      unit: settings?.currency || t('settings.currency') || 'ر.س',
     },
   ];
 
@@ -170,14 +170,14 @@ export default function Dashboard() {
       try {
         const date = new Date(d);
         if (isNaN(date.getTime())) return d;
-        return date.toLocaleDateString('ar-EG', { weekday: 'short', day: 'numeric', month: 'short' });
+        return date.toLocaleDateString(i18n.language === 'en' ? 'en-US' : 'ar-EG', { weekday: 'short', day: 'numeric', month: 'short' });
       } catch (e) {
         return d;
       }
     }),
     datasets: [
       {
-        label: 'الإيرادات',
+        label: t('dashboard.revenueLabel') || 'الإيرادات',
         data: revenueList.map((r) => r.total || r.amount || 0),
         borderColor: '#4F46E5',
         backgroundColor: 'rgba(79, 70, 229, 0.08)',
@@ -199,13 +199,13 @@ export default function Dashboard() {
     plugins: {
       legend: { display: false },
       tooltip: {
-        titleFont: { family: 'Cairo', size: 12 },
-        bodyFont: { family: 'Cairo', size: 12 },
+        titleFont: { family: i18n.language === 'ar' ? 'Cairo' : 'Inter', size: 12 },
+        bodyFont: { family: i18n.language === 'ar' ? 'Cairo' : 'Inter', size: 12 },
         padding: 10,
         backgroundColor: 'rgba(15, 23, 42, 0.9)',
         callbacks: {
           label: function(context) {
-            return ` الإيرادات: ${context.parsed.y} ر.س`;
+            return ` ${t('dashboard.revenueLabel') || 'الإيرادات'}: ${context.parsed.y} ${settings?.currency || t('settings.currency') || 'ر.س'}`;
           }
         }
       }
@@ -326,7 +326,7 @@ export default function Dashboard() {
               <Line data={revenueChartData} options={revenueChartOptions} />
             ) : (
               <p className="text-center text-secondary" style={{ paddingTop: 100 }}>
-                لا توجد بيانات
+                {t('dashboard.noData') || 'لا توجد بيانات'}
               </p>
             )}
           </div>
@@ -341,7 +341,7 @@ export default function Dashboard() {
               <Doughnut data={servicesChartData} options={servicesChartOptions} />
             ) : (
               <p className="text-center text-secondary" style={{ paddingTop: 100 }}>
-                لا توجد بيانات
+                {t('dashboard.noData') || 'لا توجد بيانات'}
               </p>
             )}
           </div>
@@ -368,7 +368,7 @@ export default function Dashboard() {
                 </span>
                 {' - '}
                 {order.customer?.name || t('dashboard.customer')}
-                {' - متأخر'}
+                {` - ${t('dashboard.overdueStatus') || 'متأخر'}`}
               </span>
             </div>
           ))}
@@ -386,7 +386,7 @@ export default function Dashboard() {
               style={{ cursor: 'pointer', background: 'none', border: 'none', font: 'inherit', display: 'flex', gap: '4px' }}
             >
               <Download size={16} />
-              تصدير البيانات
+              {t('dashboard.exportData') || 'تصدير البيانات'}
             </button>
             <span style={{ color: 'var(--border)' }}>|</span>
             <Link to="/orders" className="recent-orders-link">
@@ -420,7 +420,7 @@ export default function Dashboard() {
                     <td>
                       <StatusBadge status={order?.status} />
                     </td>
-                    <td>{order?.totalAmount || order?.total_amount || 0} ر.س</td>
+                    <td>{order?.totalAmount || order?.total_amount || 0} {settings?.currency || t('settings.currency') || 'ر.س'}</td>
                     <td>{formatDate(order?.createdAt || order?.created_at)}</td>
                   </tr>
                 ))

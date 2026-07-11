@@ -9,7 +9,11 @@
     "finances": "Finances",
     "users": "Users",
     "settings": "Settings",
-    "logout": "Logout"
+    "logout": "Logout",
+    "laundries": "Laundries Management",
+    "mainDashboard": "Main Dashboard",
+    "laundryName": "Laundry",
+    "laundrySystem": "Laundry Management System"
   },
   "layout": {
     "welcome": "Welcome",
@@ -47,7 +51,9 @@
     "viewAll": "View All",
     "items": "Items",
     "noRecentOrders": "No recent orders",
-    "exportData": "Export Data"
+    "exportData": "Export Data",
+    "revenueLabel": "Revenue",
+    "overdueStatus": "Overdue"
   },
   "status": {
     "pending": "Pending",
@@ -424,9 +430,10 @@
   },
   "roles": {
     "super_owner": "👑 System Owner",
-    "admin": "System Administrator (Admin)",
-    "cashier": "Receptionist (Cashier)",
+    "admin": "System Admin",
+    "cashier": "Cashier",
     "worker": "Worker",
+    "superOwnerBadge": "System Owner",
     "workerDesc": "Worker - For updating items only",
     "cashierDesc": "Receptionist (Cashier) - Register orders and invoices",
     "adminDesc": "System Administrator (Admin) - Full permissions"

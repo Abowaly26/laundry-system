@@ -177,7 +177,7 @@ export default function NewOrder() {
     if (!dateStr) return '';
     try {
       const dateObj = new Date(dateStr);
-      return dateObj.toLocaleDateString('ar-EG', {
+      return dateObj.toLocaleDateString(i18n.language === 'en' ? 'en-US' : 'ar-EG', {
         weekday: 'long',
         year: 'numeric',
         month: 'short',
@@ -490,7 +490,7 @@ export default function NewOrder() {
         const formattedTotal = parseFloat(totalAmount).toFixed(2);
         const formattedRemaining = parseFloat(totalAmount - (parseFloat(paidAmount) || 0)).toFixed(2);
         
-        const deliveryDateStr = expectedDate.toLocaleString('ar-EG', {
+        const deliveryDateStr = expectedDate.toLocaleString(i18n.language === 'en' ? 'en-US' : 'ar-EG', {
           year: 'numeric',
           month: 'short',
           day: 'numeric',
@@ -797,7 +797,7 @@ export default function NewOrder() {
                                     <ChevronRight size={16} />
                                   </button>
                                   <span className="month-year-label">
-                                    {viewDate.toLocaleString('ar-EG', { month: 'long', year: 'numeric' })}
+                                    {viewDate.toLocaleString(i18n.language === 'en' ? 'en-US' : 'ar-EG', { month: 'long', year: 'numeric' })}
                                   </span>
                                   <button type="button" className="btn-month-nav" onClick={handleNextMonth}>
                                     <ChevronLeft size={16} />
@@ -870,7 +870,7 @@ export default function NewOrder() {
                       <div className="scheduler-result-text">
                         <span className="result-label">الموعد المحدد:</span>
                         <span className="result-value">
-                          {new Date(`${deliveryDate}T${deliveryTime}`).toLocaleString('ar-EG', {
+                          {new Date(`${deliveryDate}T${deliveryTime}`).toLocaleString(i18n.language === 'en' ? 'en-US' : 'ar-EG', {
                             weekday: 'long',
                             year: 'numeric',
                             month: 'short',

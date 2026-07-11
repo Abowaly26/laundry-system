@@ -298,7 +298,7 @@ export default function ItemTracking() {
                                 {STATUS_STEPS.find(s => s.key === log.new_status)?.label || t(`status.${log.new_status}`) || log.new_status}
                               </span>
                               <span className="timeline-time text-secondary">
-                                {new Date(log.created_at).toLocaleString('ar-EG', {
+                                {new Date(log.created_at).toLocaleString(i18n.language === 'en' ? 'en-US' : 'ar-EG', {
                                   hour: '2-digit',
                                   minute: '2-digit',
                                   day: 'numeric',

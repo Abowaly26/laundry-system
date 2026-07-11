@@ -7,9 +7,13 @@
     "customers": "العملاء",
     "services": "الخدمات",
     "finances": "المالية",
-    "users": "المستخدمين",
+    "users": "الموظفين",
     "settings": "الإعدادات",
-    "logout": "تسجيل الخروج"
+    "logout": "تسجيل خروج",
+    "laundries": "إدارة المغاسل",
+    "mainDashboard": "لوحة التحكم الرئيسية",
+    "laundryName": "المغسلة",
+    "laundrySystem": "نظام إدارة المغسلة"
   },
   "layout": {
     "welcome": "مرحباً",
@@ -47,7 +51,9 @@
     "viewAll": "عرض الكل",
     "items": "القطع",
     "noRecentOrders": "لا توجد طلبات حديثة",
-    "exportData": "تصدير البيانات"
+    "exportData": "تصدير البيانات",
+    "revenueLabel": "الإيرادات",
+    "overdueStatus": "متأخر"
   },
   "status": {
     "pending": "قيد الانتظار",
@@ -425,8 +431,11 @@
   "roles": {
     "super_owner": "👑 صاحب النظام",
     "admin": "مدير النظام (Admin)",
-    "cashier": "موظف استقبال (Cashier)",
-    "worker": "عامل تشغيل (Worker)",
+    "cashier": "كاشير",
+    "worker": "عامل مغسلة",
+    "superOwnerBadge": "صاحب النظام"
+  },
+  "rolesDescriptions": {
     "workerDesc": "عامل تشغيل (Worker) - لتحديث القطع فقط",
     "cashierDesc": "موظف استقبال (Cashier) - تسجيل طلبات وفواتير",
     "adminDesc": "مدير النظام (Admin) - صلاحيات كاملة"

@@ -8,7 +8,7 @@ export default function Header({ title, onMenuClick }) {
   const { user, laundryName, isSuperOwner } = useAuth();
 
   const getInitials = (name) => {
-    if (!name) return '؟';
+    if (!name) return '?';
     return name.split(' ').map((n) => n[0]).join('').slice(0, 2);
   };
 

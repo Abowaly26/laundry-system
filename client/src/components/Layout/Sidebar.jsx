@@ -33,15 +33,15 @@ const navItems = [
 
 // عناصر خاصة بـ super_owner
 const superOwnerItems = [
-  { path: '/laundries', labelKey: 'إدارة المغاسل', icon: Store },
-  { path: '/users', labelKey: 'الموظفين', icon: UserCog },
+  { path: '/laundries', labelKey: 'sidebar.laundries', icon: Store },
+  { path: '/users', labelKey: 'sidebar.users', icon: UserCog },
 ];
 
 const roleLabels = {
-  super_owner: 'صاحب النظام',
-  admin: 'مدير المغسلة',
-  cashier: 'موظف استقبال',
-  worker: 'عامل تشغيل',
+  super_owner: 'roles.super_owner',
+  admin: 'roles.admin',
+  cashier: 'roles.cashier',
+  worker: 'roles.worker',
 };
 
 export default function Sidebar({ isOpen, onClose }) {
@@ -61,7 +61,7 @@ export default function Sidebar({ isOpen, onClose }) {
       });
 
   const getInitials = (name) => {
-    if (!name) return '؟';
+    if (!name) return '?';
     return name.split(' ').map((n) => n[0]).join('').slice(0, 2);
   };
 
@@ -87,15 +87,15 @@ export default function Sidebar({ isOpen, onClose }) {
           <div className="brand-text">
             {isSuperOwner ? (
               <>
-                <span className="brand-name">لوحة التحكم الرئيسية</span>
+                <span className="brand-name">{t('sidebar.mainDashboard') || 'لوحة التحكم الرئيسية'}</span>
                 <span className="brand-subtitle super-owner-badge">
-                  <Crown size={10} /> صاحب النظام
+                  <Crown size={10} /> {t('roles.superOwnerBadge') || 'صاحب النظام'}
                 </span>
               </>
             ) : (
               <>
-                <span className="brand-name">{laundryName || settings?.laundry_name || 'المغسلة'}</span>
-                <span className="brand-subtitle">نظام إدارة المغسلة</span>
+                <span className="brand-name">{laundryName || settings?.laundry_name || t('sidebar.laundryName') || 'المغسلة'}</span>
+                <span className="brand-subtitle">{t('sidebar.laundrySystem') || 'نظام إدارة المغسلة'}</span>
               </>
             )}
           </div>

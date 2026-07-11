@@ -188,7 +188,7 @@ export default function OrdersList() {
   const getFormattedDateLabel = (dateStr, fallback) => {
     if (!dateStr) return fallback;
     const date = new Date(dateStr);
-    return isNaN(date.getTime()) ? fallback : date.toLocaleDateString('ar-EG', {
+    return isNaN(date.getTime()) ? fallback : date.toLocaleDateString(i18n.language === 'en' ? 'en-US' : 'ar-EG', {
       month: 'short',
       day: 'numeric',
       year: 'numeric'
@@ -365,7 +365,7 @@ export default function OrdersList() {
                     <ChevronRight size={16} />
                   </button>
                   <span className="month-year-label">
-                    {viewStartDate.toLocaleString('ar-EG', { month: 'long', year: 'numeric' })}
+                    {viewStartDate.toLocaleString(i18n.language === 'en' ? 'en-US' : 'ar-EG', { month: 'long', year: 'numeric' })}
                   </span>
                   <button type="button" className="btn-month-nav" onClick={handleNextMonthStartDate}>
                     <ChevronLeft size={16} />
@@ -415,7 +415,7 @@ export default function OrdersList() {
                     <ChevronRight size={16} />
                   </button>
                   <span className="month-year-label">
-                    {viewEndDate.toLocaleString('ar-EG', { month: 'long', year: 'numeric' })}
+                    {viewEndDate.toLocaleString(i18n.language === 'en' ? 'en-US' : 'ar-EG', { month: 'long', year: 'numeric' })}
                   </span>
                   <button type="button" className="btn-month-nav" onClick={handleNextMonthEndDate}>
                     <ChevronLeft size={16} />
