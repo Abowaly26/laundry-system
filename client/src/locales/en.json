@@ -84,6 +84,9 @@
   "orders": {
     "title": "Orders",
     "newOrder": "New Order",
+    "subtitle": "View, filter and edit laundry orders",
+    "to": "To",
+    "credit": "Credit:",
     "searchPlaceholder": "Search orders...",
     "statusFilter": "All Statuses",
     "startDate": "Start Date",

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Search, Plus, Filter, Eye, ChevronLeft, ChevronRight, QrCode, Copy, Download } from 'lucide-react';
 import { ordersAPI } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
+import { useSettings } from '../../context/SettingsContext';
 import { QRCodeCanvas } from 'qrcode.react';
 import Button from '../../components/UI/Button';
 import Card from '../../components/UI/Card';
@@ -14,7 +15,8 @@ import Modal from '../../components/UI/Modal';
 import './OrdersList.css';
 
 export default function OrdersList() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const { settings } = useSettings();
   const navigate = useNavigate();
   const { showToast } = useToast();
   const [orders, setOrders] = useState([]);
@@ -46,7 +48,9 @@ export default function OrdersList() {
   const startDateRef = useRef(null);
   const endDateRef = useRef(null);
 
-  const WEEKDAYS = ['أح', 'اث', 'ثلا', 'أر', 'خم', 'جم', 'سب'];
+  const WEEKDAYS = i18n.language === 'en' 
+    ? ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'] 
+    : ['أح', 'اث', 'ثلا', 'أر', 'خم', 'جم', 'سب'];
 
   const STATUS_OPTIONS = [
     { value: '', label: t('orders.statusFilter') },
@@ -203,10 +207,10 @@ export default function OrdersList() {
   const formatDate = (dateStr) => {
     if (!dateStr) return '-';
     const date = new Date(dateStr);
-    return isNaN(date.getTime()) ? '-' : date.toLocaleDateString(t('layout.language') === 'English' ? 'en-US' : 'ar-EG', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
+    return isNaN(date.getTime()) ? '-' : date.toLocaleDateString(i18n.language === 'en' ? 'en-US' : 'ar-EG', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric'
     });
   };
 
@@ -398,7 +402,7 @@ export default function OrdersList() {
             )}
           </div>
 
-          <span className="date-range-separator">إلى</span>
+          <span className="date-range-separator">{t('orders.to') || 'إلى'}</span>
 
           <div className="custom-date-select-container" ref={endDateRef}>
             <button
@@ -540,14 +544,14 @@ export default function OrdersList() {
                       <td>{order.customer_phone || '-'}</td>
                       <td>{formatDate(order.created_at)}</td>
                       <td className="text-center font-semibold">{order.items_count || 0}</td>
-                      <td>{parseFloat(order.total_amount || 0).toFixed(2)} {t('dashboard.currency', 'ر.س')}</td>
+                      <td>{parseFloat(order.total_amount || 0).toFixed(2)} {settings?.currency || t('settings.currency') || 'ر.س'}</td>
                       <td>
                         {(() => {
                           const remaining = parseFloat(order.remaining_amount || 0);
                           if (remaining > 0) {
                             return <span className="text-error font-semibold">{remaining.toFixed(2)} {t('dashboard.currency', 'ر.س')}</span>;
                           } else if (remaining < 0) {
-                            return <span className="status-badge-credit">رصيد: {Math.abs(remaining).toFixed(2)} {t('dashboard.currency', 'ر.س')}</span>;
+                            return <span className="status-badge-credit">{t('orders.credit') || 'رصيد:'} {Math.abs(remaining).toFixed(2)} {settings?.currency || t('settings.currency') || 'ر.س'}</span>;
                           } else {
                             return <span className="status-badge-paid">{t('status.paid')}</span>;
                           }

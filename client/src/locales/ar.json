@@ -84,6 +84,9 @@
   "orders": {
     "title": "الطلبات",
     "newOrder": "طلب جديد",
+    "subtitle": "استعراض وتصفية وتعديل طلبات الغسيل والتنظيف",
+    "to": "إلى",
+    "credit": "رصيد:",
     "searchPlaceholder": "البحث برقم الطلب...",
     "statusFilter": "كل الحالات",
     "startDate": "من تاريخ",
