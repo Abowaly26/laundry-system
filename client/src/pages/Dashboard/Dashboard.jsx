@@ -30,6 +30,7 @@ import {
 import { Line, Doughnut } from 'react-chartjs-2';
 import { dashboardAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
+import { useSettings } from '../../context/SettingsContext';
 import StatusBadge from '../../components/UI/StatusBadge';
 import LoadingSpinner from '../../components/UI/LoadingSpinner';
 import './Dashboard.css';
@@ -44,6 +45,7 @@ export default function Dashboard() {
   const [overdue, setOverdue] = useState([]);
   const [loading, setLoading] = useState(true);
   const { isSuperOwner, isWorker, laundryName } = useAuth();
+  const { settings } = useSettings();
   const navigate = useNavigate();
 
   if (isWorker) {
