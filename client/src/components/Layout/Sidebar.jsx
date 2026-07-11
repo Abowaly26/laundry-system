@@ -127,15 +127,10 @@ export default function Sidebar({ isOpen, onClose }) {
               </div>
             </div>
           </div>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button className="sidebar-logout-btn" onClick={() => i18n.changeLanguage(i18n.language === 'en' ? 'ar' : 'en')} style={{ flex: 1, justifyContent: 'center' }}>
-              <span>{t('layout.language')}</span>
-            </button>
-            <button className="sidebar-logout-btn" onClick={logout} style={{ flex: 1, justifyContent: 'center', background: 'var(--danger-light)', color: 'var(--danger)' }}>
-              <LogOut size={18} />
-              <span>{t('sidebar.logout')}</span>
-            </button>
-          </div>
+          <button className="sidebar-logout-btn" onClick={logout}>
+            <LogOut size={20} />
+            <span>{t('sidebar.logout') || 'تسجيل الخروج'}</span>
+          </button>
         </div>
       </aside>
     </>
