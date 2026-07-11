@@ -49,6 +49,23 @@ export default function NewOrder() {
     return { className: 'workload-high', text: 'مزدحم' };
   };
 
+  const getLocalizedDayName = (dayNameAr) => {
+    const map = {
+      'اليوم': t('orders.today') || 'Today',
+      'غداً': t('orders.tomorrow') || 'Tomorrow',
+      'غدا': t('orders.tomorrow') || 'Tomorrow',
+      'الأحد': t('days.sunday') || 'Sunday',
+      'الاثنين': t('days.monday') || 'Monday',
+      'الإثنين': t('days.monday') || 'Monday',
+      'الثلاثاء': t('days.tuesday') || 'Tuesday',
+      'الأربعاء': t('days.wednesday') || 'Wednesday',
+      'الخميس': t('days.thursday') || 'Thursday',
+      'الجمعة': t('days.friday') || 'Friday',
+      'السبت': t('days.saturday') || 'Saturday',
+    };
+    return map[dayNameAr] || dayNameAr;
+  };
+
   const getTimeLabel = (timeVal) => {
     const option = getTimeOptions(t).find(opt => opt.value === timeVal);
     if (option) return option.label;
@@ -664,7 +681,7 @@ export default function NewOrder() {
                               }
                             }}
                           >
-                            <span className="day-name">{day.dayName}</span>
+                            <span className="day-name">{getLocalizedDayName(day.dayName)}</span>
                             <span className="day-date">{getFormattedDayDate(day.date)}</span>
                             <div className={`workload-status-badge ${level.className}`}>
                               <span className="status-dot"></span>
@@ -848,7 +865,7 @@ export default function NewOrder() {
                   <div className="scheduler-result-bar">
                     {deliveryDate && deliveryTime && (
                       <div className="scheduler-result-text">
-                        <span className="result-label">الموعد المحدد:</span>
+                        <span className="result-label">{t('orders.selectedDate') || 'الموعد المحدد:'}</span>
                         <span className="result-value">
                           {new Date(`${deliveryDate}T${deliveryTime}`).toLocaleString(i18n.language === 'en' ? 'en-US' : 'ar-EG', {
                             weekday: 'long',
@@ -866,7 +883,7 @@ export default function NewOrder() {
                       className="btn-custom-date-toggle"
                       onClick={() => setIsCustomDelivery(!isCustomDelivery)}
                     >
-                      {isCustomDelivery ? 'تحديد سريع' : 'موعد مخصص'}
+                      {isCustomDelivery ? (t('orders.quickSelect') || 'تحديد سريع') : (t('orders.customDate') || 'موعد مخصص')}
                     </button>
                   </div>
                 </div>

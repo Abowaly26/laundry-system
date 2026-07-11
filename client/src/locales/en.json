@@ -72,6 +72,15 @@
     "active": "Active",
     "inactive": "Inactive"
   },
+  "days": {
+    "sunday": "Sunday",
+    "monday": "Monday",
+    "tuesday": "Tuesday",
+    "wednesday": "Wednesday",
+    "thursday": "Thursday",
+    "friday": "Friday",
+    "saturday": "Saturday"
+  },
   "orders": {
     "title": "Orders",
     "newOrder": "New Order",
@@ -84,6 +93,15 @@
     "noOrdersMsg": "We couldn't find any orders matching the current search criteria. You can register a new order.",
     "am": "AM",
     "pm": "PM",
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "quickSelect": "Quick Select",
+    "customDate": "Custom Date",
+    "selectedDate": "Selected Date:",
+    "chooseDeliveryDate": "Choose Delivery Date (workload scale for next 7 days):",
+    "workloadLow": "Light",
+    "workloadMedium": "Medium",
+    "workloadHigh": "Busy",
     "qrCode": "QR Code",
     "downloadQR": "Download QR Code",
     "close": "Close",
