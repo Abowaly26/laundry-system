@@ -17,7 +17,7 @@ const STATUS_STEPS = [
 ];
 
 export default function ItemTracking() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { showToast } = useToast();
   const [scanMode, setScanMode] = useState('camera'); // 'camera' or 'manual'
   const [manualCode, setManualCode] = useState('');
