@@ -154,7 +154,8 @@ export default function ItemTracking() {
   const getNextStatusLabel = (status) => {
     const currentIdx = STATUS_STEPS.findIndex(s => s.key === status);
     if (currentIdx === -1 || currentIdx === STATUS_STEPS.length - 1) return null;
-    return STATUS_STEPS[currentIdx + 1].label;
+    const nextKey = STATUS_STEPS[currentIdx + 1].key;
+    return t(`status.${nextKey}`) || STATUS_STEPS[currentIdx + 1].label;
   };
 
   return (
@@ -295,7 +296,7 @@ export default function ItemTracking() {
                           <div className="timeline-content">
                             <div className="timeline-header">
                               <span className="timeline-status font-bold">
-                                {STATUS_STEPS.find(s => s.key === log.new_status)?.label || t(`status.${log.new_status}`) || log.new_status}
+                                {t(`status.${log.new_status}`) || STATUS_STEPS.find(s => s.key === log.new_status)?.label || log.new_status}
                               </span>
                               <span className="timeline-time text-secondary">
                                 {new Date(log.created_at).toLocaleString(i18n.language === 'en' ? 'en-US' : 'ar-EG', {
@@ -307,7 +308,9 @@ export default function ItemTracking() {
                               </span>
                             </div>
                             {log.updated_by_name && (
-                              <span className="timeline-worker text-secondary">{t('tracking.by') || 'بواسطة:'} {log.updated_by_name}</span>
+                              <span className="timeline-worker text-secondary">
+                                {t('tracking.by') || 'بواسطة:'} {log.updated_by_name === 'صاحب المغسلة (المدير)' ? (t('roles.admin') || 'Laundry Owner (Admin)') : log.updated_by_name}
+                              </span>
                             )}
                           </div>
                         </div>
@@ -331,7 +334,7 @@ export default function ItemTracking() {
                         <div className="step-circle">
                           {isCompleted ? '✓' : idx + 1}
                         </div>
-                        <span className="step-label">{step.label}</span>
+                        <span className="step-label">{t(`status.${step.key}`) || step.label}</span>
                       </div>
                     );
                   })}
