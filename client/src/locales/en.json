@@ -91,7 +91,7 @@
     "statusFilter": "All Statuses",
     "startDate": "Start Date",
     "endDate": "End Date",
-    "exportData": "Export",
+    "exportData": "Export Orders",
     "noOrders": "No orders found.",
     "noOrdersMsg": "We couldn't find any orders matching the current search criteria. You can register a new order.",
     "am": "AM",
