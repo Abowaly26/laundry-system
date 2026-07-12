@@ -8,7 +8,6 @@ import {
   Package,
   Banknote,
   AlertTriangle,
-  Download,
   PlusCircle,
   UserPlus,
   Scan,
@@ -98,36 +97,7 @@ export default function Dashboard() {
     }
   };
 
-  const exportToCSV = () => {
-    const recentOrdersList = Array.isArray(stats?.recentOrders) ? stats.recentOrders : [];
-    if (recentOrdersList.length === 0) return;
-    
-    const headers = [t('dashboard.orderId'), t('dashboard.customer'), t('dashboard.items'), t('dashboard.status'), t('dashboard.amount'), t('dashboard.date')];
-    
-    const rows = recentOrdersList.map(order => [
-      order?.id || order?.orderId,
-      order?.customer?.name || order?.customerName || '-',
-      order?.items?.length || 0,
-      t(`status.${order?.status}`) || order?.status,
-      order?.totalAmount || order?.total_amount || 0,
-      formatDate(order?.createdAt || order?.created_at)
-    ]);
-    
-    const csvContent = '\uFEFF' + [
-      headers.join(','),
-      ...rows.map(e => e.join(','))
-    ].join('\n');
-    
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.setAttribute('href', url);
-    link.setAttribute('download', `recent_orders_${new Date().toISOString().split('T')[0]}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
+
 
   if (loading) return <LoadingSpinner />;
 
@@ -257,10 +227,6 @@ export default function Dashboard() {
           <p className="page-subtitle">{formatDate(new Date())}</p>
         </div>
         <div className="header-actions">
-          <button className="btn btn-outline" onClick={exportToCSV}>
-            <Download size={18} />
-            <span>{t('dashboard.exportReport')}</span>
-          </button>
         </div>
       </div>
 
@@ -382,15 +348,6 @@ export default function Dashboard() {
         <div className="recent-orders-header">
           <h3 className="recent-orders-title">{t('dashboard.recentOrders') || 'أحدث الطلبات'}</h3>
           <div className="flex gap-sm items-center">
-            <button 
-              onClick={exportToCSV} 
-              className="recent-orders-link flex items-center"
-              style={{ cursor: 'pointer', background: 'none', border: 'none', font: 'inherit', display: 'flex', gap: '4px' }}
-            >
-              <Download size={16} />
-              {t('dashboard.exportData') || 'تصدير البيانات'}
-            </button>
-            <span style={{ color: 'var(--border)' }}>|</span>
             <Link to="/orders" className="recent-orders-link">
               {t('dashboard.viewAll') || 'عرض الكل'}
             </Link>
