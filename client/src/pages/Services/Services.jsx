@@ -40,6 +40,7 @@ export default function Services() {
 
   // Cleaning Services State
   const [showUnitDropdown, setShowUnitDropdown] = useState(false);
+  const [unitDropdownPos, setUnitDropdownPos] = useState({ top: 0, left: 0, width: 0 });
   const unitDropdownRef = useRef(null);
   const [showCleaningServiceModal, setShowCleaningServiceModal] = useState(false);
   const [cleaningServiceModalMode, setCleaningServiceModalMode] = useState('add'); // 'add' | 'edit'
@@ -880,12 +881,16 @@ export default function Services() {
                   type="button"
                   className="table-select-trigger"
                   style={{ width: '100%' }}
-                  onClick={() => setShowUnitDropdown(!showUnitDropdown)}
+                  onClick={(e) => {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    setUnitDropdownPos({ top: rect.bottom + 4, left: rect.left, width: rect.width });
+                    setShowUnitDropdown(!showUnitDropdown);
+                  }}
                 >
                   {cleaningServiceFormData.unit === 'piece' ? 'قطعة (Piece)' : 'كيلوجرام (Kg)'}
                 </button>
                 {showUnitDropdown && (
-                  <div className="table-select-dropdown" style={{ width: '100%' }}>
+                  <div className="table-select-dropdown" style={{ position: 'fixed', top: unitDropdownPos.top, left: unitDropdownPos.left, width: unitDropdownPos.width, zIndex: 99999 }}>
                     {[
                       { value: 'piece', label: 'قطعة (Piece)' },
                       { value: 'kg', label: 'كيلوجرام (Kg)' }
