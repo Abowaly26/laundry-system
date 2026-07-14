@@ -58,19 +58,6 @@ const laundriesRouter = require('./src/routes/laundries');
 
 // ربط المسارات
 app.use('/api/auth', authRouter);
-
-// Temporary fix for services
-const { query } = require('./src/config/database');
-(async function fixServices() {
-  try {
-    await query("UPDATE services SET name_ar='غسيل فقط', name='Wash Only' WHERE name_ar='غسيل عادي'");
-    await query("UPDATE services SET name_ar='غسيل وكي', name='Wash & Iron' WHERE name_ar='تنظيف سجاد'");
-    await query("UPDATE services SET name_ar='غسيل وكي مستعجل', name='Urgent Wash & Iron' WHERE name_ar='تنظيف بطانيات'");
-    console.log('Services fixed');
-  } catch (err) {
-    console.error('Error fixing services', err);
-  }
-})();
 app.use('/api/customers', customersRouter);
 app.use('/api/services', servicesRouter);
 app.use('/api/orders', ordersRouter);
