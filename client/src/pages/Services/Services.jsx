@@ -871,7 +871,7 @@ export default function Services() {
           <div className="form-group">
             <label className="form-label">وحدة القياس</label>
             <select
-              className="form-input"
+              className="form-select"
               value={cleaningServiceFormData.unit}
               onChange={(e) => setCleaningServiceFormData(p => ({...p, unit: e.target.value}))}
             >
