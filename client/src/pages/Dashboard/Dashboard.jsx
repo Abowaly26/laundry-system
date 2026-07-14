@@ -135,22 +135,48 @@ export default function Dashboard() {
     },
   ];
 
+  const processRevenueData = (data) => {
+    const list = Array.isArray(data) ? data : [];
+    const last7Days = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      last7Days.push(d);
+    }
+
+    return last7Days.map(date => {
+      const dateStr = date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
+      
+      const found = list.find(item => {
+        const itemDateStr = item.date || item._id;
+        if (!itemDateStr) return false;
+        try {
+          const itemDate = new Date(itemDateStr);
+          if (isNaN(itemDate.getTime())) return false;
+          const iDateStr = itemDate.getFullYear() + '-' + String(itemDate.getMonth() + 1).padStart(2, '0') + '-' + String(itemDate.getDate()).padStart(2, '0');
+          return iDateStr === dateStr;
+        } catch (e) {
+          return false;
+        }
+      });
+
+      return {
+        date: date,
+        total: found ? (found.total || found.amount || 0) : 0
+      };
+    });
+  };
+
+  const finalRevenueList = processRevenueData(revenueList);
+
   const revenueChartData = {
-    labels: revenueList.map((r) => {
-      const d = r.date || r._id;
-      if (!d) return '';
-      try {
-        const date = new Date(d);
-        if (isNaN(date.getTime())) return d;
-        return date.toLocaleDateString(i18n.language === 'en' ? 'en-US' : 'ar-EG', { weekday: 'short', day: 'numeric', month: 'short' });
-      } catch (e) {
-        return d;
-      }
+    labels: finalRevenueList.map((r) => {
+      return r.date.toLocaleDateString(i18n.language === 'en' ? 'en-US' : 'ar-EG', { weekday: 'short', day: 'numeric', month: 'short' });
     }),
     datasets: [
       {
         label: t('dashboard.revenueLabel') || 'الإيرادات',
-        data: revenueList.map((r) => r.total || r.amount || 0),
+        data: finalRevenueList.map((r) => r.total),
         borderColor: '#4F46E5',
         backgroundColor: 'rgba(79, 70, 229, 0.08)',
         fill: true,
