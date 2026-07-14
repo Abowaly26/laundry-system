@@ -796,9 +796,10 @@ export default function Services() {
                         <tr key={sizeName}>
                           <td className="size-name-col font-bold">{sizeName}</td>
                           {services.filter(s => s.is_active).map(svc => {
-                            const currentVal = itemTypeFormData.prices[sizeName] && itemTypeFormData.prices[sizeName][svc.id] !== undefined
+                            let currentVal = itemTypeFormData.prices[sizeName] && itemTypeFormData.prices[sizeName][svc.id] !== undefined
                               ? itemTypeFormData.prices[sizeName][svc.id]
-                              : 0;
+                              : '';
+                            if (currentVal === 0 || currentVal === '0.00' || currentVal === '0') currentVal = '';
                             return (
                               <td key={svc.id}>
                                 <input
