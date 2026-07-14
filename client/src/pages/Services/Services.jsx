@@ -839,9 +839,10 @@ export default function Services() {
         isOpen={showCleaningServiceModal} 
         onClose={handleCloseCleaningService}
         title={cleaningServiceModalMode === 'add' ? 'إضافة خدمة تنظيف جديدة' : 'تعديل خدمة التنظيف'}
+        width="650px"
       >
         <form onSubmit={handleCleaningServiceSubmit}>
-          <div className="flex flex-col md:flex-row gap-4 mb-4">
+          <div className="flex gap-4 mb-5">
             <div className="flex-1 text-right">
               <label className="text-gray-700 font-medium mb-1 block">الاسم بالعربية *</label>
               <input
