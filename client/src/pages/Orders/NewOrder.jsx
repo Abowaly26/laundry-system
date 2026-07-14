@@ -912,7 +912,7 @@ export default function NewOrder() {
                       <Fragment key={index}>
                       <tr className="item-main-row">
                         <td>
-                          <div className="table-select-container">
+                          <div className="table-select-container" style={{ zIndex: openItemTypeIndex === index ? 100 : 1 }}>
                             <button
                               type="button"
                               className="table-select-trigger"
@@ -945,7 +945,7 @@ export default function NewOrder() {
                           </div>
                         </td>
                         <td>
-                          <div className="table-select-container">
+                          <div className="table-select-container" style={{ zIndex: openSizeIndex === index ? 100 : 1 }}>
                             <button
                               type="button"
                               className="table-select-trigger"
@@ -979,7 +979,7 @@ export default function NewOrder() {
                           </div>
                         </td>
                         <td>
-                          <div className="table-select-container">
+                          <div className="table-select-container" style={{ zIndex: openServiceIndex === index ? 100 : 1 }}>
                             <button
                               type="button"
                               className="table-select-trigger"
