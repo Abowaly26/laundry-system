@@ -216,6 +216,15 @@ router.delete('/:id', authorizeRoles('admin', 'cashier', 'super_owner'), async (
       return res.status(400).json({ success: false, message: 'لا يمكن حذف العميل لوجود طلبات نشطة' });
     }
 
+    const anyOrdersResult = await query(
+      "SELECT COUNT(*) as count FROM orders WHERE customer_id = $1",
+      [id]
+    );
+
+    if (parseInt(anyOrdersResult.rows[0].count) > 0) {
+      return res.status(400).json({ success: false, message: 'لا يمكن حذف هذا العميل لوجود طلبات سابقة مسجلة باسمه، يرجى تعديل بياناته بدلاً من الحذف للحفاظ على السجلات' });
+    }
+
     await query('DELETE FROM customers WHERE id = $1', [id]);
     res.json({ success: true, message: 'تم حذف العميل بنجاح' });
   } catch (error) {
