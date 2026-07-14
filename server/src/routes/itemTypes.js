@@ -76,7 +76,7 @@ router.get('/', async (req, res) => {
  * POST /api/item-types
  * إضافة نوع قطعة جديد مع الأحجام وأسعار الخدمات (المدير فقط)
  */
-router.post('/', authorizeRoles('super_owner'), async (req, res) => {
+router.post('/', authorizeRoles('super_owner', 'admin'), async (req, res) => {
   try {
     const { name_ar, name_en, sizes, prices } = req.body;
 
@@ -147,7 +147,7 @@ router.post('/', authorizeRoles('super_owner'), async (req, res) => {
  * PUT /api/item-types/:id
  * تعديل اسم نوع القطعة، أحجامها وأسعارها (المدير فقط)
  */
-router.put('/:id', authorizeRoles('super_owner'), async (req, res) => {
+router.put('/:id', authorizeRoles('super_owner', 'admin'), async (req, res) => {
   try {
     const { id } = req.params;
     const { name_ar, name_en, sizes, prices } = req.body;
@@ -246,7 +246,7 @@ router.put('/:id', authorizeRoles('super_owner'), async (req, res) => {
  * DELETE /api/item-types/:id
  * حذف نوع قطعة بالكامل (المدير فقط)
  */
-router.delete('/:id', authorizeRoles('super_owner'), async (req, res) => {
+router.delete('/:id', authorizeRoles('super_owner', 'admin'), async (req, res) => {
   try {
     const { id } = req.params;
 
