@@ -839,52 +839,28 @@ export default function Services() {
         isOpen={showCleaningServiceModal} 
         onClose={handleCloseCleaningService}
         title={cleaningServiceModalMode === 'add' ? 'إضافة خدمة جديدة' : 'تعديل الخدمة'}
-        width="600px"
       >
         <form onSubmit={handleCleaningServiceSubmit}>
 
-          {/* Section Header */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px', padding: '12px 16px', background: 'linear-gradient(135deg, #f0f4ff 0%, #e8f0fe 100%)', borderRadius: '12px', border: '1px solid #dce8ff' }}>
-            <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'linear-gradient(135deg, #6366f1, #818cf8)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <Sparkles size={18} color="white" />
-            </div>
-            <div style={{ textAlign: 'right' }}>
-              <p style={{ margin: 0, fontWeight: 700, fontSize: '0.95rem', color: '#3730a3' }}>
-                {cleaningServiceModalMode === 'add' ? 'إضافة خدمة تنظيف جديدة' : 'تعديل بيانات الخدمة'}
-              </p>
-              <p style={{ margin: 0, fontSize: '0.8rem', color: '#6366f1', opacity: 0.8 }}>
-                الخدمات هي الأعمدة في جدول أسعار القطع
-              </p>
-            </div>
-          </div>
-
-          {/* Names Row */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '16px' }}>
-            <div>
-              <label style={{ display: 'block', textAlign: 'right', fontWeight: 600, fontSize: '0.85rem', color: '#374151', marginBottom: '6px' }}>
-                الاسم بالعربية <span style={{ color: '#ef4444' }}>*</span>
-              </label>
+          <div className="form-row">
+            <div className="form-group">
+              <label className="form-label">الاسم بالعربية *</label>
               <input
                 type="text"
-                name="name_ar"
-                className="form-control"
-                style={{ width: '100%', textAlign: 'right', borderRadius: '10px', border: '1.5px solid #e5e7eb', padding: '10px 14px', fontSize: '0.9rem', transition: 'border-color 0.2s', outline: 'none' }}
+                className="form-input"
                 value={cleaningServiceFormData.name_ar}
                 onChange={(e) => setCleaningServiceFormData(p => ({...p, name_ar: e.target.value}))}
                 required
                 placeholder="مثال: غسيل عادي"
               />
             </div>
-            <div>
-              <label style={{ display: 'block', textAlign: 'right', fontWeight: 600, fontSize: '0.85rem', color: '#374151', marginBottom: '6px' }}>
-                الاسم بالإنجليزية
-              </label>
+            <div className="form-group">
+              <label className="form-label">الاسم بالإنجليزية</label>
               <input
                 type="text"
-                name="name"
-                className="form-control"
+                className="form-input"
                 dir="ltr"
-                style={{ width: '100%', textAlign: 'left', borderRadius: '10px', border: '1.5px solid #e5e7eb', padding: '10px 14px', fontSize: '0.9rem', transition: 'border-color 0.2s', outline: 'none' }}
+                style={{ textAlign: 'left' }}
                 value={cleaningServiceFormData.name}
                 onChange={(e) => setCleaningServiceFormData(p => ({...p, name: e.target.value}))}
                 placeholder="e.g. Regular Wash"
@@ -892,84 +868,35 @@ export default function Services() {
             </div>
           </div>
 
-          {/* Unit Row */}
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', textAlign: 'right', fontWeight: 600, fontSize: '0.85rem', color: '#374151', marginBottom: '6px' }}>
-              وحدة القياس
-            </label>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-              {[
-                { value: 'piece', label: 'قطعة (Piece)', icon: '👕' },
-                { value: 'kg', label: 'كيلوجرام (Kg)', icon: '⚖️' }
-              ].map(opt => (
-                <label
-                  key={opt.value}
-                  style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '10px',
-                    padding: '12px 16px', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s',
-                    border: `2px solid ${cleaningServiceFormData.unit === opt.value ? '#6366f1' : '#e5e7eb'}`,
-                    background: cleaningServiceFormData.unit === opt.value ? '#f0f4ff' : '#fafafa',
-                  }}
-                >
-                  <span style={{ fontWeight: cleaningServiceFormData.unit === opt.value ? 700 : 500, color: cleaningServiceFormData.unit === opt.value ? '#4338ca' : '#374151', fontSize: '0.9rem' }}>{opt.label}</span>
-                  <span style={{ fontSize: '1.2rem' }}>{opt.icon}</span>
-                  <input
-                    type="radio"
-                    name="unit"
-                    value={opt.value}
-                    checked={cleaningServiceFormData.unit === opt.value}
-                    onChange={(e) => setCleaningServiceFormData(p => ({...p, unit: e.target.value}))}
-                    style={{ display: 'none' }}
-                  />
-                </label>
-              ))}
-            </div>
+          <div className="form-group">
+            <label className="form-label">وحدة القياس</label>
+            <select
+              className="form-input"
+              value={cleaningServiceFormData.unit}
+              onChange={(e) => setCleaningServiceFormData(p => ({...p, unit: e.target.value}))}
+            >
+              <option value="piece">قطعة (Piece)</option>
+              <option value="kg">كيلوجرام (Kg)</option>
+            </select>
           </div>
 
-          {/* Active Toggle */}
-          <div style={{ marginBottom: '24px' }}>
-            <label style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              padding: '14px 18px', borderRadius: '12px', cursor: 'pointer',
-              border: `2px solid ${cleaningServiceFormData.is_active ? '#10b981' : '#e5e7eb'}`,
-              background: cleaningServiceFormData.is_active ? '#f0fdf4' : '#fafafa',
-              transition: 'all 0.25s',
-            }}>
-              <div style={{
-                width: '44px', height: '24px', borderRadius: '999px', position: 'relative', flexShrink: 0,
-                background: cleaningServiceFormData.is_active ? '#10b981' : '#d1d5db', transition: 'background 0.25s',
-              }}>
-                <div style={{
-                  position: 'absolute', top: '3px', borderRadius: '50%', width: '18px', height: '18px',
-                  background: 'white', transition: 'right 0.25s',
-                  right: cleaningServiceFormData.is_active ? '3px' : '23px',
-                  boxShadow: '0 1px 4px rgba(0,0,0,0.2)'
-                }} />
-              </div>
-              <div style={{ textAlign: 'right' }}>
-                <p style={{ margin: 0, fontWeight: 700, fontSize: '0.9rem', color: cleaningServiceFormData.is_active ? '#065f46' : '#374151' }}>
-                  {cleaningServiceFormData.is_active ? '✅ الخدمة نشطة' : '⏸️ الخدمة معطّلة'}
-                </p>
-                <p style={{ margin: 0, fontSize: '0.78rem', color: '#6b7280' }}>
-                  {cleaningServiceFormData.is_active ? 'تظهر للعملاء والموظفين عند إنشاء الطلبات' : 'مخفية ولا يمكن اختيارها في الطلبات'}
-                </p>
-              </div>
+          <div className="form-group">
+            <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', userSelect: 'none' }}>
               <input
                 type="checkbox"
                 checked={cleaningServiceFormData.is_active}
                 onChange={(e) => setCleaningServiceFormData(p => ({...p, is_active: e.target.checked}))}
-                style={{ display: 'none' }}
               />
+              الخدمة نشطة (تظهر للعملاء والموظفين)
             </label>
           </div>
 
-          {/* Action Buttons */}
-          <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+          <div className="flex justify-between mt-md">
             <Button variant="secondary" type="button" onClick={handleCloseCleaningService}>
               إلغاء
             </Button>
             <Button variant="primary" type="submit">
-              {cleaningServiceModalMode === 'add' ? '+ إضافة الخدمة' : '💾 حفظ التعديلات'}
+              {cleaningServiceModalMode === 'add' ? 'إضافة الخدمة' : 'حفظ التعديلات'}
             </Button>
           </div>
 
