@@ -124,11 +124,11 @@ async function seedDatabase() {
       `;
 
       const defaultServices = [
-        ['Regular Wash', 'غسيل عادي', 10.0, 'piece', 24],
+        ['Wash Only', 'غسيل فقط', 10.0, 'piece', 24],
+        ['Iron Only', 'كي فقط', 5.0, 'piece', 12],
+        ['Wash & Iron', 'غسيل وكي', 15.0, 'piece', 24],
         ['Dry Clean', 'غسيل جاف', 25.0, 'piece', 48],
-        ['Ironing', 'كي فقط', 5.0, 'piece', 12],
-        ['Carpet Cleaning', 'تنظيف سجاد', 15.0, 'kg', 72],
-        ['Blanket Cleaning', 'تنظيف بطانيات', 30.0, 'piece', 48],
+        ['Urgent Wash & Iron', 'غسيل وكي مستعجل', 25.0, 'piece', 6],
       ];
 
       // إضافة الخدمات لكل مغسلة
