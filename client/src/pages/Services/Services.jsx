@@ -841,56 +841,47 @@ export default function Services() {
         title={cleaningServiceModalMode === 'add' ? 'إضافة خدمة تنظيف جديدة' : 'تعديل خدمة التنظيف'}
       >
         <form onSubmit={handleCleaningServiceSubmit}>
-          <div className="form-group mb-md">
-            <label>الاسم بالعربية *</label>
-            <input
-              type="text"
-              name="name_ar"
-              className="form-control"
-              value={cleaningServiceFormData.name_ar}
-              onChange={(e) => setCleaningServiceFormData(p => ({...p, name_ar: e.target.value}))}
-              required
-              placeholder="مثال: غسيل وكي مستعجل"
-            />
-          </div>
-          <div className="form-group mb-md">
-            <label>الاسم بالإنجليزية</label>
-            <input
-              type="text"
-              name="name"
-              className="form-control"
-              value={cleaningServiceFormData.name}
-              onChange={(e) => setCleaningServiceFormData(p => ({...p, name: e.target.value}))}
-              placeholder="e.g. Urgent Wash & Iron"
-            />
-          </div>
-          <div className="form-group mb-md">
-            <label>الوحدة الافتراضية</label>
-            <select
-              name="unit"
-              className="form-control"
-              value={cleaningServiceFormData.unit}
-              onChange={(e) => setCleaningServiceFormData(p => ({...p, unit: e.target.value}))}
-            >
-              <option value="piece">قطعة (Piece)</option>
-              <option value="kg">كيلوجرام (Kg)</option>
-            </select>
-          </div>
           <div className="flex gap-md mb-md">
             <div className="form-group flex-1">
-              <label>السعر الافتراضي</label>
+              <label className="text-gray-700 font-medium mb-1 block">الاسم بالعربية *</label>
               <input
-                type="number"
-                name="price"
-                min="0"
-                step="0.01"
+                type="text"
+                name="name_ar"
                 className="form-control"
-                value={cleaningServiceFormData.price}
-                onChange={(e) => setCleaningServiceFormData(p => ({...p, price: e.target.value}))}
+                value={cleaningServiceFormData.name_ar}
+                onChange={(e) => setCleaningServiceFormData(p => ({...p, name_ar: e.target.value}))}
+                required
+                placeholder="مثال: غسيل وكي مستعجل"
               />
             </div>
             <div className="form-group flex-1">
-              <label>المدة المتوقعة (ساعات)</label>
+              <label className="text-gray-700 font-medium mb-1 block">الاسم بالإنجليزية</label>
+              <input
+                type="text"
+                name="name"
+                className="form-control"
+                value={cleaningServiceFormData.name}
+                onChange={(e) => setCleaningServiceFormData(p => ({...p, name: e.target.value}))}
+                placeholder="e.g. Urgent Wash & Iron"
+              />
+            </div>
+          </div>
+
+          <div className="flex gap-md mb-md">
+            <div className="form-group flex-1">
+              <label className="text-gray-700 font-medium mb-1 block">الوحدة الافتراضية</label>
+              <select
+                name="unit"
+                className="form-control"
+                value={cleaningServiceFormData.unit}
+                onChange={(e) => setCleaningServiceFormData(p => ({...p, unit: e.target.value}))}
+              >
+                <option value="piece">قطعة (Piece)</option>
+                <option value="kg">كيلوجرام (Kg)</option>
+              </select>
+            </div>
+            <div className="form-group flex-1">
+              <label className="text-gray-700 font-medium mb-1 block">المدة المتوقعة للانتهاء (ساعات)</label>
               <input
                 type="number"
                 name="estimated_hours"
