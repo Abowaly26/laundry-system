@@ -112,6 +112,8 @@ export const servicesAPI = {
     request(`/services/${id}`, { method: 'PUT', body: data }),
   delete: (id) =>
     request(`/services/${id}`, { method: 'DELETE' }),
+  seedDefaults: () =>
+    request('/services/seed-defaults', { method: 'POST' }),
 };
 
 // ===== Item Types & Pricing Matrix =====

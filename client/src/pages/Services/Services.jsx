@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Plus, Edit2, Trash2, Sparkles, Tags, ShieldAlert, X, Download, Search } from 'lucide-react';
+import { Plus, Edit2, Trash2, Sparkles, Tags, ShieldAlert, X, Download, Search, Wand2 } from 'lucide-react';
 import { servicesAPI, itemTypesAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';

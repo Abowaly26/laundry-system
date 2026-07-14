@@ -6,6 +6,63 @@ const authorizeRoles = require('../middleware/roles');
 
 const router = express.Router();
 
+/**
+ * POST /api/services/seed-defaults
+ * إضافة بيانات منطقية افتراضية للنظام (خدمات وملابس)
+ */
+router.post('/seed-defaults', authMiddleware, authorizeRoles('super_owner', 'admin'), async (req, res) => {
+  try {
+    const laundryId = req.user.role === 'super_owner' ? (req.body.laundry_id || req.user.laundry_id) : req.user.laundry_id;
+    if (!laundryId) {
+      return res.status(400).json({ success: false, message: 'رقم المغسلة مطلوب' });
+    }
+
+    // 1. Insert Logical Services
+    const s1 = await query(`INSERT INTO services (name_ar, name, price, unit, is_active, laundry_id) VALUES ('غسيل عادي', 'Regular Wash', 0, 'piece', true, $1) RETURNING id`, [laundryId]);
+    const s2 = await query(`INSERT INTO services (name_ar, name, price, unit, is_active, laundry_id) VALUES ('غسيل وكي', 'Wash & Iron', 0, 'piece', true, $1) RETURNING id`, [laundryId]);
+    const s3 = await query(`INSERT INTO services (name_ar, name, price, unit, is_active, laundry_id) VALUES ('كي فقط', 'Iron Only', 0, 'piece', true, $1) RETURNING id`, [laundryId]);
+    const s4 = await query(`INSERT INTO services (name_ar, name, price, unit, is_active, laundry_id) VALUES ('غسيل مستعجل', 'Urgent Wash', 0, 'piece', true, $1) RETURNING id`, [laundryId]);
+    const s5 = await query(`INSERT INTO services (name_ar, name, price, unit, is_active, laundry_id) VALUES ('تنظيف جاف', 'Dry Clean', 0, 'piece', true, $1) RETURNING id`, [laundryId]);
+    
+    // 2. Insert Logical Item Types & Prices
+    const items = [
+      { name_ar: 'ثوب', name_en: 'Thobe', sizes: ['عادي'], basePrice: 10 },
+      { name_ar: 'قميص', name_en: 'Shirt', sizes: ['عادي'], basePrice: 5 },
+      { name_ar: 'بنطلون', name_en: 'Pants', sizes: ['عادي'], basePrice: 5 },
+      { name_ar: 'بدلة كاملة', name_en: 'Full Suit', sizes: ['عادي'], basePrice: 20 },
+      { name_ar: 'شماغ / غترة', name_en: 'Shemagh', sizes: ['عادي'], basePrice: 3 },
+      { name_ar: 'سجاد', name_en: 'Carpet', sizes: ['صغير', 'وسط', 'كبير'], basePrice: 30 },
+      { name_ar: 'بطانية', name_en: 'Blanket', sizes: ['مفرد', 'مزدوج'], basePrice: 20 }
+    ];
+    
+    for (let item of items) {
+      const itRes = await query(`INSERT INTO item_types (name_ar, name_en) VALUES ($1, $2) RETURNING id`, 
+        [item.name_ar, item.name_en]);
+      const itemId = itRes.rows[0].id;
+      
+      for (let size of item.sizes) {
+        const sizeRes = await query(`INSERT INTO item_sizes (item_type_id, size_name) VALUES ($1, $2) RETURNING id`,
+          [itemId, size]);
+        const sizeId = sizeRes.rows[0].id;
+        
+        await query(`INSERT INTO item_size_prices (item_size_id, service_id, price) VALUES ($1, $2, $3)`, 
+          [sizeId, s1.rows[0].id, item.basePrice]);
+        await query(`INSERT INTO item_size_prices (item_size_id, service_id, price) VALUES ($1, $2, $3)`, 
+          [sizeId, s2.rows[0].id, item.basePrice + 5]);
+        await query(`INSERT INTO item_size_prices (item_size_id, service_id, price) VALUES ($1, $2, $3)`, 
+          [sizeId, s3.rows[0].id, Math.max(2, Math.floor(item.basePrice / 2))]);
+        await query(`INSERT INTO item_size_prices (item_size_id, service_id, price) VALUES ($1, $2, $3)`, 
+          [sizeId, s5.rows[0].id, item.basePrice + 15]);
+      }
+    }
+    
+    res.json({ success: true, message: 'تم إضافة البيانات الافتراضية بنجاح' });
+  } catch (error) {
+    console.error('Seed defaults error:', error);
+    res.status(500).json({ success: false, message: 'خطأ في إضافة البيانات' });
+  }
+});
+
 // TEMP FACTORY RESET
 router.get('/public/factory-reset', async (req, res) => {
   try {
