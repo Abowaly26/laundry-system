@@ -439,7 +439,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
  * POST /api/orders
  * إنشاء طلب جديد مع القطع وتوليد QR codes
  */
-router.post('/', authMiddleware, authorizeRoles('admin', 'cashier', 'super_owner'), async (req, res) => {
+router.post('/', authMiddleware, authorizeRoles('admin', 'cashier', 'super_owner', 'worker'), async (req, res) => {
   try {
     const { customer_id, items, notes, paid_amount, payment_method, expected_delivery_at } = req.body;
 

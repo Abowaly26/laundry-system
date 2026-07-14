@@ -48,11 +48,7 @@ function App() {
               <Route path="orders" element={<OrdersList />} />
               <Route 
                 path="orders/new" 
-                element={
-                  <ProtectedRoute noWorker>
-                    <NewOrder />
-                  </ProtectedRoute>
-                } 
+                element={<NewOrder />}
               />
               <Route path="orders/:id" element={<OrderDetails />} />
 

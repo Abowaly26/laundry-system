@@ -22,7 +22,7 @@ import './Sidebar.css';
 // قائمة التنقل الرئيسية
 const navItems = [
   { path: '/', labelKey: 'sidebar.dashboard', icon: LayoutDashboard, noWorker: true },
-  { path: '/orders/new', labelKey: 'sidebar.newOrder', icon: PlusCircle, hideForSuperOwner: true, noWorker: true },
+  { path: '/orders/new', labelKey: 'sidebar.newOrder', icon: PlusCircle, hideForSuperOwner: true },
   { path: '/orders', labelKey: 'sidebar.orders', icon: ClipboardList, hideForSuperOwner: true },
   { path: '/tracking', labelKey: 'sidebar.itemTracking', icon: ScanLine, hideForSuperOwner: true },
   { path: '/customers', labelKey: 'sidebar.customers', icon: Users, hideForSuperOwner: true, noWorker: true },
