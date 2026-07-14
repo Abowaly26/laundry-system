@@ -890,13 +890,25 @@ export default function Services() {
             </div>
 
             <div style={{ flex: 1, paddingBottom: '4px' }}>
-              <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', userSelect: 'none', marginBottom: 0, paddingTop: '22px' }}>
-                <input
-                  type="checkbox"
-                  checked={cleaningServiceFormData.is_active}
-                  onChange={(e) => setCleaningServiceFormData(p => ({...p, is_active: e.target.checked}))}
-                />
-                الخدمة نشطة
+              <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', userSelect: 'none', paddingTop: '22px', marginBottom: 0 }}>
+                <span className="form-label" style={{ marginBottom: 0 }}>الخدمة نشطة</span>
+                {/* Toggle Switch */}
+                <div
+                  onClick={() => setCleaningServiceFormData(p => ({...p, is_active: !p.is_active}))}
+                  style={{
+                    position: 'relative', width: '44px', height: '24px', borderRadius: '999px',
+                    background: cleaningServiceFormData.is_active ? 'var(--primary)' : '#d1d5db',
+                    transition: 'background 0.25s', cursor: 'pointer', flexShrink: 0,
+                  }}
+                >
+                  <div style={{
+                    position: 'absolute', top: '3px',
+                    left: cleaningServiceFormData.is_active ? '23px' : '3px',
+                    width: '18px', height: '18px', borderRadius: '50%',
+                    background: 'white', transition: 'left 0.25s',
+                    boxShadow: '0 1px 4px rgba(0,0,0,0.2)',
+                  }} />
+                </div>
               </label>
             </div>
           </div>
