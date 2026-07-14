@@ -11,9 +11,7 @@ import {
   UserCog,
   Settings as SettingsIcon,
   LogOut,
-  Sparkles,
   Shirt,
-  Wallet,
   Store,
   Crown,
 } from 'lucide-react';
