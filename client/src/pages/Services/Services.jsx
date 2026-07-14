@@ -841,6 +841,7 @@ export default function Services() {
         isOpen={showCleaningServiceModal} 
         onClose={handleCloseCleaningService}
         title={cleaningServiceModalMode === 'add' ? 'إضافة خدمة جديدة' : 'تعديل الخدمة'}
+        width="620px"
       >
         <form onSubmit={handleCleaningServiceSubmit}>
 
