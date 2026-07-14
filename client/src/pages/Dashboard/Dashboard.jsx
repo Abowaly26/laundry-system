@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -44,7 +44,9 @@ export default function Dashboard() {
   const [overdue, setOverdue] = useState([]);
   const [loading, setLoading] = useState(true);
   const [revenuePeriod, setRevenuePeriod] = useState('7days');
+  const [showRevenueDropdown, setShowRevenueDropdown] = useState(false);
   const [revenueLoading, setRevenueLoading] = useState(false);
+  const revenueDropdownRef = useRef(null);
   const { isSuperOwner, isWorker, laundryName } = useAuth();
   const { settings } = useSettings();
   const navigate = useNavigate();
@@ -70,6 +72,16 @@ export default function Dashboard() {
   useEffect(() => {
     loadRevenue();
   }, [revenuePeriod]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (revenueDropdownRef.current && !revenueDropdownRef.current.contains(event.target)) {
+        setShowRevenueDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const loadRevenue = async () => {
     try {
@@ -346,16 +358,38 @@ export default function Dashboard() {
         <div className="chart-card">
           <div className="chart-card-header flex justify-between items-center">
             <h3 className="chart-card-title">{t('dashboard.revenueTitle') || 'الإيرادات'}</h3>
-            <select 
-              className="form-input-compact" 
-              value={revenuePeriod} 
-              onChange={(e) => setRevenuePeriod(e.target.value)}
-              style={{ width: 'auto', minWidth: '120px', padding: '4px 8px', fontSize: '0.9rem' }}
-            >
-              <option value="7days">{t('dashboard.last7days') || 'آخر 7 أيام'}</option>
-              <option value="30days">{t('dashboard.last30days') || 'آخر 30 يوم'}</option>
-              <option value="this_month">{t('dashboard.thisMonth') || 'هذا الشهر'}</option>
-            </select>
+            <div className="table-select-container" style={{ width: '130px' }} ref={revenueDropdownRef}>
+              <button
+                type="button"
+                className="table-select-trigger"
+                onClick={() => setShowRevenueDropdown(!showRevenueDropdown)}
+              >
+                {revenuePeriod === '7days' ? (t('dashboard.last7days') || 'آخر 7 أيام') : 
+                 revenuePeriod === '30days' ? (t('dashboard.last30days') || 'آخر 30 يوم') : 
+                 (t('dashboard.thisMonth') || 'هذا الشهر')}
+              </button>
+              {showRevenueDropdown && (
+                <div className="table-select-dropdown">
+                  {[
+                    { value: '7days', label: t('dashboard.last7days') || 'آخر 7 أيام' },
+                    { value: '30days', label: t('dashboard.last30days') || 'آخر 30 يوم' },
+                    { value: 'this_month', label: t('dashboard.thisMonth') || 'هذا الشهر' }
+                  ].map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      className={`table-select-item ${revenuePeriod === opt.value ? 'selected' : ''}`}
+                      onClick={() => {
+                        setRevenuePeriod(opt.value);
+                        setShowRevenueDropdown(false);
+                      }}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
           <div className="chart-card-body" style={{ height: 300, position: 'relative' }}>
             {revenueLoading && (
