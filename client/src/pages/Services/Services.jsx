@@ -876,40 +876,17 @@ export default function Services() {
           <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-end', marginBottom: '20px' }}>
             <div style={{ flex: '0 0 auto', width: '180px' }}>
               <label className="form-label">وحدة القياس</label>
-              <div className="table-select-container" ref={unitDropdownRef} style={{ position: 'relative' }}>
-                <button
-                  type="button"
-                  className="table-select-trigger"
-                  style={{ width: '100%' }}
-                  onClick={(e) => {
-                    const rect = e.currentTarget.getBoundingClientRect();
-                    setUnitDropdownPos({ top: rect.bottom + 4, left: rect.left, width: rect.width });
-                    setShowUnitDropdown(!showUnitDropdown);
-                  }}
-                >
-                  {cleaningServiceFormData.unit === 'piece' ? 'قطعة (Piece)' : 'كيلوجرام (Kg)'}
-                </button>
-                {showUnitDropdown && (
-                  <div className="table-select-dropdown" style={{ position: 'fixed', top: unitDropdownPos.top, left: unitDropdownPos.left, width: unitDropdownPos.width, zIndex: 99999 }}>
-                    {[
-                      { value: 'piece', label: 'قطعة (Piece)' },
-                      { value: 'kg', label: 'كيلوجرام (Kg)' }
-                    ].map(opt => (
-                      <button
-                        key={opt.value}
-                        type="button"
-                        className={`table-select-item ${cleaningServiceFormData.unit === opt.value ? 'selected' : ''}`}
-                        onClick={() => {
-                          setCleaningServiceFormData(p => ({...p, unit: opt.value}));
-                          setShowUnitDropdown(false);
-                        }}
-                      >
-                        {opt.label}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+            <div className="table-select-container" ref={unitDropdownRef} style={{ position: 'relative' }}>
+              <select
+                className="form-select"
+                value={cleaningServiceFormData.unit}
+                onChange={(e) => setCleaningServiceFormData(p => ({...p, unit: e.target.value}))}
+                style={{ width: '100%' }}
+              >
+                <option value="piece">قطعة (Piece)</option>
+                <option value="kg">كيلوجرام (Kg)</option>
+              </select>
+            </div>
             </div>
 
             <div style={{ flex: 1, paddingBottom: '4px' }}>
