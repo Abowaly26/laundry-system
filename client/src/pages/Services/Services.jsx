@@ -36,6 +36,19 @@ export default function Services() {
   });
   const [newSizeInput, setNewSizeInput] = useState('');
 
+  // Cleaning Services State
+  const [showCleaningServiceModal, setShowCleaningServiceModal] = useState(false);
+  const [cleaningServiceModalMode, setCleaningServiceModalMode] = useState('add'); // 'add' | 'edit'
+  const [editingCleaningService, setEditingCleaningService] = useState(null);
+  const [cleaningServiceFormData, setCleaningServiceFormData] = useState({
+    name_ar: '',
+    name: '',
+    price: 0,
+    unit: 'piece',
+    estimated_hours: 24,
+    is_active: true
+  });
+
   // Load General Services
   const loadServices = async () => {
     setLoading(true);
@@ -119,6 +132,63 @@ export default function Services() {
     loadServices();
     loadItemTypes();
   }, []);
+
+  // --- Cleaning Services Handlers ---
+  const handleOpenCleaningService = (mode, service = null) => {
+    setCleaningServiceModalMode(mode);
+    setEditingCleaningService(service);
+    if (mode === 'edit' && service) {
+      setCleaningServiceFormData({
+        name_ar: service.name_ar,
+        name: service.name || '',
+        price: service.price,
+        unit: service.unit,
+        estimated_hours: service.estimated_hours,
+        is_active: service.is_active
+      });
+    } else {
+      setCleaningServiceFormData({
+        name_ar: '',
+        name: '',
+        price: 0,
+        unit: 'piece',
+        estimated_hours: 24,
+        is_active: true
+      });
+    }
+    setShowCleaningServiceModal(true);
+  };
+
+  const handleCloseCleaningService = () => {
+    setShowCleaningServiceModal(false);
+    setEditingCleaningService(null);
+  };
+
+  const handleCleaningServiceSubmit = async (e) => {
+    e.preventDefault();
+    if (!cleaningServiceFormData.name_ar) {
+      showToast(t('services.nameArRequired') || 'الرجاء إدخال اسم الخدمة بالعربية', 'warning');
+      return;
+    }
+    try {
+      if (cleaningServiceModalMode === 'add') {
+        const res = await servicesAPI.create(cleaningServiceFormData);
+        if (res.success) {
+          showToast(t('services.addSuccess') || 'تم إضافة الخدمة بنجاح', 'success');
+        }
+      } else {
+        const res = await servicesAPI.update(editingCleaningService.id, cleaningServiceFormData);
+        if (res.success) {
+          showToast(t('services.updateSuccess') || 'تم تحديث الخدمة بنجاح', 'success');
+        }
+      }
+      handleCloseCleaningService();
+      loadServices();
+    } catch (err) {
+      console.error(err);
+      showToast(t('services.saveError') || 'خطأ أثناء حفظ الخدمة', 'error');
+    }
+  };
 
   // Item Types & Pricing Matrix Actions
   const handleOpenAddItemType = () => {
@@ -435,6 +505,40 @@ export default function Services() {
       })()}
 
       {/* Search Bar & Control Panel */}
+      {/* Services Section */}
+      <div className="cleaning-services-section mb-lg">
+        <div className="section-header flex justify-between items-center mb-md">
+          <h2 className="section-title text-lg font-bold flex items-center gap-sm">
+            <Sparkles size={20} className="text-primary" />
+            طرق التنظيف (الأعمدة)
+          </h2>
+          {isAdmin && (
+            <Button variant="secondary" onClick={() => handleOpenCleaningService('add')}>
+              <Plus size={16} /> إضافة خدمة
+            </Button>
+          )}
+        </div>
+        <div className="cleaning-services-grid" style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+          {services.map(s => (
+            <div 
+              key={s.id} 
+              className={`service-chip ${!s.is_active ? 'inactive' : ''}`}
+              onClick={() => isAdmin && handleOpenCleaningService('edit', s)}
+              style={{
+                background: 'var(--bg-card)', padding: '10px 16px', borderRadius: '8px', 
+                border: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '8px',
+                cursor: isAdmin ? 'pointer' : 'default', transition: 'all 0.2s'
+              }}
+            >
+              <span style={{ fontWeight: 500, color: s.is_active ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
+                {s.name_ar}
+              </span>
+              {!s.is_active && <span style={{ fontSize: '10px', background: '#eee', padding: '2px 6px', borderRadius: '4px' }}>معطل</span>}
+            </div>
+          ))}
+        </div>
+      </div>
+
       <div className="services-search-control-card mb-md">
         <div className="search-input-wrapper">
           <Search size={19} className="search-icon-left" />
@@ -722,6 +826,94 @@ export default function Services() {
             </Button>
             <Button variant="primary" type="submit">
               {t('services.saveBtn') || 'حفظ القطعة والأسعار'}
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* 2) Cleaning Service Modal */}
+      <Modal 
+        isOpen={showCleaningServiceModal} 
+        onClose={handleCloseCleaningService}
+        title={cleaningServiceModalMode === 'add' ? 'إضافة خدمة تنظيف جديدة' : 'تعديل خدمة التنظيف'}
+      >
+        <form onSubmit={handleCleaningServiceSubmit}>
+          <div className="form-group mb-md">
+            <label>الاسم بالعربية *</label>
+            <input
+              type="text"
+              name="name_ar"
+              className="form-control"
+              value={cleaningServiceFormData.name_ar}
+              onChange={(e) => setCleaningServiceFormData(p => ({...p, name_ar: e.target.value}))}
+              required
+              placeholder="مثال: غسيل وكي مستعجل"
+            />
+          </div>
+          <div className="form-group mb-md">
+            <label>الاسم بالإنجليزية</label>
+            <input
+              type="text"
+              name="name"
+              className="form-control"
+              value={cleaningServiceFormData.name}
+              onChange={(e) => setCleaningServiceFormData(p => ({...p, name: e.target.value}))}
+              placeholder="e.g. Urgent Wash & Iron"
+            />
+          </div>
+          <div className="form-group mb-md">
+            <label>الوحدة الافتراضية</label>
+            <select
+              name="unit"
+              className="form-control"
+              value={cleaningServiceFormData.unit}
+              onChange={(e) => setCleaningServiceFormData(p => ({...p, unit: e.target.value}))}
+            >
+              <option value="piece">قطعة (Piece)</option>
+              <option value="kg">كيلوجرام (Kg)</option>
+            </select>
+          </div>
+          <div className="flex gap-md mb-md">
+            <div className="form-group flex-1">
+              <label>السعر الافتراضي</label>
+              <input
+                type="number"
+                name="price"
+                min="0"
+                step="0.01"
+                className="form-control"
+                value={cleaningServiceFormData.price}
+                onChange={(e) => setCleaningServiceFormData(p => ({...p, price: e.target.value}))}
+              />
+            </div>
+            <div className="form-group flex-1">
+              <label>المدة المتوقعة (ساعات)</label>
+              <input
+                type="number"
+                name="estimated_hours"
+                min="1"
+                className="form-control"
+                value={cleaningServiceFormData.estimated_hours}
+                onChange={(e) => setCleaningServiceFormData(p => ({...p, estimated_hours: e.target.value}))}
+              />
+            </div>
+          </div>
+          <div className="form-group mb-md">
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={cleaningServiceFormData.is_active}
+                onChange={(e) => setCleaningServiceFormData(p => ({...p, is_active: e.target.checked}))}
+              />
+              الخدمة نشطة (تظهر للعملاء والموظفين)
+            </label>
+          </div>
+          <div className="flex justify-end gap-sm mt-lg">
+            <Button variant="secondary" type="button" onClick={handleCloseCleaningService}>
+              إلغاء
+            </Button>
+            <Button variant="primary" type="submit">
+              حفظ الخدمة
             </Button>
           </div>
         </form>
