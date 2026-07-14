@@ -841,25 +841,26 @@ export default function Services() {
         title={cleaningServiceModalMode === 'add' ? 'إضافة خدمة تنظيف جديدة' : 'تعديل خدمة التنظيف'}
       >
         <form onSubmit={handleCleaningServiceSubmit}>
-          <div className="flex gap-md mb-md">
-            <div className="form-group flex-1">
+          <div className="flex flex-col md:flex-row gap-4 mb-4">
+            <div className="flex-1 text-right">
               <label className="text-gray-700 font-medium mb-1 block">الاسم بالعربية *</label>
               <input
                 type="text"
                 name="name_ar"
-                className="form-control"
+                className="form-control w-full"
                 value={cleaningServiceFormData.name_ar}
                 onChange={(e) => setCleaningServiceFormData(p => ({...p, name_ar: e.target.value}))}
                 required
                 placeholder="مثال: غسيل وكي مستعجل"
               />
             </div>
-            <div className="form-group flex-1">
+            <div className="flex-1 text-right">
               <label className="text-gray-700 font-medium mb-1 block">الاسم بالإنجليزية</label>
               <input
                 type="text"
                 name="name"
-                className="form-control"
+                className="form-control w-full text-left"
+                dir="ltr"
                 value={cleaningServiceFormData.name}
                 onChange={(e) => setCleaningServiceFormData(p => ({...p, name: e.target.value}))}
                 placeholder="e.g. Urgent Wash & Iron"
@@ -867,11 +868,11 @@ export default function Services() {
             </div>
           </div>
 
-          <div className="form-group mb-md">
+          <div className="mb-4 text-right">
             <label className="text-gray-700 font-medium mb-1 block">الوحدة الافتراضية</label>
             <select
               name="unit"
-              className="form-control"
+              className="form-control w-full sm:w-1/2"
               value={cleaningServiceFormData.unit}
               onChange={(e) => setCleaningServiceFormData(p => ({...p, unit: e.target.value}))}
             >
@@ -879,14 +880,16 @@ export default function Services() {
               <option value="kg">كيلوجرام (Kg)</option>
             </select>
           </div>
-          <div className="form-group mb-md">
-            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+          
+          <div className="mb-6 text-right">
+            <label className="flex items-center justify-start gap-3 cursor-pointer p-4 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors w-full sm:w-2/3">
               <input
                 type="checkbox"
+                className="w-5 h-5 text-primary border-gray-300 rounded focus:ring-primary"
                 checked={cleaningServiceFormData.is_active}
                 onChange={(e) => setCleaningServiceFormData(p => ({...p, is_active: e.target.checked}))}
               />
-              الخدمة نشطة (تظهر للعملاء والموظفين)
+              <span className="text-gray-700 font-medium text-base">الخدمة نشطة (تظهر للعملاء والموظفين)</span>
             </label>
           </div>
           <div className="flex justify-end gap-sm mt-lg">
