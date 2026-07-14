@@ -324,14 +324,16 @@ export default function Dashboard() {
             {t('dashboard.overdueOrders')} ({overdueList.length})
           </h3>
           {overdueList.slice(0, 5).map((order) => (
-            <div className="overdue-alert" key={order._id || order.id}>
+            <div 
+              className="overdue-alert" 
+              key={order._id || order.id}
+              onClick={() => navigate(`/orders/${order._id || order.id}`)}
+              style={{ cursor: 'pointer' }}
+            >
               <AlertTriangle size={18} className="alert-icon" />
               <span>
                 {t('dashboard.orderId')}{' '}
-                <span
-                  className="order-link"
-                  onClick={() => navigate(`/orders/${order._id || order.id}`)}
-                >
+                <span className="order-link">
                   #{order.orderNumber || order.id}
                 </span>
                 {' - '}
