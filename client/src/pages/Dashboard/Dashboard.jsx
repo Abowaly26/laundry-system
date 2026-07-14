@@ -342,7 +342,7 @@ export default function Dashboard() {
       </div>
 
       {/* Charts */}
-      <div className="charts-grid">
+      <div className="charts-row">
         <div className="chart-card">
           <div className="chart-card-header flex justify-between items-center">
             <h3 className="chart-card-title">{t('dashboard.revenueTitle') || 'الإيرادات'}</h3>
