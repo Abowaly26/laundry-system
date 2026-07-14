@@ -43,6 +43,8 @@ export default function Services() {
   const [unitDropdownPos, setUnitDropdownPos] = useState({ top: 0, left: 0, width: 0 });
   const unitDropdownRef = useRef(null);
   const [showCleaningServiceModal, setShowCleaningServiceModal] = useState(false);
+  const [showAddServiceDropdown, setShowAddServiceDropdown] = useState(false);
+  const addServiceDropdownRef = useRef(null);
   const [cleaningServiceModalMode, setCleaningServiceModalMode] = useState('add'); // 'add' | 'edit'
   const [editingCleaningService, setEditingCleaningService] = useState(null);
   const [cleaningServiceFormData, setCleaningServiceFormData] = useState({
@@ -799,10 +801,65 @@ export default function Services() {
 
           {/* Pricing Grid Matrix */}
           <div className="form-group mt-md">
-            <label className="form-label font-bold text-primary flex items-center">
-              <ShieldAlert size={16} style={{ marginLeft: '6px' }} />
-              {t('services.matrixLabel') || 'شبكة أسعار الخدمات لكل حجم مضاف (ر.س)'}
-            </label>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+              <label className="form-label font-bold text-primary flex items-center" style={{ marginBottom: 0 }}>
+                <ShieldAlert size={16} style={{ marginLeft: '6px' }} />
+                {t('services.matrixLabel') || 'شبكة أسعار الخدمات لكل حجم مضاف (ر.س)'}
+              </label>
+
+              {/* Add Service Button / Dropdown */}
+              {itemTypeFormData.excludedServiceIds && itemTypeFormData.excludedServiceIds.length > 0 && (() => {
+                const excludedServices = itemTypeFormData.excludedServiceIds
+                  .map(id => services.find(s => s.id === id))
+                  .filter(Boolean);
+                
+                return (
+                  <div ref={addServiceDropdownRef} style={{ position: 'relative' }}>
+                    <button
+                      type="button"
+                      className="btn btn-secondary btn-sm"
+                      onClick={() => setShowAddServiceDropdown(!showAddServiceDropdown)}
+                      style={{
+                        padding: '6px 12px',
+                        fontSize: '0.85rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        cursor: 'pointer',
+                        borderRadius: '6px',
+                        border: '1.5px solid var(--border)',
+                        background: 'var(--bg-card)',
+                        color: 'var(--text)',
+                        fontWeight: 600
+                      }}
+                    >
+                      <Plus size={14} />
+                      إضافة خدمة
+                    </button>
+                    {showAddServiceDropdown && (
+                      <div className="table-select-dropdown" style={{ position: 'absolute', top: 'calc(100% + 4px)', left: 0, minWidth: '150px', zIndex: 100 }}>
+                        {excludedServices.map(svc => (
+                          <button
+                            key={svc.id}
+                            type="button"
+                            className="table-select-item"
+                            onClick={() => {
+                              setItemTypeFormData(prev => ({
+                                ...prev,
+                                excludedServiceIds: (prev.excludedServiceIds || []).filter(x => x !== svc.id)
+                              }));
+                              setShowAddServiceDropdown(false);
+                            }}
+                          >
+                            {svc.name_ar}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+            </div>
             
             <div className="pricing-grid-matrix-container mt-sm">
               {itemTypeFormData.sizes.length === 0 ? (
