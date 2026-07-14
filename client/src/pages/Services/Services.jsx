@@ -844,8 +844,8 @@ export default function Services() {
       >
         <form onSubmit={handleCleaningServiceSubmit}>
 
-          <div className="form-row">
-            <div className="form-group">
+          <div className="form-row" style={{ marginBottom: '12px' }}>
+            <div className="form-group" style={{ marginBottom: 0 }}>
               <label className="form-label">الاسم بالعربية *</label>
               <input
                 type="text"
@@ -856,7 +856,7 @@ export default function Services() {
                 placeholder="مثال: غسيل عادي"
               />
             </div>
-            <div className="form-group">
+            <div className="form-group" style={{ marginBottom: 0 }}>
               <label className="form-label">الاسم بالإنجليزية</label>
               <input
                 type="text"
@@ -870,52 +870,55 @@ export default function Services() {
             </div>
           </div>
 
-          <div className="form-group">
-            <label className="form-label">وحدة القياس</label>
-            <div className="table-select-container" ref={unitDropdownRef} style={{ position: 'relative' }}>
-              <button
-                type="button"
-                className="table-select-trigger"
-                style={{ width: '100%', justifyContent: 'space-between' }}
-                onClick={() => setShowUnitDropdown(!showUnitDropdown)}
-              >
-                {cleaningServiceFormData.unit === 'piece' ? 'قطعة (Piece)' : 'كيلوجرام (Kg)'}
-              </button>
-              {showUnitDropdown && (
-                <div className="table-select-dropdown" style={{ width: '100%' }}>
-                  {[
-                    { value: 'piece', label: 'قطعة (Piece)' },
-                    { value: 'kg', label: 'كيلوجرام (Kg)' }
-                  ].map(opt => (
-                    <button
-                      key={opt.value}
-                      type="button"
-                      className={`table-select-item ${cleaningServiceFormData.unit === opt.value ? 'selected' : ''}`}
-                      onClick={() => {
-                        setCleaningServiceFormData(p => ({...p, unit: opt.value}));
-                        setShowUnitDropdown(false);
-                      }}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
-              )}
+          {/* Unit + Active in one compact row */}
+          <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-end', marginBottom: '20px' }}>
+            <div style={{ flex: '0 0 auto', width: '180px' }}>
+              <label className="form-label">وحدة القياس</label>
+              <div className="table-select-container" ref={unitDropdownRef} style={{ position: 'relative' }}>
+                <button
+                  type="button"
+                  className="table-select-trigger"
+                  style={{ width: '100%' }}
+                  onClick={() => setShowUnitDropdown(!showUnitDropdown)}
+                >
+                  {cleaningServiceFormData.unit === 'piece' ? 'قطعة (Piece)' : 'كيلوجرام (Kg)'}
+                </button>
+                {showUnitDropdown && (
+                  <div className="table-select-dropdown" style={{ width: '100%' }}>
+                    {[
+                      { value: 'piece', label: 'قطعة (Piece)' },
+                      { value: 'kg', label: 'كيلوجرام (Kg)' }
+                    ].map(opt => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        className={`table-select-item ${cleaningServiceFormData.unit === opt.value ? 'selected' : ''}`}
+                        onClick={() => {
+                          setCleaningServiceFormData(p => ({...p, unit: opt.value}));
+                          setShowUnitDropdown(false);
+                        }}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div style={{ flex: 1, paddingBottom: '4px' }}>
+              <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', userSelect: 'none', marginBottom: 0, paddingTop: '22px' }}>
+                <input
+                  type="checkbox"
+                  checked={cleaningServiceFormData.is_active}
+                  onChange={(e) => setCleaningServiceFormData(p => ({...p, is_active: e.target.checked}))}
+                />
+                الخدمة نشطة
+              </label>
             </div>
           </div>
 
-          <div className="form-group">
-            <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', userSelect: 'none' }}>
-              <input
-                type="checkbox"
-                checked={cleaningServiceFormData.is_active}
-                onChange={(e) => setCleaningServiceFormData(p => ({...p, is_active: e.target.checked}))}
-              />
-              الخدمة نشطة (تظهر للعملاء والموظفين)
-            </label>
-          </div>
-
-          <div className="flex justify-between mt-md">
+          <div className="flex justify-between mt-sm">
             <Button variant="secondary" type="button" onClick={handleCloseCleaningService}>
               إلغاء
             </Button>
