@@ -189,7 +189,7 @@ export default function Settings() {
                   <li><code>{`{total_amount}`}</code> - {t('settings.phTotalAmount') || 'إجمالي المبلغ المستحق'}</li>
                   <li><code>{`{remaining_amount}`}</code> - {t('settings.phRemainingAmount') || 'المبلغ المتبقي عند التسليم'}</li>
                   <li><code>{`{currency}`}</code> - {t('settings.phCurrency') || 'العملة الافتراضية'}</li>
-                  <li><code>{`{delivery_date}`}</code> - {t('settings.phDeliveryDate') || 'موعد الاستلام المتوقع'}</li>
+                  <li><code>{`{delivery_date}`}</code> - {t('settings.phDeliveryDate') || 'موعد التسليم'}</li>
                   <li><code>{`{tracking_link}`}</code> - {t('settings.phTrackingLink') || 'رابط تعقب حالة الغسيل'}</li>
                 </ul>
               </div>

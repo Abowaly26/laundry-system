@@ -442,7 +442,7 @@ export default function OrderDetails() {
             <div className="detail-item">
               <div className="detail-item-left">
                 <Clock size={16} className="detail-icon" />
-                <span className="detail-label">{t('orders.expectedDelivery') || 'موعد التسليم المتوقع:'}</span>
+                <span className="detail-label">{t('orders.expectedDelivery') || 'موعد التسليم:'}</span>
               </div>
               <span className="detail-value">{formatDate(order.expected_delivery_at)}</span>
             </div>

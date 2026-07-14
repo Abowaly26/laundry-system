@@ -17,7 +17,7 @@ const DEFAULT_SETTINGS = {
 - عدد القطع: {items_count}
 - إجمالي الفاتورة: {total_amount} {currency}
 - المتبقي للدفع: {remaining_amount} {currency}
-- موعد التسليم المتوقع: {delivery_date}
+- موعد التسليم: {delivery_date}
 
 يمكنك تتبع حالة غسيل وكي ملابسك مباشرة من رابط التتبع الخاص بك:
 {tracking_link}

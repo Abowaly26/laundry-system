@@ -164,7 +164,7 @@ export default function CustomerPortal() {
               {/* تفاصيل التكلفة والمواعيد */}
               <div className="order-result-meta-grid mt-md">
                 <div className="meta-box">
-                  <span className="lbl">{t('customerPortal.expectedDelivery') || 'التسليم المتوقع'}</span>
+                  <span className="lbl">{t('customerPortal.expectedDelivery') || 'موعد التسليم'}</span>
                   <span className="val">{formatDate(order.expected_delivery_at)}</span>
                 </div>
                 <div className="meta-box">

@@ -83,7 +83,7 @@ export default function PrintInvoice({ order }) {
         </div>
         {order.expected_delivery_at && (
           <div className="receipt-row">
-            <strong style={{ color: '#444' }}>{t('print.expectedDelivery') || 'التسليم المتوقع:'}</strong> 
+            <strong style={{ color: '#444' }}>{t('print.expectedDelivery') || 'موعد التسليم:'}</strong> 
             <span>{formatDate(order.expected_delivery_at)}</span>
           </div>
         )}
