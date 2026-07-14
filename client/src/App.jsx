@@ -13,6 +13,7 @@ import OrderDetails from './pages/Orders/OrderDetails';
 import ItemTracking from './pages/Items/ItemTracking';
 import Customers from './pages/Customers/Customers';
 import Services from './pages/Services/Services';
+import CleaningServices from './pages/CleaningServices/CleaningServices';
 import Finance from './pages/Finance/Finance';
 import Users from './pages/Users/Users';
 import Settings from './pages/Settings/Settings';
@@ -73,6 +74,14 @@ function App() {
                 element={
                   <ProtectedRoute adminOnly>
                     <Services />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="cleaning-services" 
+                element={
+                  <ProtectedRoute adminOnly>
+                    <CleaningServices />
                   </ProtectedRoute>
                 } 
               />
