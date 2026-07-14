@@ -209,7 +209,8 @@ export default function Services() {
       name_ar: '',
       name_en: '',
       sizes: ['عادي'],
-      prices: initialPrices
+      prices: initialPrices,
+      excludedServiceIds: []
     });
     setNewSizeInput('');
     setShowItemTypeModal(true);
@@ -219,6 +220,17 @@ export default function Services() {
     setItemTypeModalMode('edit');
     setSelectedItemTypeId(itemType.id);
     
+    // Detect which active services have no price entry at all in this itemType
+    const excludedServiceIds = [];
+    services.forEach(s => {
+      const hasPrice = (itemType.sizes || []).some(sz => 
+        (sz.prices || []).some(pr => pr.service_id === s.id)
+      );
+      if (!hasPrice) {
+        excludedServiceIds.push(s.id);
+      }
+    });
+
     // Map existing nested prices into formData prices state structure
     const mappedPrices = {};
     (itemType.sizes || []).forEach(sz => {
@@ -240,7 +252,8 @@ export default function Services() {
       name_ar: itemType.name_ar,
       name_en: itemType.name_en || '',
       sizes: sortedSizes,
-      prices: mappedPrices
+      prices: mappedPrices,
+      excludedServiceIds: excludedServiceIds
     });
     setNewSizeInput('');
     setShowItemTypeModal(true);
@@ -320,8 +333,11 @@ export default function Services() {
         cleanedPrices[sz] = {};
         const sizePrices = itemTypeFormData.prices[sz] || {};
         Object.keys(sizePrices).forEach(svcId => {
-          const val = parseFloat(sizePrices[svcId]);
-          cleanedPrices[sz][svcId] = !isNaN(val) && val >= 0 ? val : 0;
+          const numericSvcId = parseInt(svcId);
+          if (itemTypeFormData.excludedServiceIds && !itemTypeFormData.excludedServiceIds.includes(numericSvcId)) {
+            const val = parseFloat(sizePrices[svcId]);
+            cleanedPrices[sz][svcId] = !isNaN(val) && val >= 0 ? val : 0;
+          }
         });
       });
 
@@ -595,6 +611,14 @@ export default function Services() {
           <div className="services-grid mt-md">
             {filteredItemTypes.map((itemType) => {
               const sortedCardSizes = sortSizes(itemType.sizes || []);
+              const cardServices = services.filter(s => 
+                s.is_active && 
+                (itemType.sizes || []).some(sz => 
+                  (sz.prices || []).some(pr => pr.service_id === s.id)
+                )
+              );
+              const displayServices = cardServices.length > 0 ? cardServices : services.filter(s => s.is_active);
+
               return (
                 <Card 
                   key={itemType.id} 
@@ -648,7 +672,7 @@ export default function Services() {
                       <thead>
                         <tr>
                           <th style={{ minWidth: '75px' }}>{t('services.colSize') || 'الحجم'}</th>
-                          {services.filter(s => s.is_active).map(svc => (
+                          {displayServices.map(svc => (
                             <th key={svc.id} style={{ minWidth: '95px', textAlign: 'center' }}>{i18n.language === 'en' && svc.name_en ? svc.name_en : svc.name_ar}</th>
                           ))}
                         </tr>
@@ -660,7 +684,7 @@ export default function Services() {
                           return (
                             <tr key={typeof sz === 'object' && sz !== null ? (sz.id || sName) : sName}>
                               <td className="size-group-cell">{sName}</td>
-                              {services.filter(s => s.is_active).map(svc => {
+                              {displayServices.map(svc => {
                                 const priceObj = sPrices.find(p => p.service_id === svc.id);
                                 const priceVal = parseFloat(priceObj ? priceObj.price : 0) || 0;
                                 return (
@@ -789,8 +813,25 @@ export default function Services() {
                     <thead>
                       <tr>
                         <th>{t('services.colSize') || 'الحجم'}</th>
-                        {services.filter(s => s.is_active).map(svc => (
-                          <th key={svc.id}>{i18n.language === 'en' && svc.name_en ? svc.name_en : svc.name_ar}</th>
+                        {services.filter(s => s.is_active && !(itemTypeFormData.excludedServiceIds || []).includes(s.id)).map(svc => (
+                          <th key={svc.id}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px' }}>
+                              <span>{i18n.language === 'en' && svc.name_en ? svc.name_en : svc.name_ar}</span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setItemTypeFormData(prev => ({
+                                    ...prev,
+                                    excludedServiceIds: [...(prev.excludedServiceIds || []), svc.id]
+                                  }));
+                                }}
+                                title="استبعاد الخدمة"
+                                style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#ef4444', fontSize: '1.2rem', padding: '0 4px', display: 'flex', alignItems: 'center', fontWeight: 'bold' }}
+                              >
+                                &times;
+                              </button>
+                            </div>
+                          </th>
                         ))}
                       </tr>
                     </thead>
@@ -798,7 +839,7 @@ export default function Services() {
                       {sortSizes(itemTypeFormData.sizes).map(sizeName => (
                         <tr key={sizeName}>
                           <td className="size-name-col font-bold">{sizeName}</td>
-                          {services.filter(s => s.is_active).map(svc => {
+                          {services.filter(s => s.is_active && !(itemTypeFormData.excludedServiceIds || []).includes(s.id)).map(svc => {
                             let currentVal = itemTypeFormData.prices[sizeName] && itemTypeFormData.prices[sizeName][svc.id] !== undefined
                               ? itemTypeFormData.prices[sizeName][svc.id]
                               : '';

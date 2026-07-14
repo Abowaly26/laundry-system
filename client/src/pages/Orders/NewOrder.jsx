@@ -992,33 +992,44 @@ export default function NewOrder() {
                             >
                               {services.find(s => s.id === parseInt(item.service_id))?.name_ar || t('orders.chooseService') || 'اختر الخدمة...'}
                             </button>
-                            {openServiceIndex === index && (
-                              <div className="table-select-dropdown">
-                                <button
-                                  type="button"
-                                  className={`table-select-item ${!item.service_id ? 'selected' : ''}`}
-                                  onClick={() => {
-                                    handleServiceChange(index, '');
-                                    setOpenServiceIndex(null);
-                                  }}
-                                >
-                                  {t('orders.chooseService') || 'اختر الخدمة...'}
-                                </button>
-                                {services.map((s) => (
+                            {openServiceIndex === index && (() => {
+                              const foundType = itemTypes.find(t => t.name_ar === item.item_type);
+                              const foundSize = foundType ? ((foundType.sizes || []).find(sz => sz.size_name === item.size_name) 
+                                || (foundType.sizes && foundType.sizes.length > 0 ? foundType.sizes[0] : null)) : null;
+                              const hasConfiguredPrices = foundSize && (foundSize.prices || []).length > 0;
+                              const dropdownServices = services.filter(s => 
+                                s.is_active && 
+                                (!hasConfiguredPrices || (foundSize.prices || []).some(pr => pr.service_id === s.id))
+                              );
+
+                              return (
+                                <div className="table-select-dropdown">
                                   <button
-                                    key={s.id}
                                     type="button"
-                                    className={`table-select-item ${item.service_id === String(s.id) ? 'selected' : ''}`}
+                                    className={`table-select-item ${!item.service_id ? 'selected' : ''}`}
                                     onClick={() => {
-                                      handleServiceChange(index, String(s.id));
+                                      handleServiceChange(index, '');
                                       setOpenServiceIndex(null);
                                     }}
                                   >
-                                    {s.name_ar}
+                                    {t('orders.chooseService') || 'اختر الخدمة...'}
                                   </button>
-                                ))}
-                              </div>
-                            )}
+                                  {dropdownServices.map((s) => (
+                                    <button
+                                      key={s.id}
+                                      type="button"
+                                      className={`table-select-item ${item.service_id === String(s.id) ? 'selected' : ''}`}
+                                      onClick={() => {
+                                        handleServiceChange(index, String(s.id));
+                                        setOpenServiceIndex(null);
+                                      }}
+                                    >
+                                      {s.name_ar}
+                                    </button>
+                                  ))}
+                                </div>
+                              );
+                            })()}
                           </div>
                         </td>
                         <td>
