@@ -867,30 +867,17 @@ export default function Services() {
             </div>
           </div>
 
-          <div className="flex gap-md mb-md">
-            <div className="form-group flex-1">
-              <label className="text-gray-700 font-medium mb-1 block">الوحدة الافتراضية</label>
-              <select
-                name="unit"
-                className="form-control"
-                value={cleaningServiceFormData.unit}
-                onChange={(e) => setCleaningServiceFormData(p => ({...p, unit: e.target.value}))}
-              >
-                <option value="piece">قطعة (Piece)</option>
-                <option value="kg">كيلوجرام (Kg)</option>
-              </select>
-            </div>
-            <div className="form-group flex-1">
-              <label className="text-gray-700 font-medium mb-1 block">المدة المتوقعة للانتهاء (ساعات)</label>
-              <input
-                type="number"
-                name="estimated_hours"
-                min="1"
-                className="form-control"
-                value={cleaningServiceFormData.estimated_hours}
-                onChange={(e) => setCleaningServiceFormData(p => ({...p, estimated_hours: e.target.value}))}
-              />
-            </div>
+          <div className="form-group mb-md">
+            <label className="text-gray-700 font-medium mb-1 block">الوحدة الافتراضية</label>
+            <select
+              name="unit"
+              className="form-control"
+              value={cleaningServiceFormData.unit}
+              onChange={(e) => setCleaningServiceFormData(p => ({...p, unit: e.target.value}))}
+            >
+              <option value="piece">قطعة (Piece)</option>
+              <option value="kg">كيلوجرام (Kg)</option>
+            </select>
           </div>
           <div className="form-group mb-md">
             <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
