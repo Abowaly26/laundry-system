@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Plus, Edit2, Trash2, Sparkles, Tags, ShieldAlert, X, Download, Search, Wand2 } from 'lucide-react';
 import { servicesAPI, itemTypesAPI } from '../../services/api';
@@ -39,6 +39,8 @@ export default function Services() {
   const [newSizeInput, setNewSizeInput] = useState('');
 
   // Cleaning Services State
+  const [showUnitDropdown, setShowUnitDropdown] = useState(false);
+  const unitDropdownRef = useRef(null);
   const [showCleaningServiceModal, setShowCleaningServiceModal] = useState(false);
   const [cleaningServiceModalMode, setCleaningServiceModalMode] = useState('add'); // 'add' | 'edit'
   const [editingCleaningService, setEditingCleaningService] = useState(null);
@@ -870,14 +872,36 @@ export default function Services() {
 
           <div className="form-group">
             <label className="form-label">وحدة القياس</label>
-            <select
-              className="form-select"
-              value={cleaningServiceFormData.unit}
-              onChange={(e) => setCleaningServiceFormData(p => ({...p, unit: e.target.value}))}
-            >
-              <option value="piece">قطعة (Piece)</option>
-              <option value="kg">كيلوجرام (Kg)</option>
-            </select>
+            <div className="table-select-container" ref={unitDropdownRef} style={{ position: 'relative' }}>
+              <button
+                type="button"
+                className="table-select-trigger"
+                style={{ width: '100%', justifyContent: 'space-between' }}
+                onClick={() => setShowUnitDropdown(!showUnitDropdown)}
+              >
+                {cleaningServiceFormData.unit === 'piece' ? 'قطعة (Piece)' : 'كيلوجرام (Kg)'}
+              </button>
+              {showUnitDropdown && (
+                <div className="table-select-dropdown" style={{ width: '100%' }}>
+                  {[
+                    { value: 'piece', label: 'قطعة (Piece)' },
+                    { value: 'kg', label: 'كيلوجرام (Kg)' }
+                  ].map(opt => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      className={`table-select-item ${cleaningServiceFormData.unit === opt.value ? 'selected' : ''}`}
+                      onClick={() => {
+                        setCleaningServiceFormData(p => ({...p, unit: opt.value}));
+                        setShowUnitDropdown(false);
+                      }}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="form-group">
