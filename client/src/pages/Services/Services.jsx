@@ -487,7 +487,12 @@ export default function Services() {
             {filteredItemTypes.map((itemType) => {
               const sortedCardSizes = sortSizes(itemType.sizes || []);
               return (
-                <Card key={itemType.id} className="service-card item-type-card-premium">
+                <Card 
+                  key={itemType.id} 
+                  className="service-card item-type-card-premium"
+                  onClick={() => isAdmin && handleOpenEditItemType(itemType)}
+                  style={{ cursor: isAdmin ? 'pointer' : 'default' }}
+                >
                   {/* Top Header of Card */}
                   <div className="card-top-header">
                     <div className="header-title-section">
@@ -508,7 +513,7 @@ export default function Services() {
                         <button
                           type="button"
                           className="quick-delete-icon-btn"
-                          onClick={() => handleDeleteItemType(itemType.id)}
+                          onClick={(e) => { e.stopPropagation(); handleDeleteItemType(itemType.id); }}
                           title={t('services.deleteItemTypeTitle') || "حذف هذا النوع بالكامل"}
                         >
                           <Trash2 size={16} />
@@ -574,7 +579,7 @@ export default function Services() {
                       <Button
                         variant="primary"
                         className="edit-full-pricing-btn"
-                        onClick={() => handleOpenEditItemType(itemType)}
+                        onClick={(e) => { e.stopPropagation(); handleOpenEditItemType(itemType); }}
                       >
                         <Edit2 size={16} />
                         <span>{t('services.editPricesBtn') || 'تعديل الأسعار والأحجام'}</span>
