@@ -171,9 +171,36 @@ async function seedDatabase() {
       console.log('🧹 Found illogical data, factory resetting services & items...');
       await query('DELETE FROM order_items');
       await query('DELETE FROM orders');
-      await query('DELETE FROM item_prices');
+      await query('DELETE FROM item_size_prices');
+      await query('DELETE FROM item_sizes');
       await query('DELETE FROM item_types');
       await query('DELETE FROM services');
+
+      // Add item types (shared across laundries)
+      const items = [
+        { name_ar: 'ثوب', name_en: 'Thobe', sizes: ['عادي'], basePrice: 10 },
+        { name_ar: 'قميص', name_en: 'Shirt', sizes: ['عادي'], basePrice: 5 },
+        { name_ar: 'بنطلون', name_en: 'Pants', sizes: ['عادي'], basePrice: 5 },
+        { name_ar: 'بدلة كاملة', name_en: 'Full Suit', sizes: ['عادي'], basePrice: 20 },
+        { name_ar: 'شماغ / غترة', name_en: 'Shemagh', sizes: ['عادي'], basePrice: 3 },
+        { name_ar: 'سجاد', name_en: 'Carpet', sizes: ['صغير', 'وسط', 'كبير'], basePrice: 30 },
+        { name_ar: 'بطانية', name_en: 'Blanket', sizes: ['مفرد', 'مزدوج'], basePrice: 20 }
+      ];
+
+      const insertedItems = [];
+      for (let item of items) {
+        const itRes = await query(`INSERT INTO item_types (name_ar, name_en) VALUES ($1, $2) RETURNING id`, 
+          [item.name_ar, item.name_en]);
+        const itemId = itRes.rows[0].id;
+        
+        const insertedSizes = [];
+        for (let size of item.sizes) {
+          const sizeRes = await query(`INSERT INTO item_sizes (item_type_id, size_name) VALUES ($1, $2) RETURNING id`,
+            [itemId, size]);
+          insertedSizes.push({ sizeId: sizeRes.rows[0].id, sizeName: size, basePrice: item.basePrice });
+        }
+        insertedItems.push({ itemId, sizes: insertedSizes });
+      }
 
       for (const laundryId of [laundry1Id, laundry2Id]) {
         if (!laundryId) continue;
@@ -184,30 +211,16 @@ async function seedDatabase() {
         const s4 = await query(`INSERT INTO services (name_ar, name, price, unit, is_active, laundry_id) VALUES ('غسيل مستعجل', 'Urgent Wash', 0, 'piece', true, $1) RETURNING id`, [lid]);
         const s5 = await query(`INSERT INTO services (name_ar, name, price, unit, is_active, laundry_id) VALUES ('تنظيف جاف', 'Dry Clean', 0, 'piece', true, $1) RETURNING id`, [lid]);
         
-        const items = [
-          { name_ar: 'ثوب', name_en: 'Thobe', sizes: ['عادي'], basePrice: 10 },
-          { name_ar: 'قميص', name_en: 'Shirt', sizes: ['عادي'], basePrice: 5 },
-          { name_ar: 'بنطلون', name_en: 'Pants', sizes: ['عادي'], basePrice: 5 },
-          { name_ar: 'بدلة كاملة', name_en: 'Full Suit', sizes: ['عادي'], basePrice: 20 },
-          { name_ar: 'شماغ / غترة', name_en: 'Shemagh', sizes: ['عادي'], basePrice: 3 },
-          { name_ar: 'سجاد', name_en: 'Carpet', sizes: ['صغير', 'وسط', 'كبير'], basePrice: 30 },
-          { name_ar: 'بطانية', name_en: 'Blanket', sizes: ['مفرد', 'مزدوج'], basePrice: 20 }
-        ];
-        
-        for (let item of items) {
-          const itRes = await query(`INSERT INTO item_types (name_ar, name_en, sizes, laundry_id) VALUES ($1, $2, $3, $4) RETURNING id`, 
-            [item.name_ar, item.name_en, JSON.stringify(item.sizes), lid]);
-          const itemId = itRes.rows[0].id;
-          
+        for (let item of insertedItems) {
           for (let size of item.sizes) {
-            await query(`INSERT INTO item_prices (item_type_id, service_id, size_name, price) VALUES ($1, $2, $3, $4)`, 
-              [itemId, s1.rows[0].id, size, item.basePrice]);
-            await query(`INSERT INTO item_prices (item_type_id, service_id, size_name, price) VALUES ($1, $2, $3, $4)`, 
-              [itemId, s2.rows[0].id, size, item.basePrice + 5]);
-            await query(`INSERT INTO item_prices (item_type_id, service_id, size_name, price) VALUES ($1, $2, $3, $4)`, 
-              [itemId, s3.rows[0].id, size, Math.max(2, Math.floor(item.basePrice / 2))]);
-            await query(`INSERT INTO item_prices (item_type_id, service_id, size_name, price) VALUES ($1, $2, $3, $4)`, 
-              [itemId, s5.rows[0].id, size, item.basePrice + 15]);
+            await query(`INSERT INTO item_size_prices (item_size_id, service_id, price) VALUES ($1, $2, $3)`, 
+              [size.sizeId, s1.rows[0].id, size.basePrice]);
+            await query(`INSERT INTO item_size_prices (item_size_id, service_id, price) VALUES ($1, $2, $3)`, 
+              [size.sizeId, s2.rows[0].id, size.basePrice + 5]);
+            await query(`INSERT INTO item_size_prices (item_size_id, service_id, price) VALUES ($1, $2, $3)`, 
+              [size.sizeId, s3.rows[0].id, Math.max(2, Math.floor(size.basePrice / 2))]);
+            await query(`INSERT INTO item_size_prices (item_size_id, service_id, price) VALUES ($1, $2, $3)`, 
+              [size.sizeId, s5.rows[0].id, size.basePrice + 15]);
           }
         }
       }
