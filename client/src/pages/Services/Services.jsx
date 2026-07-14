@@ -4,6 +4,7 @@ import { Plus, Edit2, Trash2, Sparkles, Tags, ShieldAlert, X, Download, Search, 
 import { servicesAPI, itemTypesAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
+import { useSettings } from '../../context/SettingsContext';
 import Button from '../../components/UI/Button';
 import Card from '../../components/UI/Card';
 import Modal from '../../components/UI/Modal';
@@ -15,6 +16,7 @@ export default function Services() {
   const { t, i18n } = useTranslation();
   const { isAdmin } = useAuth();
   const { showToast } = useToast();
+  const { settings } = useSettings();
   
   const [itemTypeSearch, setItemTypeSearch] = useState('');
   
@@ -662,7 +664,7 @@ export default function Services() {
                                   <td key={svc.id} style={{ textAlign: 'center' }}>
                                     {priceVal > 0 ? (
                                       <span className="price-badge-active">
-                                        {priceVal.toFixed(2)} <small>{t('currency') || 'ر.س'}</small>
+                                        {priceVal.toFixed(2)} <small>{settings?.currency || 'ر.س'}</small>
                                       </span>
                                     ) : (
                                       <span className="price-badge-zero">—</span>
