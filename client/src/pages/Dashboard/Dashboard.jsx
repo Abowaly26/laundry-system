@@ -43,6 +43,8 @@ export default function Dashboard() {
   const [popularServices, setPopularServices] = useState([]);
   const [overdue, setOverdue] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [revenuePeriod, setRevenuePeriod] = useState('7days');
+  const [revenueLoading, setRevenueLoading] = useState(false);
   const { isSuperOwner, isWorker, laundryName } = useAuth();
   const { settings } = useSettings();
   const navigate = useNavigate();
@@ -65,11 +67,28 @@ export default function Dashboard() {
     loadDashboard();
   }, []);
 
+  useEffect(() => {
+    loadRevenue();
+  }, [revenuePeriod]);
+
+  const loadRevenue = async () => {
+    try {
+      setRevenueLoading(true);
+      const res = await dashboardAPI.getRevenue({ period: revenuePeriod });
+      if (res && res.success) {
+        setRevenue(res.data || []);
+      }
+    } catch (err) {
+      console.error('Revenue load error:', err);
+    } finally {
+      setRevenueLoading(false);
+    }
+  };
+
   const loadDashboard = async () => {
     try {
-      const [statsData, revenueData, servicesData, overdueData] = await Promise.allSettled([
+      const [statsData, servicesData, overdueData] = await Promise.allSettled([
         dashboardAPI.getStats(),
-        dashboardAPI.getRevenue(),
         dashboardAPI.getPopularServices(),
         dashboardAPI.getOverdue(),
       ]);
@@ -77,10 +96,6 @@ export default function Dashboard() {
       if (statsData.status === 'fulfilled') {
         const val = statsData.value;
         setStats(val && val.success ? val : null);
-      }
-      if (revenueData.status === 'fulfilled') {
-        const val = revenueData.value;
-        setRevenue(val && Array.isArray(val.data) ? val.data : (Array.isArray(val) ? val : []));
       }
       if (servicesData.status === 'fulfilled') {
         const val = servicesData.value;
@@ -135,16 +150,33 @@ export default function Dashboard() {
     },
   ];
 
-  const processRevenueData = (data) => {
+  const processRevenueData = (data, period) => {
     const list = Array.isArray(data) ? data : [];
-    const last7Days = [];
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      last7Days.push(d);
+    const datesToPad = [];
+    
+    if (period === '7days') {
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        datesToPad.push(d);
+      }
+    } else if (period === '30days') {
+      for (let i = 29; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        datesToPad.push(d);
+      }
+    } else if (period === 'this_month') {
+      const today = new Date();
+      const currentDay = today.getDate();
+      for (let i = currentDay - 1; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        datesToPad.push(d);
+      }
     }
 
-    return last7Days.map(date => {
+    return datesToPad.map(date => {
       const dateStr = date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
       
       const found = list.find(item => {
@@ -167,7 +199,7 @@ export default function Dashboard() {
     });
   };
 
-  const finalRevenueList = processRevenueData(revenueList);
+  const finalRevenueList = processRevenueData(revenueList, revenuePeriod);
 
   const revenueChartData = {
     labels: finalRevenueList.map((r) => {
@@ -310,13 +342,28 @@ export default function Dashboard() {
       </div>
 
       {/* Charts */}
-      <div className="charts-row">
+      <div className="charts-grid">
         <div className="chart-card">
-          <div className="chart-card-header">
-            <h3 className="chart-card-title">{t('dashboard.revenueOverTime') || 'إيرادات آخر 7 أيام'}</h3>
+          <div className="chart-card-header flex justify-between items-center">
+            <h3 className="chart-card-title">{t('dashboard.revenueTitle') || 'الإيرادات'}</h3>
+            <select 
+              className="form-input-compact" 
+              value={revenuePeriod} 
+              onChange={(e) => setRevenuePeriod(e.target.value)}
+              style={{ width: 'auto', minWidth: '120px', padding: '4px 8px', fontSize: '0.9rem' }}
+            >
+              <option value="7days">{t('dashboard.last7days') || 'آخر 7 أيام'}</option>
+              <option value="30days">{t('dashboard.last30days') || 'آخر 30 يوم'}</option>
+              <option value="this_month">{t('dashboard.thisMonth') || 'هذا الشهر'}</option>
+            </select>
           </div>
-          <div className="chart-card-body" style={{ height: 300 }}>
-            {revenueList.length > 0 ? (
+          <div className="chart-card-body" style={{ height: 300, position: 'relative' }}>
+            {revenueLoading && (
+              <div style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
+                <Loader className="spin" size={24} color="var(--primary)" />
+              </div>
+            )}
+            {finalRevenueList.length > 0 ? (
               <Line data={revenueChartData} options={revenueChartOptions} />
             ) : (
               <p className="text-center text-secondary" style={{ paddingTop: 100 }}>

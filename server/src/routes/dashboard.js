@@ -108,20 +108,27 @@ router.get('/revenue', async (req, res) => {
     const isSuperOwner = req.user.role === 'super_owner';
     const laundryFilter = isSuperOwner ? '' : `AND laundry_id = ${req.user.laundry_id}`;
 
-    let revenueData;
-    if (period === 'daily') {
-      const result = await query(`
-        SELECT 
-          DATE(created_at) as date,
-          COALESCE(SUM(total_amount), 0) as total
-        FROM orders
-        WHERE created_at >= CURRENT_TIMESTAMP - INTERVAL '7 days'
-          AND status != 'cancelled' ${laundryFilter}
-        GROUP BY DATE(created_at)
-        ORDER BY date ASC
-      `);
-      revenueData = result.rows;
+    let revenueData = [];
+    
+    let intervalQuery = "CURRENT_TIMESTAMP - INTERVAL '7 days'";
+    if (period === '30days') {
+      intervalQuery = "CURRENT_TIMESTAMP - INTERVAL '30 days'";
+    } else if (period === 'this_month') {
+      intervalQuery = "DATE_TRUNC('month', CURRENT_TIMESTAMP)";
     }
+
+    const result = await query(`
+      SELECT 
+        DATE(created_at) as date,
+        COALESCE(SUM(total_amount), 0) as total
+      FROM orders
+      WHERE created_at >= ${intervalQuery}
+        AND status != 'cancelled' ${laundryFilter}
+      GROUP BY DATE(created_at)
+      ORDER BY date ASC
+    `);
+    
+    revenueData = result.rows;
 
     res.json({ success: true, data: revenueData });
   } catch (error) {
