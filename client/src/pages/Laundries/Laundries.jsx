@@ -237,9 +237,23 @@ export default function Laundries() {
                 value={statusFilter}
                 onChange={e => setStatusFilter(e.target.value)}
                 style={{
-                  height: '46px',
+                  height: '44px',
                   padding: '0 16px',
-                  fontSize: '0.9rem'
+                  fontSize: '0.9rem',
+                  borderRadius: '12px',
+                  border: '1.5px solid var(--border)',
+                  background: 'var(--surface)',
+                  color: 'var(--text-primary)',
+                  fontWeight: '600',
+                  boxShadow: 'none',
+                  cursor: 'pointer',
+                  appearance: 'none',
+                  WebkitAppearance: 'none',
+                  backgroundImage: `url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' viewBox='0 0 24 24' stroke='%236b7280' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`,
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: 'left 12px center',
+                  paddingLeft: '32px',
+                  transition: 'border-color 0.2s, box-shadow 0.2s'
                 }}
               >
                 <option value="all">{t('laundriesList.filterAll') || 'كل المغاسل'}</option>
