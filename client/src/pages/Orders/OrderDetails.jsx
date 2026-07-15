@@ -415,37 +415,13 @@ export default function OrderDetails() {
 
             {/* خريطة التوصيل inline - قابلة للضغط للتكبير */}
             {((order.delivery_lat && order.delivery_lng) || (order.customer_lat && order.customer_lng)) ? (
-              <div style={{ position: 'relative' }}>
-                <StaticOrderMap
-                  lat={order.delivery_lat || order.customer_lat}
-                  lng={order.delivery_lng || order.customer_lng}
-                  address={order.delivery_address || order.customer_address || ''}
-                  height="230px"
-                  onClick={() => setShowViewMapModal(true)}
-                />
-                <div 
-                  style={{
-                    position: 'absolute',
-                    top: '0.6rem',
-                    insetInlineStart: '0.6rem',
-                    zIndex: 900,
-                    background: 'rgba(15,23,42,0.85)',
-                    backdropFilter: 'blur(4px)',
-                    color: '#fff',
-                    padding: '0.3rem 0.6rem',
-                    borderRadius: '8px',
-                    fontSize: '0.72rem',
-                    fontWeight: 700,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-                    pointerEvents: 'none'
-                  }}
-                >
-                  🔍 اضغط لتكبير الخريطة
-                </div>
-              </div>
+              <StaticOrderMap
+                lat={order.delivery_lat || order.customer_lat}
+                lng={order.delivery_lng || order.customer_lng}
+                address={order.delivery_address || order.customer_address || ''}
+                height="230px"
+                onClick={() => setShowViewMapModal(true)}
+              />
             ) : (
               <div 
                 className="mt-sm p-md text-center rounded-lg" 
