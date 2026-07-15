@@ -99,11 +99,12 @@ export default function OrderDetails() {
   // تسجيل دفعة مالية جديدة
   const handleSavePayment = async (e) => {
     e.preventDefault();
-    if (paymentAmount <= 0) {
+    const amountVal = parseFloat(paymentAmount) || 0;
+    if (amountVal <= 0) {
       showToast(t('orderDetails.invalidAmount') || 'الرجاء إدخال مبلغ صحيح', 'warning');
       return;
     }
-    if (paymentAmount > order.remaining_amount) {
+    if (amountVal > order.remaining_amount) {
       showToast(t('orderDetails.amountTooLarge') || 'المبلغ المدفوع أكبر من المبلغ المتبقي على الطلب', 'warning');
       return;
     }
@@ -112,7 +113,7 @@ export default function OrderDetails() {
     try {
       const res = await paymentsAPI.create({
         order_id: parseInt(id),
-        amount: parseFloat(paymentAmount),
+        amount: amountVal,
         method: paymentMethod,
         type: paymentType
       });
@@ -609,9 +610,15 @@ export default function OrderDetails() {
             <input
               type="number"
               className="form-input"
-              value={paymentAmount === 0 ? '' : paymentAmount}
-              onChange={(e) => setPaymentAmount(parseFloat(e.target.value) || 0)}
-              onFocus={(e) => e.target.select()}
+              value={paymentAmount}
+              onChange={(e) => setPaymentAmount(e.target.value === '' ? '' : (parseFloat(e.target.value) || 0))}
+              onFocus={(e) => {
+                if (parseFloat(e.target.value) === 0 || paymentAmount === 0) {
+                  setPaymentAmount('');
+                } else {
+                  e.target.select();
+                }
+              }}
               max={order?.remaining_amount}
               min="0.01"
               step="any"
