@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Plus, Store, Users, ShoppingBag, TrendingUp,
@@ -36,6 +36,10 @@ export default function Laundries() {
   const [showStaffModal, setShowStaffModal] = useState(false);
   const [staffModalLaundry, setStaffModalLaundry] = useState(null);
 
+  // Custom Dropdown لفلتر الحالة
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+  const filterDropdownRef = useRef(null);
+
   const loadLaundries = async () => {
     setLoading(true);
     try {
@@ -49,6 +53,16 @@ export default function Laundries() {
   };
 
   useEffect(() => { loadLaundries(); }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (filterDropdownRef.current && !filterDropdownRef.current.contains(event.target)) {
+        setShowFilterDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleOpenAdd = () => {
     setModalMode('add');
@@ -231,35 +245,81 @@ export default function Laundries() {
               )}
             </div>
             
-            <div className="laundries-filter-wrapper" style={{ minWidth: '150px' }}>
-              <select
-                className="form-select"
-                value={statusFilter}
-                onChange={e => setStatusFilter(e.target.value)}
+            <div className="table-select-container" ref={filterDropdownRef} style={{ width: '160px' }}>
+              <button
+                type="button"
+                className="table-select-trigger"
+                onClick={() => setShowFilterDropdown(!showFilterDropdown)}
                 style={{
                   height: '44px',
-                  padding: '0 16px',
-                  fontSize: '0.9rem',
                   borderRadius: '12px',
                   border: '1.5px solid var(--border)',
                   background: 'var(--surface)',
                   color: 'var(--text-primary)',
                   fontWeight: '600',
-                  boxShadow: 'none',
-                  cursor: 'pointer',
-                  appearance: 'none',
-                  WebkitAppearance: 'none',
-                  backgroundImage: `url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' viewBox='0 0 24 24' stroke='%236b7280' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`,
-                  backgroundRepeat: 'no-repeat',
-                  backgroundPosition: 'left 12px center',
-                  paddingLeft: '32px',
-                  transition: 'border-color 0.2s, box-shadow 0.2s'
+                  fontSize: '0.9rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  width: '100%',
+                  padding: '0 16px',
+                  cursor: 'pointer'
                 }}
               >
-                <option value="all">{t('laundriesList.filterAll') || 'كل المغاسل'}</option>
-                <option value="active">{t('laundriesList.filterActive') || 'نشطة فقط'}</option>
-                <option value="inactive">{t('laundriesList.filterInactive') || 'معطلة فقط'}</option>
-              </select>
+                <span>
+                  {statusFilter === 'all' ? (t('laundriesList.filterAll') || 'كل المغاسل') : 
+                   statusFilter === 'active' ? (t('laundriesList.filterActive') || 'نشطة فقط') : 
+                   (t('laundriesList.filterInactive') || 'معطلة فقط')}
+                </span>
+                <ChevronDown size={16} style={{ transition: 'transform 0.2s', transform: showFilterDropdown ? 'rotate(180deg)' : 'rotate(0)' }} />
+              </button>
+              {showFilterDropdown && (
+                <div className="table-select-dropdown" style={{
+                  position: 'absolute',
+                  top: 'calc(100% + 6px)',
+                  left: 0,
+                  right: 0,
+                  background: 'var(--surface)',
+                  border: '1.5px solid var(--border)',
+                  borderRadius: '12px',
+                  boxShadow: 'var(--shadow-lg)',
+                  zIndex: 100,
+                  padding: '6px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '4px'
+                }}>
+                  {[
+                    { value: 'all', label: t('laundriesList.filterAll') || 'كل المغاسل' },
+                    { value: 'active', label: t('laundriesList.filterActive') || 'نشطة فقط' },
+                    { value: 'inactive', label: t('laundriesList.filterInactive') || 'معطلة فقط' }
+                  ].map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      className={`table-select-item ${statusFilter === opt.value ? 'selected' : ''}`}
+                      onClick={() => {
+                        setStatusFilter(opt.value);
+                        setShowFilterDropdown(false);
+                      }}
+                      style={{
+                        padding: '10px 12px',
+                        border: 'none',
+                        background: statusFilter === opt.value ? 'var(--primary)' : 'none',
+                        color: statusFilter === opt.value ? '#fff' : 'var(--text-primary)',
+                        borderRadius: '8px',
+                        fontWeight: statusFilter === opt.value ? '700' : '500',
+                        fontSize: '0.88rem',
+                        textAlign: 'right',
+                        cursor: 'pointer',
+                        transition: 'background 0.2s, color 0.2s'
+                      }}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
