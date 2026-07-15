@@ -55,7 +55,16 @@ export default function Laundries() {
   const handleOpenEdit = (laundry) => {
     setModalMode('edit');
     setSelectedLaundry(laundry);
-    setFormData({ name: laundry.name, address: laundry.address || '', phone: laundry.phone || '', currency: laundry.currency || 'ر.س', language: laundry.language || 'ar', admin_name: '', admin_email: '', admin_password: '' });
+    setFormData({
+      name: laundry.name,
+      address: laundry.address || '',
+      phone: laundry.phone || '',
+      currency: laundry.currency || 'ر.س',
+      language: laundry.language || 'ar',
+      admin_name: laundry.admin_name || '',
+      admin_email: laundry.admin_email || '',
+      admin_password: ''
+    });
     setShowModal(true);
   };
 
@@ -73,7 +82,13 @@ export default function Laundries() {
         res = await laundriesAPI.create(formData);
       } else {
         res = await laundriesAPI.update(selectedLaundry.id, {
-          name: formData.name, address: formData.address, phone: formData.phone, currency: formData.currency, language: formData.language
+          name: formData.name,
+          address: formData.address,
+          phone: formData.phone,
+          currency: formData.currency,
+          language: formData.language,
+          ...(formData.admin_email ? { admin_email: formData.admin_email } : {}),
+          ...(formData.admin_password ? { admin_password: formData.admin_password } : {})
         });
       }
 
@@ -273,6 +288,13 @@ export default function Laundries() {
                     <span>{t('settings.currency') || 'العملة'}: {laundry.currency}</span>
                   </div>
                 )}
+                {laundry.admin_email && (
+                  <div className="laundry-info-row laundry-info-row--admin">
+                    <Mail size={14} />
+                    <span>{laundry.admin_email}</span>
+                    <span className="laundry-admin-badge">مدير</span>
+                  </div>
+                )}
 
                 {/* إحصائيات سريعة */}
                 <div className="laundry-stats-grid">
@@ -404,8 +426,8 @@ export default function Laundries() {
             </div>
           </div>
 
-          {/* بيانات المدير - فقط عند الإنشاء */}
-          {modalMode === 'add' && (
+          {/* بيانات المدير - عند الإنشاء أو التعديل */}
+          {modalMode === 'add' ? (
             <>
               <div className="modal-section-title" style={{ marginTop: '20px' }}>
                 <Crown size={16} />
@@ -438,6 +460,33 @@ export default function Laundries() {
                 label={t('laundriesList.adminPasswordLabel') || 'كلمة مرور المدير *'}
                 type="password"
                 required
+                value={formData.admin_password}
+                onChange={(e) => setFormData({ ...formData, admin_password: e.target.value })}
+                placeholder="••••••••"
+              />
+            </>
+          ) : (
+            <>
+              <div className="modal-section-title" style={{ marginTop: '20px' }}>
+                <Crown size={16} />
+                {t('laundriesList.adminAccountEdit') || 'تعديل حساب مدير المغسلة'}
+              </div>
+              <div className="modal-section-note">
+                {t('laundriesList.adminEditNote') || 'تعديل البريد الإلكتروني أو تعيين كلمة مرور جديدة للمدير'}
+              </div>
+
+              <Input
+                id="admin-email-edit"
+                label={t('laundriesList.adminEmailLabel') || 'البريد الإلكتروني للمدير'}
+                type="email"
+                value={formData.admin_email}
+                onChange={(e) => setFormData({ ...formData, admin_email: e.target.value })}
+                placeholder="admin@example.com"
+              />
+              <Input
+                id="admin-password-edit"
+                label={t('laundriesList.adminPasswordEditLabel') || 'كلمة مرور جديدة (اتركها فارغة لعدم التغيير)'}
+                type="password"
                 value={formData.admin_password}
                 onChange={(e) => setFormData({ ...formData, admin_password: e.target.value })}
                 placeholder="••••••••"

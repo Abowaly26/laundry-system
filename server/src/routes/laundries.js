@@ -23,7 +23,9 @@ router.get('/', authorizeRoles('super_owner'), async (req, res) => {
         (SELECT COUNT(*) FROM users u WHERE u.laundry_id = l.id AND u.is_active = true AND u.role != 'admin' AND u.role != 'super_owner') as staff_count,
         (SELECT COUNT(*) FROM customers c WHERE c.laundry_id = l.id) as customers_count,
         (SELECT COUNT(*) FROM orders o WHERE o.laundry_id = l.id AND o.status NOT IN ('delivered', 'cancelled')) as active_orders_count,
-        COALESCE((SELECT SUM(o.total_amount) FROM orders o WHERE o.laundry_id = l.id AND o.status != 'cancelled'), 0) as total_revenue
+        COALESCE((SELECT SUM(o.total_amount) FROM orders o WHERE o.laundry_id = l.id AND o.status != 'cancelled'), 0) as total_revenue,
+        (SELECT u.email FROM users u WHERE u.laundry_id = l.id AND u.role = 'admin' ORDER BY u.created_at ASC LIMIT 1) as admin_email,
+        (SELECT u.name FROM users u WHERE u.laundry_id = l.id AND u.role = 'admin' ORDER BY u.created_at ASC LIMIT 1) as admin_name
       FROM laundries l
       ORDER BY l.created_at DESC
     `);
@@ -136,7 +138,7 @@ router.post('/', authorizeRoles('super_owner'), async (req, res) => {
 router.put('/:id', authorizeRoles('super_owner'), async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, address, phone, currency, language, is_active } = req.body;
+    const { name, address, phone, currency, language, is_active, admin_email, admin_password } = req.body;
 
     const existing = await query('SELECT * FROM laundries WHERE id = $1', [id]);
     if (existing.rows.length === 0) {
@@ -154,17 +156,56 @@ router.put('/:id', authorizeRoles('super_owner'), async (req, res) => {
     if (language !== undefined) { updateFields.push(`language = $${paramCount++}`); updateParams.push(language); }
     if (is_active !== undefined) { updateFields.push(`is_active = $${paramCount++}`); updateParams.push(is_active); }
 
-    if (updateFields.length === 0) {
-      return res.status(400).json({ success: false, message: 'لا توجد بيانات للتحديث' });
+    let laundryResult;
+    if (updateFields.length > 0) {
+      updateParams.push(id);
+      laundryResult = await query(
+        `UPDATE laundries SET ${updateFields.join(', ')} WHERE id = $${paramCount} RETURNING *`,
+        updateParams
+      );
+    } else {
+      laundryResult = await query('SELECT * FROM laundries WHERE id = $1', [id]);
     }
 
-    updateParams.push(id);
-    const result = await query(
-      `UPDATE laundries SET ${updateFields.join(', ')} WHERE id = $${paramCount} RETURNING *`,
-      updateParams
-    );
+    // تحديث بيانات حساب المدير إن طُلب
+    if (admin_email || admin_password) {
+      const adminRes = await query(
+        `SELECT id FROM users WHERE laundry_id = $1 AND role = 'admin' ORDER BY created_at ASC LIMIT 1`,
+        [id]
+      );
+      if (adminRes.rows.length > 0) {
+        const adminId = adminRes.rows[0].id;
+        const adminUpdateFields = [];
+        const adminUpdateParams = [];
+        let ap = 1;
 
-    res.json({ success: true, message: 'تم تحديث المغسلة بنجاح', data: result.rows[0] });
+        if (admin_email) {
+          // Check email uniqueness
+          const emailCheck = await query('SELECT id FROM users WHERE email = $1 AND id != $2', [admin_email, adminId]);
+          if (emailCheck.rows.length > 0) {
+            return res.status(400).json({ success: false, message: 'البريد الإلكتروني مستخدم من قِبَل مستخدم آخر' });
+          }
+          adminUpdateFields.push(`email = $${ap++}`);
+          adminUpdateParams.push(admin_email);
+        }
+        if (admin_password) {
+          const bcrypt = require('bcryptjs');
+          const passwordHash = await bcrypt.hash(admin_password, 10);
+          adminUpdateFields.push(`password_hash = $${ap++}`);
+          adminUpdateParams.push(passwordHash);
+        }
+
+        if (adminUpdateFields.length > 0) {
+          adminUpdateParams.push(adminId);
+          await query(
+            `UPDATE users SET ${adminUpdateFields.join(', ')} WHERE id = $${ap}`,
+            adminUpdateParams
+          );
+        }
+      }
+    }
+
+    res.json({ success: true, message: 'تم تحديث المغسلة بنجاح', data: laundryResult.rows[0] });
   } catch (error) {
     console.error('Update laundry error:', error);
     res.status(500).json({ success: false, message: 'خطأ في تحديث المغسلة' });
