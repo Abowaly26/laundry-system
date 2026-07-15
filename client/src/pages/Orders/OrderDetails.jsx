@@ -146,7 +146,7 @@ export default function OrderDetails() {
   // Click outside to close dropdowns
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (!event.target.closest('.table-select-container')) {
+      if (!event.target.closest('.table-select-container') && !event.target.closest('.table-select-dropdown')) {
         setOpenItemStatusDropdownId(null);
       }
       if (methodDropdownRef.current && !methodDropdownRef.current.contains(event.target)) {
