@@ -196,6 +196,7 @@
     "goToOrdersList": "الذهاب لقائمة الطلبات",
     "orderDetailsTitle": "تفاصيل الطلب #{{id}}",
     "orderDetailsSubtitle": "تتبع القطع، معالجة الدفعات، وإجراءات التسليم",
+    "deliveryLocationTitle": "موقع التوصيل على الخريطة التفاعلية",
     "backToOrders": "الرجوع للطلبات",
     "shareWhatsApp": "مشاركة واتساب",
     "customerInfo": "معلومات العميل",
