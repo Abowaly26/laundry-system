@@ -217,10 +217,6 @@ export default function Settings() {
             <Save size={18} style={{ marginLeft: '8px' }} />
             {t('settings.saveBtn') || 'حفظ إعدادات النظام'}
           </Button>
-          <Button type="button" variant="secondary" onClick={handleRestoreDefaults}>
-            <RefreshCw size={16} style={{ marginLeft: '6px' }} />
-            {t('settings.restoreBtn') || 'استعادة الافتراضيات'}
-          </Button>
         </div>
       </form>
     </div>
