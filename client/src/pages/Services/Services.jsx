@@ -401,7 +401,17 @@ export default function Services() {
       t('services.colId') || 'Item ID',
       t('services.colName') || 'Item Name',
       t('services.colSize') || 'Size',
-      ...activeServices.map(svc => svc.name_en || svc.name_ar)
+      ...activeServices.map(svc => {
+        if (svc.name_en) return svc.name_en;
+        const dict = {
+          'تنظيف جاف': 'Dry Clean',
+          'غسيل مستعجل': 'Urgent Wash',
+          'كي فقط': 'Ironing Only',
+          'غسيل وكي': 'Wash & Iron',
+          'غسيل عادي': 'Normal Wash'
+        };
+        return dict[svc.name_ar] || svc.name_ar;
+      })
     ] : [
       t('services.colId') || 'رقم القطعة',
       t('services.colName') || 'اسم القطعة',
@@ -432,7 +442,8 @@ export default function Services() {
             'فستان': 'Dress',
             'جاكيت': 'Jacket',
             'قميص': 'Shirt',
-            'بنطلون': 'Pants'
+            'بنطلون': 'Pants',
+            'شماغ': 'Shemagh'
           };
           return dict[nameAr] || nameAr;
         }
@@ -449,9 +460,22 @@ export default function Services() {
       } else {
         sortedSizes.forEach(sz => {
           const sName = typeof sz === 'object' && sz !== null ? (sz.size_name || '-') : String(sz);
-          const translatedSize = i18n.language === 'en' && sName === 'عادي' ? 'Normal' : 
-                                 i18n.language === 'en' && sName === 'مفرد' ? 'Single' :
-                                 i18n.language === 'en' && sName === 'مزدوج' ? 'Double' : sName;
+          
+          let translatedSize = sName;
+          if (i18n.language === 'en') {
+            const sizeDict = {
+              'عادي': 'Normal',
+              'مفرد': 'Single',
+              'مزدوج': 'Double',
+              'صغير': 'Small',
+              'وسط': 'Medium',
+              'كبير': 'Large',
+              'كبير جداً': 'X-Large',
+              'طفل': 'Kids',
+              'ملكي': 'Royal'
+            };
+            translatedSize = sizeDict[sName] || sName;
+          }
           
           const sizeRow = [
             formatCSVField(`#${itemType.id}`),
