@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Printer, Wallet, ArrowRight, CheckCircle2, User, Calendar, CreditCard, Clock, FileText, MessageSquare, Copy, QrCode, MapPin } from 'lucide-react';
+import { Printer, Wallet, ArrowRight, CheckCircle2, User, Calendar, CreditCard, Clock, FileText, MessageSquare, Copy, QrCode, MapPin, XCircle } from 'lucide-react';
 import { QRCodeCanvas } from 'qrcode.react';
 import { ordersAPI, paymentsAPI, itemsAPI, customersAPI } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
@@ -105,6 +105,22 @@ export default function OrderDetails() {
 
   const handlePrintLabels = () => {
     printOrder('labels');
+  };
+
+  const handleCancelOrder = async () => {
+    if (window.confirm(t('orders.confirmCancel') || 'هل أنت متأكد من رغبتك في إلغاء هذا الطلب؟ لا يمكن التراجع عن هذا الإجراء.')) {
+      try {
+        const res = await ordersAPI.delete(order.id);
+        if (res.success) {
+          showToast(t('orders.cancelSuccess') || 'تم إلغاء الطلب بنجاح', 'success');
+          loadOrderDetails();
+        } else {
+          showToast(res.message || 'فشل في إلغاء الطلب', 'error');
+        }
+      } catch (err) {
+        showToast(err.message || 'حدث خطأ أثناء إلغاء الطلب', 'error');
+      }
+    }
   };
 
   // تسجيل دفعة مالية جديدة
@@ -373,6 +389,12 @@ export default function OrderDetails() {
             <MessageSquare size={16} style={{ marginLeft: '6px' }} />
             {t('orders.shareWhatsApp') || 'مشاركة واتساب'}
           </Button>
+          {order.status !== 'cancelled' && order.status !== 'delivered' && (
+            <Button variant="danger" onClick={handleCancelOrder}>
+              <XCircle size={16} style={{ marginLeft: '6px' }} />
+              {t('orders.cancelOrder') || 'إلغاء الطلب'}
+            </Button>
+          )}
         </div>
       </div>
 
