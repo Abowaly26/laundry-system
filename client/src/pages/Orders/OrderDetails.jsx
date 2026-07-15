@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Printer, Wallet, ArrowRight, CheckCircle2, User, Calendar, CreditCard, Clock, FileText, MessageSquare, Copy, QrCode, MapPin } from 'lucide-react';
@@ -44,6 +45,7 @@ export default function OrderDetails() {
   const [qrModalItem, setQrModalItem] = useState(null);
   const [showMapModal, setShowMapModal] = useState(false);
   const [showViewMapModal, setShowViewMapModal] = useState(false);
+  const [dropdownTriggerRect, setDropdownTriggerRect] = useState(null);
 
   const ITEM_STATUS_OPTIONS = [
     { value: 'pending', label: t('status.pending') || 'قيد الانتظار' },
@@ -584,30 +586,69 @@ export default function OrderDetails() {
                             style={{ height: '32px', fontSize: '0.8rem', padding: '4px 12px', minWidth: '120px', margin: '0 auto' }}
                             onClick={(e) => {
                               e.stopPropagation();
-                              setOpenItemStatusDropdownId(openItemStatusDropdownId === item.id ? null : item.id);
+                              if (openItemStatusDropdownId === item.id) {
+                                setOpenItemStatusDropdownId(null);
+                                setDropdownTriggerRect(null);
+                              } else {
+                                setOpenItemStatusDropdownId(item.id);
+                                const rect = e.currentTarget.getBoundingClientRect();
+                                setDropdownTriggerRect({
+                                  top: rect.bottom + window.scrollY,
+                                  left: rect.left + window.scrollX,
+                                  width: rect.width
+                                });
+                              }
                             }}
                           >
                             {ITEM_STATUS_OPTIONS.find(opt => opt.value === item.status)?.label || 'تحديث...'}
                           </button>
-                          {openItemStatusDropdownId === item.id && (
-                            <div className="table-select-dropdown open-upwards" style={{ right: 0, left: 'auto', minWidth: '130px' }}>
-                              {ITEM_STATUS_OPTIONS.map((opt) => {
-                                const isDisabled = opt.value === 'delivered' && parseFloat(order.remaining_amount) > 0;
-                                return (
-                                  <button
-                                    key={opt.value}
-                                    type="button"
-                                    className={`table-select-item ${item.status === opt.value ? 'selected' : ''} ${isDisabled ? 'disabled' : ''}`}
-                                    onClick={() => !isDisabled && handleUpdateItemStatus(item.id, opt.value)}
-                                    disabled={isDisabled}
-                                    style={isDisabled ? { opacity: 0.5, cursor: 'not-allowed', color: 'var(--text-muted)' } : {}}
-                                    title={isDisabled ? 'لا يمكن تسليم القطعة قبل سداد المبلغ المتبقي' : ''}
-                                  >
-                                    {opt.label}
-                                  </button>
-                                );
-                              })}
-                            </div>
+                          {openItemStatusDropdownId === item.id && dropdownTriggerRect && createPortal(
+                            <>
+                              <div 
+                                style={{ position: 'fixed', inset: 0, zIndex: 9998, background: 'transparent' }} 
+                                onClick={(ev) => {
+                                  ev.stopPropagation();
+                                  setOpenItemStatusDropdownId(null);
+                                  setDropdownTriggerRect(null);
+                                }}
+                              />
+                              <div 
+                                className="table-select-dropdown" 
+                                style={{ 
+                                  position: 'absolute',
+                                  top: `${dropdownTriggerRect.top + 6}px`, 
+                                  left: `${dropdownTriggerRect.left}px`, 
+                                  minWidth: '130px',
+                                  width: `${dropdownTriggerRect.width}px`,
+                                  zIndex: 9999
+                                }}
+                                onClick={(ev) => ev.stopPropagation()}
+                              >
+                                {ITEM_STATUS_OPTIONS.map((opt) => {
+                                  const isDisabled = opt.value === 'delivered' && parseFloat(order.remaining_amount) > 0;
+                                  return (
+                                    <button
+                                      key={opt.value}
+                                      type="button"
+                                      className={`table-select-item ${item.status === opt.value ? 'selected' : ''} ${isDisabled ? 'disabled' : ''}`}
+                                      onClick={() => {
+                                        if (!isDisabled) {
+                                          handleUpdateItemStatus(item.id, opt.value);
+                                          setOpenItemStatusDropdownId(null);
+                                          setDropdownTriggerRect(null);
+                                        }
+                                      }}
+                                      disabled={isDisabled}
+                                      style={isDisabled ? { opacity: 0.5, cursor: 'not-allowed', color: 'var(--text-muted)' } : {}}
+                                      title={isDisabled ? 'لا يمكن تسليم القطعة قبل سداد المبلغ المتبقي' : ''}
+                                    >
+                                      {opt.label}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </>,
+                            document.body
                           )}
                         </div>
                       </td>
