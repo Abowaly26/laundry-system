@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import L from 'leaflet';
 
 // Fix leaflet default icon broken paths in Vite/React environments
@@ -9,15 +9,38 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
 });
 
+// تعريف خيارات أنماط الخرائط
+const TILE_LAYERS = {
+  voyager: {
+    name: 'خرائط جوجل',
+    url: 'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=ar',
+  },
+  osm: {
+    name: 'هجين',
+    url: 'https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}&hl=ar',
+  },
+  positron: {
+    name: 'قمر صناعي',
+    url: 'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
+  },
+};
+
 /**
  * StaticOrderMap
- * خريطة ثابتة / inline تُعرض في صفحة تفاصيل الطلب لإظهار موقع العميل.
- * تستقبل إحداثيات delivery_lat / delivery_lng أو customer_lat / customer_lng.
- * تضع دبوسًا احترافيًا على الموقع مع نافذة popup تُظهر العنوان النصي.
+ * خريطة ثابتة / تفاعلية تُعرض في صفحة تفاصيل الطلب مع خيار تغيير شكل الخريطة.
  */
 const StaticOrderMap = ({ lat, lng, address, height = '220px', interactive = false, onClick }) => {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
+  const tileLayerRef = useRef(null);
+  const [activeLayer, setActiveLayer] = useState('voyager');
+
+  // الاستماع لتغيير شكل الخريطة
+  useEffect(() => {
+    if (tileLayerRef.current) {
+      tileLayerRef.current.setUrl(TILE_LAYERS[activeLayer].url);
+    }
+  }, [activeLayer]);
 
   useEffect(() => {
     if (!containerRef.current || !lat || !lng) return;
@@ -38,10 +61,10 @@ const StaticOrderMap = ({ lat, lng, address, height = '220px', interactive = fal
       touchZoom: interactive,
     });
 
-    L.tileLayer(
-      'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=ar',
-      { maxZoom: 19 }
-    ).addTo(map);
+    // إضافة طبقة الخريطة النشطة
+    tileLayerRef.current = L.tileLayer(TILE_LAYERS[activeLayer].url, {
+      maxZoom: 19
+    }).addTo(map);
 
     const icon = L.divIcon({
       className: '',
@@ -105,6 +128,48 @@ const StaticOrderMap = ({ lat, lng, address, height = '220px', interactive = fal
     >
       <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
 
+      {/* مفتاح تبديل شكل الخريطة (قمر صناعي، خرائط جوجل، هجين) */}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: '0.6rem',
+          insetInlineStart: '0.6rem',
+          zIndex: 900,
+          background: 'rgba(255, 255, 255, 0.95)',
+          backdropFilter: 'blur(8px)',
+          padding: '0.25rem',
+          borderRadius: '20px',
+          boxShadow: '0 4px 15px rgba(0, 0, 0, 0.15)',
+          border: '1px solid rgba(226, 232, 240, 0.8)',
+          display: 'flex',
+          gap: '0.25rem',
+        }}
+        onClick={(e) => e.stopPropagation()} // منع انتشار الحدث لعدم فتح المودال عند تغيير شكل الخريطة
+      >
+        {Object.entries(TILE_LAYERS).map(([key, val]) => (
+          <button
+            key={key}
+            type="button"
+            style={{
+              border: 'none',
+              background: activeLayer === key ? 'var(--primary, #1e40af)' : 'transparent',
+              color: activeLayer === key ? '#ffffff' : '#475569',
+              padding: '0.35rem 0.7rem',
+              borderRadius: '15px',
+              fontSize: '0.72rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '3px'
+            }}
+            onClick={() => setActiveLayer(key)}
+          >
+            {val.name}
+          </button>
+        ))}
+      </div>
 
       {/* Open in Google Maps Link */}
       <a
@@ -127,7 +192,7 @@ const StaticOrderMap = ({ lat, lng, address, height = '220px', interactive = fal
           display: 'flex',
           alignItems: 'center',
           gap: '0.4rem',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+          boxShadow: '0 2px 8 rgba(0,0,0,0.15)',
           border: '1px solid #bfdbfe',
         }}
       >
