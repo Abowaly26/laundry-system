@@ -19,16 +19,12 @@ router.get('/', authorizeRoles('super_owner'), async (req, res) => {
     const result = await query(`
       SELECT 
         l.*,
-        COUNT(DISTINCT u.id) FILTER (WHERE u.role = 'admin') as admin_count,
-        COUNT(DISTINCT u.id) FILTER (WHERE u.role != 'admin' AND u.role != 'super_owner') as staff_count,
-        COUNT(DISTINCT c.id) as customers_count,
-        COUNT(DISTINCT o.id) FILTER (WHERE o.status NOT IN ('delivered', 'cancelled')) as active_orders_count,
-        COALESCE(SUM(o.total_amount) FILTER (WHERE o.status != 'cancelled'), 0) as total_revenue
+        (SELECT COUNT(*) FROM users u WHERE u.laundry_id = l.id AND u.is_active = true AND u.role = 'admin') as admin_count,
+        (SELECT COUNT(*) FROM users u WHERE u.laundry_id = l.id AND u.is_active = true AND u.role != 'admin' AND u.role != 'super_owner') as staff_count,
+        (SELECT COUNT(*) FROM customers c WHERE c.laundry_id = l.id) as customers_count,
+        (SELECT COUNT(*) FROM orders o WHERE o.laundry_id = l.id AND o.status NOT IN ('delivered', 'cancelled')) as active_orders_count,
+        COALESCE((SELECT SUM(o.total_amount) FROM orders o WHERE o.laundry_id = l.id AND o.status != 'cancelled'), 0) as total_revenue
       FROM laundries l
-      LEFT JOIN users u ON l.id = u.laundry_id AND u.is_active = true
-      LEFT JOIN customers c ON l.id = c.laundry_id
-      LEFT JOIN orders o ON l.id = o.laundry_id
-      GROUP BY l.id
       ORDER BY l.created_at DESC
     `);
 

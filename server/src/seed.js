@@ -10,37 +10,36 @@ async function seedDatabase() {
     // 1. إنشاء المغاسل الافتراضية
     // ==============================
     console.log('🏪 Seeding laundries...');
-    const insertLaundryQuery = `
-      INSERT INTO laundries (name, address, phone)
-      VALUES ($1, $2, $3)
-      ON CONFLICT DO NOTHING
-      RETURNING id
-    `;
+    
+    // Check if laundry 1 exists
+    const l1Exist = await query("SELECT id FROM laundries WHERE name = 'المغسلة الرئيسية' LIMIT 1");
+    let laundry1Id;
+    if (l1Exist.rows.length === 0) {
+      const res = await query(
+        `INSERT INTO laundries (name, address, phone) VALUES ($1, $2, $3) RETURNING id`,
+        ['المغسلة الرئيسية', 'الرياض، حي الياسمين', '0500000001']
+      );
+      laundry1Id = res.rows[0].id;
+      console.log(`   - Created laundry 1 with ID: ${laundry1Id}`);
+    } else {
+      laundry1Id = l1Exist.rows[0].id;
+      console.log(`   - Laundry 1 already exists with ID: ${laundry1Id}`);
+    }
 
-    const laundry1Result = await query(insertLaundryQuery, [
-      'المغسلة الرئيسية',
-      'الرياض، حي الياسمين',
-      '0500000001'
-    ]);
-
-    const laundry2Result = await query(insertLaundryQuery, [
-      'فرع جدة',
-      'جدة، حي الروضة',
-      '0500000002'
-    ]);
-
-    // الحصول على IDs المغاسل (سواء تم إنشاؤها أو كانت موجودة)
-    const laundry1IdResult = await query(
-      "SELECT id FROM laundries WHERE name = 'المغسلة الرئيسية' LIMIT 1"
-    );
-    const laundry2IdResult = await query(
-      "SELECT id FROM laundries WHERE name = 'فرع جدة' LIMIT 1"
-    );
-
-    const laundry1Id = laundry1IdResult.rows[0]?.id;
-    const laundry2Id = laundry2IdResult.rows[0]?.id;
-
-    console.log(`✅ Laundries ready: [1]=${laundry1Id}, [2]=${laundry2Id}`);
+    // Check if laundry 2 exists
+    const l2Exist = await query("SELECT id FROM laundries WHERE name = 'فرع جدة' LIMIT 1");
+    let laundry2Id;
+    if (l2Exist.rows.length === 0) {
+      const res = await query(
+        `INSERT INTO laundries (name, address, phone) VALUES ($1, $2, $3) RETURNING id`,
+        ['فرع جدة', 'جدة، حي الروضة', '0500000002']
+      );
+      laundry2Id = res.rows[0].id;
+      console.log(`   - Created laundry 2 with ID: ${laundry2Id}`);
+    } else {
+      laundry2Id = l2Exist.rows[0].id;
+      console.log(`   - Laundry 2 already exists with ID: ${laundry2Id}`);
+    }
 
     // ==============================
     // 2. إضافة المستخدمين

@@ -113,12 +113,12 @@ export default function Laundries() {
 
   const getLaundryGradient = (index) => {
     const gradients = [
-      'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-      'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-      'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
-      'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
-      'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)',
+      'linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%)', // Indigo to Blue
+      'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', // Dark Slate to Slate
+      'linear-gradient(135deg, #059669 0%, #10b981 100%)', // Emerald to Green
+      'linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%)', // Violet to Purple
+      'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)', // Blue to Dark Blue
+      'linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)'  // Teal to Cyan
     ];
     return gradients[index % gradients.length];
   };
