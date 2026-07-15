@@ -9,7 +9,7 @@ import { Settings as SettingsIcon, Save, RefreshCw } from 'lucide-react';
 import './Settings.css';
 
 export default function Settings() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { settings, updateSettings, defaults } = useSettings();
   const { showToast } = useToast();
   const { isAdmin } = useAuth();
@@ -176,6 +176,7 @@ export default function Settings() {
                   onChange={handleChange}
                   rows={10}
                   required
+                  style={{ direction: i18n.language === 'ar' ? 'rtl' : 'ltr' }}
                   placeholder={t('settings.whatsappPlaceholder') || 'اكتب قالب الرسالة هنا...'}
                 />
               </div>
