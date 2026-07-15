@@ -92,9 +92,6 @@
   border-bottom: 1px solid var(--border-color, #f1f5f9);
   position: relative;
   z-index: 1000;
-  display: flex;
-  gap: 0.75rem;
-  align-items: center;
 }
 
 .search-input-wrapper {
@@ -154,16 +151,16 @@
 /* --- Search Suggestions Dropdown --- */
 .map-search-suggestions {
   position: absolute;
-  top: calc(100% - 0.25rem);
-  left: 1.75rem;
-  right: 1.75rem;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
   background: var(--bg-surface, #ffffff);
   border: 1px solid var(--border-color, #e2e8f0);
   border-radius: 14px;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
   max-height: 280px;
   overflow-y: auto;
-  z-index: 1050;
+  z-index: 2000;
   list-style: none;
   margin: 0;
   padding: 0.5rem;
@@ -177,9 +174,25 @@
   align-items: flex-start;
   gap: 0.75rem;
   transition: all 0.15s ease;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   color: var(--text-main, #1e293b);
   border-bottom: 1px solid var(--border-color, #f1f5f9);
+}
+
+.map-search-suggestions li strong {
+  display: block;
+  font-size: 0.9rem;
+  margin-bottom: 2px;
+}
+
+.map-search-suggestions li span {
+  display: block;
+  font-size: 0.78rem;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 500px;
 }
 
 .map-search-suggestions li:last-child {
@@ -612,6 +625,13 @@
 .btn-cancel-location:hover {
   background: #e2e8f0;
   color: #1e293b;
+}
+
+.btn-confirm-location:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
 }
 
 /* Spinner for Geocoding loading */
