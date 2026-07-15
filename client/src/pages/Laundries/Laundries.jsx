@@ -28,7 +28,8 @@ export default function Laundries() {
   const [selectedLaundry, setSelectedLaundry] = useState(null);
   const [formData, setFormData] = useState({
     name: '', address: '', phone: '', currency: 'ر.س', language: 'ar',
-    admin_name: '', admin_email: '', admin_password: ''
+    admin_name: '', admin_email: '', admin_password: '',
+    plan_type: 'lifetime', subscription_start_date: '', subscription_end_date: '', payment_status: 'paid'
   });
   const [saving, setSaving] = useState(false);
 
@@ -67,7 +68,11 @@ export default function Laundries() {
   const handleOpenAdd = () => {
     setModalMode('add');
     setSelectedLaundry(null);
-    setFormData({ name: '', address: '', phone: '', currency: 'ر.س', language: 'ar', admin_name: '', admin_email: '', admin_password: '' });
+    setFormData({ 
+      name: '', address: '', phone: '', currency: 'ر.س', language: 'ar', 
+      admin_name: '', admin_email: '', admin_password: '',
+      plan_type: 'lifetime', subscription_start_date: new Date().toISOString().split('T')[0], subscription_end_date: '', payment_status: 'paid'
+    });
     setShowModal(true);
   };
 
@@ -82,7 +87,11 @@ export default function Laundries() {
       language: laundry.language || 'ar',
       admin_name: laundry.admin_name || '',
       admin_email: laundry.admin_email || '',
-      admin_password: ''
+      admin_password: '',
+      plan_type: laundry.plan_type || 'lifetime',
+      subscription_start_date: laundry.subscription_start_date ? new Date(laundry.subscription_start_date).toISOString().split('T')[0] : '',
+      subscription_end_date: laundry.subscription_end_date ? new Date(laundry.subscription_end_date).toISOString().split('T')[0] : '',
+      payment_status: laundry.payment_status || 'paid'
     });
     setShowModal(true);
   };
@@ -106,6 +115,10 @@ export default function Laundries() {
           phone: formData.phone,
           currency: formData.currency,
           language: formData.language,
+          plan_type: formData.plan_type,
+          subscription_start_date: formData.subscription_start_date || null,
+          subscription_end_date: formData.subscription_end_date || null,
+          payment_status: formData.payment_status,
           ...(formData.admin_email ? { admin_email: formData.admin_email } : {}),
           ...(formData.admin_password ? { admin_password: formData.admin_password } : {})
         });
@@ -125,18 +138,17 @@ export default function Laundries() {
     }
   };
 
-  const handleToggleStatus = async (laundry) => {
-    const action = laundry.is_active ? (t('laundriesList.deactivate') || 'تعطيل') : (t('laundriesList.activate') || 'تفعيل');
-    if (!window.confirm(t('laundriesList.confirmToggleStatus', { action, name: laundry.name, warning: laundry.is_active ? (t('laundriesList.disableWarning') || 'سيتم تعطيل جميع موظفيها.') : '' }) || `هل أنت متأكد من ${action} مغسلة "${laundry.name}"؟ ${laundry.is_active ? 'سيتم تعطيل جميع موظفيها.' : ''}`)) return;
+  const handleDeleteLaundry = async (laundry) => {
+    if (!window.confirm(`⚠️ تحذير مهم جداً: هل أنت متأكد من حذف مغسلة "${laundry.name}" تماماً؟\nسيتم حذف جميع الموظفين، العملاء، الخدمات، والطلبات الخاصة بهذه المغسلة نهائياً ولا يمكن التراجع عن هذا الإجراء!`)) return;
 
     try {
-      const res = await laundriesAPI.update(laundry.id, { is_active: !laundry.is_active });
+      const res = await laundriesAPI.delete(laundry.id);
       if (res.success) {
-        showToast(t('laundriesList.statusSuccess', { action }) || `تم ${action} المغسلة بنجاح`, 'success');
+        showToast(t('laundriesList.deleteSuccess') || 'تم حذف المغسلة وجميع بياناتها بنجاح', 'success');
         loadLaundries();
       }
     } catch (err) {
-      showToast(err.message || t('laundriesList.statusError') || 'خطأ', 'error');
+      showToast(err.message || 'خطأ أثناء حذف المغسلة', 'error');
     }
   };
 
@@ -355,18 +367,13 @@ export default function Laundries() {
                     </div>
                   </div>
                 </div>
-                <div className="laundry-card-actions" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div className="laundry-card-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <button className="laundry-icon-btn" onClick={() => handleOpenEdit(laundry)} title={t('usersList.editBtn') || "تعديل"}>
                     <Edit2 size={16} />
                   </button>
-                  <label className="laundry-switch" title={laundry.is_active ? (t('usersList.deactivateTitle') || 'تعطيل') : (t('usersList.activateTitle') || 'تفعيل')}>
-                    <input 
-                      type="checkbox" 
-                      checked={laundry.is_active} 
-                      onChange={() => handleToggleStatus(laundry)}
-                    />
-                    <span className="laundry-switch-slider"></span>
-                  </label>
+                  <button className="laundry-icon-btn danger" onClick={() => handleDeleteLaundry(laundry)} title="حذف نهائي">
+                    <X size={16} />
+                  </button>
                 </div>
               </div>
 
@@ -397,6 +404,72 @@ export default function Laundries() {
                     <span className="laundry-admin-badge">مدير</span>
                   </div>
                 )}
+
+                {/* باقة الاشتراك والتبعات الزمنيّة */}
+                <div className="laundry-subscription-card" style={{
+                  marginTop: '12px',
+                  padding: '12px',
+                  borderRadius: '10px',
+                  background: laundry.payment_status === 'unpaid' ? '#FEF2F2' : '#F9FAF_B',
+                  border: laundry.payment_status === 'unpaid' ? '1px solid #FCA5A5' : '1px solid var(--border)',
+                  fontSize: '0.85rem'
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                    <strong style={{ color: 'var(--text-primary)' }}>الباقة:</strong>
+                    <span style={{
+                      fontWeight: 'bold',
+                      color: laundry.plan_type === 'lifetime' ? '#059669' : '#3B82F6'
+                    }}>
+                      {laundry.plan_type === 'lifetime' ? 'دائم (مدى الحياة)' :
+                       laundry.plan_type === 'monthly' ? 'شهري' :
+                       laundry.plan_type === 'yearly' ? 'سنوي' : 'نصف سنوي'}
+                    </span>
+                  </div>
+                  {laundry.subscription_start_date && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                      <span style={{ color: 'var(--text-muted)' }}>تاريخ البدء:</span>
+                      <span style={{ fontWeight: '500' }}>{new Date(laundry.subscription_start_date).toLocaleDateString('ar-EG')}</span>
+                    </div>
+                  )}
+                  {laundry.plan_type !== 'lifetime' && laundry.subscription_end_date && (
+                    <>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                        <span style={{ color: 'var(--text-muted)' }}>تاريخ الانتهاء:</span>
+                        <span style={{ fontWeight: '500' }}>{new Date(laundry.subscription_end_date).toLocaleDateString('ar-EG')}</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                        <span style={{ color: 'var(--text-muted)' }}>الأيام المتبقية:</span>
+                        <span style={{
+                          fontWeight: 'bold',
+                          color: (() => {
+                            const diff = new Date(laundry.subscription_end_date) - new Date();
+                            const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+                            return days <= 5 ? '#EF4444' : days <= 15 ? '#F59E0B' : '#059669';
+                          })()
+                        }}>
+                          {(() => {
+                            const diff = new Date(laundry.subscription_end_date) - new Date();
+                            const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+                            return days > 0 ? `${days} يوم` : 'منتهي';
+                          })()}
+                        </span>
+                      </div>
+                    </>
+                  )}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '6px', paddingTop: '6px', borderTop: '1px solid rgba(0,0,0,0.05)' }}>
+                    <span style={{ color: 'var(--text-muted)' }}>حالة الدفع:</span>
+                    <span style={{
+                      fontWeight: 'bold',
+                      padding: '2px 8px',
+                      borderRadius: '12px',
+                      fontSize: '0.75rem',
+                      background: laundry.payment_status === 'paid' ? '#D1FAE5' : '#FEE2E2',
+                      color: laundry.payment_status === 'paid' ? '#065F46' : '#991B1B'
+                    }}>
+                      {laundry.payment_status === 'paid' ? 'مدفوع' : 'غير مدفوع / عليه فلوس'}
+                    </span>
+                  </div>
+                </div>
 
                 {/* إحصائيات سريعة */}
                 <div className="laundry-stats-grid">
@@ -537,6 +610,60 @@ export default function Laundries() {
                 {formData.language === 'en' && <span className="laundry-lang-check">✓</span>}
               </div>
             </div>
+          </div>
+
+          {/* باقة الاشتراك */}
+          <div className="modal-section-title" style={{ marginTop: '20px' }}>
+            <span>💳</span>
+            اشتراك وباقة المغسلة
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">نوع الباقة *</label>
+            <select
+              className="form-select"
+              value={formData.plan_type}
+              onChange={(e) => setFormData({ ...formData, plan_type: e.target.value })}
+            >
+              <option value="lifetime">دائم (مدى الحياة)</option>
+              <option value="monthly">شهري</option>
+              <option value="semi_annual">نصف سنوي</option>
+              <option value="yearly">سنوي</option>
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">تاريخ بدء الاشتراك</label>
+            <Input
+              id="sub-start"
+              type="date"
+              value={formData.subscription_start_date}
+              onChange={(e) => setFormData({ ...formData, subscription_start_date: e.target.value })}
+            />
+          </div>
+
+          {formData.plan_type !== 'lifetime' && (
+            <div className="form-group">
+              <label className="form-label">تاريخ انتهاء الاشتراك</label>
+              <Input
+                id="sub-end"
+                type="date"
+                value={formData.subscription_end_date}
+                onChange={(e) => setFormData({ ...formData, subscription_end_date: e.target.value })}
+              />
+            </div>
+          )}
+
+          <div className="form-group">
+            <label className="form-label">حالة الدفع</label>
+            <select
+              className="form-select"
+              value={formData.payment_status}
+              onChange={(e) => setFormData({ ...formData, payment_status: e.target.value })}
+            >
+              <option value="paid">مدفوع</option>
+              <option value="unpaid">غير مدفوع (عليه فلوس)</option>
+            </select>
           </div>
 
           {/* بيانات المدير - عند الإنشاء أو التعديل */}

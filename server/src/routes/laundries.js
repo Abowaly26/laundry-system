@@ -78,7 +78,8 @@ router.post('/', authorizeRoles('super_owner'), async (req, res) => {
   try {
     const {
       name, address, phone, currency, language,
-      admin_name, admin_email, admin_password
+      admin_name, admin_email, admin_password,
+      plan_type, subscription_start_date, subscription_end_date, payment_status
     } = req.body;
 
     // التحقق من البيانات المطلوبة
@@ -103,8 +104,19 @@ router.post('/', authorizeRoles('super_owner'), async (req, res) => {
 
     // إنشاء المغسلة
     const laundryResult = await query(
-      `INSERT INTO laundries (name, address, phone, currency, language) VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-      [name, address || '', phone || '', currency || 'ر.س', language || 'ar']
+      `INSERT INTO laundries (name, address, phone, currency, language, plan_type, subscription_start_date, subscription_end_date, payment_status) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
+      [
+        name, 
+        address || '', 
+        phone || '', 
+        currency || 'ر.س', 
+        language || 'ar',
+        plan_type || 'lifetime',
+        subscription_start_date || null,
+        subscription_end_date || null,
+        payment_status || 'paid'
+      ]
     );
     const laundry = laundryResult.rows[0];
 
@@ -138,7 +150,11 @@ router.post('/', authorizeRoles('super_owner'), async (req, res) => {
 router.put('/:id', authorizeRoles('super_owner'), async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, address, phone, currency, language, is_active, admin_email, admin_password } = req.body;
+    const { 
+      name, address, phone, currency, language, is_active, 
+      admin_email, admin_password,
+      plan_type, subscription_start_date, subscription_end_date, payment_status
+    } = req.body;
 
     const existing = await query('SELECT * FROM laundries WHERE id = $1', [id]);
     if (existing.rows.length === 0) {
@@ -155,6 +171,10 @@ router.put('/:id', authorizeRoles('super_owner'), async (req, res) => {
     if (currency !== undefined) { updateFields.push(`currency = $${paramCount++}`); updateParams.push(currency); }
     if (language !== undefined) { updateFields.push(`language = $${paramCount++}`); updateParams.push(language); }
     if (is_active !== undefined) { updateFields.push(`is_active = $${paramCount++}`); updateParams.push(is_active); }
+    if (plan_type !== undefined) { updateFields.push(`plan_type = $${paramCount++}`); updateParams.push(plan_type); }
+    if (subscription_start_date !== undefined) { updateFields.push(`subscription_start_date = $${paramCount++}`); updateParams.push(subscription_start_date); }
+    if (subscription_end_date !== undefined) { updateFields.push(`subscription_end_date = $${paramCount++}`); updateParams.push(subscription_end_date); }
+    if (payment_status !== undefined) { updateFields.push(`payment_status = $${paramCount++}`); updateParams.push(payment_status); }
 
     let laundryResult;
     if (updateFields.length > 0) {
@@ -212,10 +232,6 @@ router.put('/:id', authorizeRoles('super_owner'), async (req, res) => {
   }
 });
 
-/**
- * DELETE /api/laundries/:id
- * تعطيل مغسلة (super_owner فقط)
- */
 router.delete('/:id', authorizeRoles('super_owner'), async (req, res) => {
   try {
     const { id } = req.params;
@@ -225,14 +241,13 @@ router.delete('/:id', authorizeRoles('super_owner'), async (req, res) => {
       return res.status(404).json({ success: false, message: 'المغسلة غير موجودة' });
     }
 
-    // تعطيل المغسلة وموظفيها بدلاً من الحذف الكلي
-    await query('UPDATE laundries SET is_active = false WHERE id = $1', [id]);
-    await query('UPDATE users SET is_active = false WHERE laundry_id = $1', [id]);
+    // حذف المغسلة تماماً (العلاقات مثل الموظفين والخدمات والعملاء ستحذف تلقائياً بفضل الـ ON DELETE CASCADE)
+    await query('DELETE FROM laundries WHERE id = $1', [id]);
 
-    res.json({ success: true, message: 'تم تعطيل المغسلة وجميع موظفيها بنجاح' });
+    res.json({ success: true, message: 'تم حذف المغسلة وجميع بياناتها بنجاح' });
   } catch (error) {
     console.error('Delete laundry error:', error);
-    res.status(500).json({ success: false, message: 'خطأ في تعطيل المغسلة' });
+    res.status(500).json({ success: false, message: 'خطأ في حذف المغسلة' });
   }
 });
 
