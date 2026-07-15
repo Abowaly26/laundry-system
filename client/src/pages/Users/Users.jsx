@@ -75,9 +75,9 @@ export default function Users() {
       if (usersRes.success) setUsers(usersRes.data);
       if (laundriesRes.success) {
         setLaundries(laundriesRes.data);
-        // Expand all laundries by default
+        // All laundries collapsed by default
         const expanded = {};
-        laundriesRes.data.forEach(l => { expanded[l.id] = true; });
+        laundriesRes.data.forEach(l => { expanded[l.id] = false; });
         setExpandedLaundries(expanded);
       }
     } catch (err) {
