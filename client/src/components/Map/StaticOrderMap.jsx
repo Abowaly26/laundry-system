@@ -15,7 +15,7 @@ L.Icon.Default.mergeOptions({
  * تستقبل إحداثيات delivery_lat / delivery_lng أو customer_lat / customer_lng.
  * تضع دبوسًا احترافيًا على الموقع مع نافذة popup تُظهر العنوان النصي.
  */
-const StaticOrderMap = ({ lat, lng, address, height = '220px' }) => {
+const StaticOrderMap = ({ lat, lng, address, height = '220px', interactive = false, onClick }) => {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
 
@@ -30,12 +30,12 @@ const StaticOrderMap = ({ lat, lng, address, height = '220px' }) => {
     const map = L.map(containerRef.current, {
       center: [parseFloat(lat), parseFloat(lng)],
       zoom: 15,
-      zoomControl: true,
+      zoomControl: interactive,
       attributionControl: false,
-      scrollWheelZoom: false,
-      dragging: false,
-      doubleClickZoom: false,
-      touchZoom: false,
+      scrollWheelZoom: interactive,
+      dragging: interactive,
+      doubleClickZoom: interactive,
+      touchZoom: interactive,
     });
 
     L.tileLayer(
@@ -101,6 +101,7 @@ const StaticOrderMap = ({ lat, lng, address, height = '220px' }) => {
 
   return (
     <div
+      onClick={onClick}
       style={{
         position: 'relative',
         borderRadius: '14px',
@@ -109,6 +110,7 @@ const StaticOrderMap = ({ lat, lng, address, height = '220px' }) => {
         border: '2px solid var(--border-color, #e2e8f0)',
         boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
         marginTop: '0.75rem',
+        cursor: onClick ? 'pointer' : 'default'
       }}
     >
       <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
@@ -141,6 +143,7 @@ const StaticOrderMap = ({ lat, lng, address, height = '220px' }) => {
         href={`https://www.google.com/maps?q=${lat},${lng}`}
         target="_blank"
         rel="noopener noreferrer"
+        onClick={(e) => e.stopPropagation()} // منع انتشار الحدث لفتح المودال عند الضغط على فتح خرائط جوجل
         style={{
           position: 'absolute',
           bottom: '0.6rem',

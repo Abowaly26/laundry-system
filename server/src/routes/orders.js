@@ -615,7 +615,7 @@ router.post('/', authMiddleware, authorizeRoles('admin', 'cashier', 'super_owner
 router.put('/:id', authMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
-    const { status, notes, expected_delivery_at } = req.body;
+    const { status, notes, expected_delivery_at, delivery_address, delivery_lat, delivery_lng } = req.body;
 
     let laundryCheck = '';
     let queryParams = [id];
@@ -647,6 +647,18 @@ router.put('/:id', authMiddleware, async (req, res) => {
     if (expected_delivery_at) {
       updateFields.push(`expected_delivery_at = $${paramCount++}`);
       updateParams.push(expected_delivery_at);
+    }
+    if (delivery_address !== undefined) {
+      updateFields.push(`delivery_address = $${paramCount++}`);
+      updateParams.push(delivery_address);
+    }
+    if (delivery_lat !== undefined) {
+      updateFields.push(`delivery_lat = $${paramCount++}`);
+      updateParams.push(delivery_lat !== null && delivery_lat !== '' ? parseFloat(delivery_lat) : null);
+    }
+    if (delivery_lng !== undefined) {
+      updateFields.push(`delivery_lng = $${paramCount++}`);
+      updateParams.push(delivery_lng !== null && delivery_lng !== '' ? parseFloat(delivery_lng) : null);
     }
 
     if (updateFields.length === 0) {

@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Printer, Wallet, ArrowRight, CheckCircle2, User, Calendar, CreditCard, Clock, FileText, MessageSquare, Copy, QrCode } from 'lucide-react';
+import { Printer, Wallet, ArrowRight, CheckCircle2, User, Calendar, CreditCard, Clock, FileText, MessageSquare, Copy, QrCode, MapPin } from 'lucide-react';
 import { QRCodeCanvas } from 'qrcode.react';
-import { ordersAPI, paymentsAPI, itemsAPI } from '../../services/api';
+import { ordersAPI, paymentsAPI, itemsAPI, customersAPI } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import { useSettings } from '../../context/SettingsContext';
 import Button from '../../components/UI/Button';
@@ -14,6 +14,7 @@ import Modal from '../../components/UI/Modal';
 import PrintInvoice from '../../components/Print/PrintInvoice';
 import PrintQRLabels from '../../components/Print/PrintQRLabels';
 import StaticOrderMap from '../../components/Map/StaticOrderMap';
+import LocationPickerModal from '../../components/Map/LocationPickerModal';
 import './OrderDetails.css';
 
 export default function OrderDetails() {
@@ -41,6 +42,8 @@ export default function OrderDetails() {
   const [delivering, setDelivering] = useState(false);
   const [openItemStatusDropdownId, setOpenItemStatusDropdownId] = useState(null);
   const [qrModalItem, setQrModalItem] = useState(null);
+  const [showMapModal, setShowMapModal] = useState(false);
+  const [showViewMapModal, setShowViewMapModal] = useState(false);
 
   const ITEM_STATUS_OPTIONS = [
     { value: 'pending', label: t('status.pending') || 'قيد الانتظار' },
@@ -388,24 +391,75 @@ export default function OrderDetails() {
               </div>
               <span className="detail-value">{order.customer_phone || order.customer?.phone || '-'}</span>
             </div>
-            {(order.customer_address || order.customer?.address) && (
-              <div className="detail-item" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '0.25rem' }}>
-                <div className="detail-item-left">
-                  <Clock size={16} className="detail-icon" />
-                  <span className="detail-label">{t('orders.addressLabel') || 'العنوان:'}</span>
+            <div className="detail-item" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '0.5rem', width: '100%' }}>
+              <div className="detail-item-left" style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <MapPin size={16} className="detail-icon" style={{ color: 'var(--primary)' }} />
+                  <span className="detail-label" style={{ fontWeight: '600' }}>{t('orders.addressLabel') || 'عنوان وموقع التوصيل:'}</span>
                 </div>
-                <span className="detail-value" style={{ width: '100%' }}>{order.delivery_address || order.customer_address || order.customer?.address}</span>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="text-primary flex items-center gap-xs"
+                  style={{ padding: '2px 8px', fontSize: '0.8rem', height: 'auto', border: '1px solid var(--border-color)', borderRadius: '6px' }}
+                  onClick={() => setShowMapModal(true)}
+                >
+                  🗺️ {((order.delivery_lat && order.delivery_lng) || (order.customer_lat && order.customer_lng)) ? 'تعديل الموقع' : 'تحديد الموقع'}
+                </Button>
               </div>
-            )}
+              <span className="detail-value" style={{ width: '100%', fontSize: '0.9rem', color: 'var(--text-main, #1e293b)', background: 'var(--bg-body, #f8fafc)', padding: '0.5rem 0.75rem', borderRadius: '8px', border: '1px solid var(--border-color, #e2e8f0)', whiteSpace: 'normal', wordBreak: 'break-word', display: 'block' }}>
+                {order.delivery_address || order.customer_address || order.customer?.address || 'لم يتم تحديد عنوان أو موقع توصيل بعد'}
+              </span>
+            </div>
 
-            {/* خريطة التوصيل inline */}
-            {((order.delivery_lat && order.delivery_lng) || (order.customer_lat && order.customer_lng)) && (
-              <StaticOrderMap
-                lat={order.delivery_lat || order.customer_lat}
-                lng={order.delivery_lng || order.customer_lng}
-                address={order.delivery_address || order.customer_address || ''}
-                height="230px"
-              />
+            {/* خريطة التوصيل inline - قابلة للضغط للتكبير */}
+            {((order.delivery_lat && order.delivery_lng) || (order.customer_lat && order.customer_lng)) ? (
+              <div style={{ position: 'relative' }}>
+                <StaticOrderMap
+                  lat={order.delivery_lat || order.customer_lat}
+                  lng={order.delivery_lng || order.customer_lng}
+                  address={order.delivery_address || order.customer_address || ''}
+                  height="230px"
+                  onClick={() => setShowViewMapModal(true)}
+                />
+                <div 
+                  style={{
+                    position: 'absolute',
+                    top: '0.6rem',
+                    insetInlineStart: '0.6rem',
+                    zIndex: 900,
+                    background: 'rgba(15,23,42,0.85)',
+                    backdropFilter: 'blur(4px)',
+                    color: '#fff',
+                    padding: '0.3rem 0.6rem',
+                    borderRadius: '8px',
+                    fontSize: '0.72rem',
+                    fontWeight: 700,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                    pointerEvents: 'none'
+                  }}
+                >
+                  🔍 اضغط لتكبير الخريطة
+                </div>
+              </div>
+            ) : (
+              <div 
+                className="mt-sm p-md text-center rounded-lg" 
+                style={{ 
+                  background: 'var(--bg-body, #f8fafc)', 
+                  border: '2px dashed var(--border-color, #e2e8f0)',
+                  color: 'var(--text-muted, #64748b)',
+                  fontSize: '0.82rem',
+                  lineHeight: '1.4',
+                  width: '100%'
+                }}
+              >
+                📍 لم يتم تحديد إحداثيات الموقع على الخريطة التفاعلية للمندوب. اضغط على "تحديد الموقع" لتحديدها وتسهيل التوصيل.
+              </div>
             )}
           </Card>
 
@@ -780,6 +834,77 @@ export default function OrderDetails() {
           <PrintInvoice order={order} />
           <PrintQRLabels items={order.items || []} orderId={order.id} />
         </div>
+      )}
+
+      {order && (
+        <LocationPickerModal
+          isOpen={showMapModal}
+          onClose={() => setShowMapModal(false)}
+          initialLocation={
+            order.delivery_lat && order.delivery_lng
+              ? { lat: parseFloat(order.delivery_lat), lng: parseFloat(order.delivery_lng) }
+              : order.customer_lat && order.customer_lng
+              ? { lat: parseFloat(order.customer_lat), lng: parseFloat(order.customer_lng) }
+              : null
+          }
+          initialAddress={order.delivery_address || order.customer_address || ''}
+          onSelectLocation={async (locationData) => {
+            try {
+              // تحديث عنوان وإحداثيات توصيل الطلب
+              await ordersAPI.update(id, {
+                delivery_address: locationData.address,
+                delivery_lat: locationData.latitude,
+                delivery_lng: locationData.longitude
+              });
+              
+              // تحديث تفاصيل العميل للمستقبل
+              if (order.customer_id) {
+                try {
+                  await customersAPI.update(order.customer_id, {
+                    address: locationData.address,
+                    latitude: locationData.latitude,
+                    longitude: locationData.longitude
+                  });
+                } catch (cErr) {
+                  console.warn('Could not auto-update customer record:', cErr);
+                }
+              }
+              
+              showToast('تم تحديث وحفظ عنوان وموقع التوصيل بنجاح 📍', 'success');
+              setShowMapModal(false);
+              loadOrderDetails();
+            } catch (err) {
+              console.error('Failed to update order address/location:', err);
+              showToast('حدث خطأ أثناء حفظ تفاصيل موقع التوصيل', 'error');
+            }
+          }}
+        />
+      )}
+
+      {order && ((order.delivery_lat && order.delivery_lng) || (order.customer_lat && order.customer_lng)) && (
+        <Modal
+          isOpen={showViewMapModal}
+          onClose={() => setShowViewMapModal(false)}
+          title={t('orders.deliveryLocationTitle') || '📍 موقع التوصيل على الخريطة التفاعلية'}
+        >
+          <div style={{ padding: '0.5rem 0' }}>
+            <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary, #64748b)', marginBottom: '0.75rem', direction: 'rtl', textAlign: 'right' }}>
+              <strong>العنوان المحدد:</strong> {order.delivery_address || order.customer_address || ''}
+            </p>
+            <StaticOrderMap
+              lat={order.delivery_lat || order.customer_lat}
+              lng={order.delivery_lng || order.customer_lng}
+              address={order.delivery_address || order.customer_address || ''}
+              height="380px"
+              interactive={true}
+            />
+            <div className="flex justify-end mt-md" style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
+              <Button variant="secondary" onClick={() => setShowViewMapModal(false)}>
+                {t('orders.close') || 'إغلاق'}
+              </Button>
+            </div>
+          </div>
+        </Modal>
       )}
     </div>
   );
