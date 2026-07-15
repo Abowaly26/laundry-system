@@ -619,5 +619,23 @@
     "code": "Code:",
     "type": "Type:",
     "service": "Service:"
+  },
+  "orderDetails": {
+    "notFound": "Order not found",
+    "loadError": "Error loading order details",
+    "invalidAmount": "Please enter a valid amount",
+    "amountTooLarge": "Paid amount is larger than remaining order amount",
+    "paymentSuccess": "Payment recorded successfully! 💸",
+    "paymentFail": "Failed to save payment",
+    "serverError": "Server connection error",
+    "statusUpdateSuccess": "Item status updated successfully!",
+    "statusUpdateFail": "Failed to update item status",
+    "updateError": "Error during update",
+    "confirmDeliverIncomplete": "Warning: Some items are not ready yet. Do you want to proceed and deliver the entire order?",
+    "confirmDeliverUnpaid": "There is a remaining amount ({{remaining}} {{currency}}). Do you want to collect it and deliver the order now?",
+    "errorRemainingPayment": "An error occurred while recording remaining payment: ",
+    "deliverSuccess": "Order delivered and closed successfully! ✓",
+    "deliverFail": "Failed to update order status",
+    "deliverError": "Error during order update"
   }
 }

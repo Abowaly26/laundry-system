@@ -621,5 +621,23 @@
     "code": "كود:",
     "type": "النوع:",
     "service": "الخدمة:"
+  },
+  "orderDetails": {
+    "notFound": "لم يتم العثور على الطلب",
+    "loadError": "خطأ في تحميل تفاصيل الطلب",
+    "invalidAmount": "الرجاء إدخال مبلغ صحيح",
+    "amountTooLarge": "المبلغ المدفوع أكبر من المبلغ المتبقي على الطلب",
+    "paymentSuccess": "تم تسجيل الدفعة بنجاح! 💸",
+    "paymentFail": "فشل في حفظ الدفعة",
+    "serverError": "خطأ في الاتصال بالخادم",
+    "statusUpdateSuccess": "تم تحديث حالة القطعة بنجاح!",
+    "statusUpdateFail": "فشل في تحديث حالة القطعة",
+    "updateError": "خطأ أثناء التحديث",
+    "confirmDeliverIncomplete": "تنبيه: بعض القطع ليست جاهزة بعد. هل تريد المتابعة وتسليم الطلب بأكمله؟",
+    "confirmDeliverUnpaid": "يوجد مبلغ متبقي ({{remaining}} {{currency}}). هل تريد تحصيل المبلغ وتسليم الطلب الآن؟",
+    "errorRemainingPayment": "حدث خطأ أثناء تسجيل الدفعة المتبقية: ",
+    "deliverSuccess": "تم تسليم الطلب وإغلاقه بنجاح! ✓",
+    "deliverFail": "فشل في تحديث حالة الطلب",
+    "deliverError": "خطأ أثناء تحديث الطلب"
   }
 }
