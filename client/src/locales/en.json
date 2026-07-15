@@ -455,7 +455,9 @@
     "matrixLabel": "Services Price Matrix for each added size",
     "matrixEmpty": "Please enter at least one size to set prices for it.",
     "cancelBtn": "Cancel",
-    "saveBtn": "Save Item and Prices"
+    "saveBtn": "Save Item and Prices",
+    "cleaningMethods": "Cleaning Methods (Columns)",
+    "addServiceBtn": "Add Service"
   },
   "common": {
     "noData": "No data available"

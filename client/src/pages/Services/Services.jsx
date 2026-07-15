@@ -533,11 +533,11 @@ export default function Services() {
         <div className="section-header flex justify-between items-center mb-md">
           <h2 className="section-title text-lg font-bold flex items-center gap-sm">
             <Sparkles size={20} className="text-primary" />
-            طرق التنظيف (الأعمدة)
+            {t('services.cleaningMethods') || 'طرق التنظيف (الأعمدة)'}
           </h2>
           {isAdmin && (
             <Button variant="secondary" onClick={() => handleOpenCleaningService('add')}>
-              <Plus size={16} /> إضافة خدمة
+              <Plus size={16} /> {t('services.addServiceBtn') || 'إضافة خدمة'}
             </Button>
           )}
         </div>
@@ -554,9 +554,9 @@ export default function Services() {
               }}
             >
               <span style={{ fontWeight: 500, color: s.is_active ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
-                {s.name_ar}
+                {i18n.language === 'en' && s.name_en ? s.name_en : s.name_ar}
               </span>
-              {!s.is_active && <span style={{ fontSize: '10px', background: '#eee', padding: '2px 6px', borderRadius: '4px' }}>معطل</span>}
+              {!s.is_active && <span style={{ fontSize: '10px', background: '#eee', padding: '2px 6px', borderRadius: '4px' }}>{t('usersList.statusInactive') || 'معطل'}</span>}
             </div>
           ))}
         </div>
