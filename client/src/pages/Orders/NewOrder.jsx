@@ -138,11 +138,13 @@ export default function NewOrder() {
     const year = date.getFullYear();
     const month = date.getMonth();
     const firstDay = new Date(year, month, 1);
-    const startDayOfWeek = firstDay.getDay();
+    // JS standard getDay() returns 0 for Sunday, 1 for Monday, etc.
+    const startDayOfWeek = firstDay.getDay(); 
     const totalDays = new Date(year, month + 1, 0).getDate();
     const prevTotalDays = new Date(year, month, 0).getDate();
     const daysGrid = [];
     
+    // First, fill in days from previous month
     for (let i = startDayOfWeek - 1; i >= 0; i--) {
       daysGrid.push({
         dayNum: prevTotalDays - i,
@@ -151,6 +153,7 @@ export default function NewOrder() {
       });
     }
     
+    // Second, fill in days of current month
     for (let i = 1; i <= totalDays; i++) {
       daysGrid.push({
         dayNum: i,
@@ -159,6 +162,7 @@ export default function NewOrder() {
       });
     }
     
+    // Finally, pad with days of next month to complete the 42-day (6x7) calendar grid
     const remaining = 42 - daysGrid.length;
     for (let i = 1; i <= remaining; i++) {
       daysGrid.push({
@@ -201,7 +205,9 @@ export default function NewOrder() {
     setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1));
   };
 
-  const WEEKDAYS = ['أح', 'اث', 'ثلا', 'أر', 'خم', 'جم', 'سب'];
+  const WEEKDAYS = i18n.language === 'en' 
+    ? ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'] 
+    : ['أح', 'إث', 'ثلا', 'أر', 'خم', 'جم', 'سب'];
 
   // دالة مساعدة للحصول على مسودة من localStorage
   const getDraftValue = (key, defaultValue) => {
