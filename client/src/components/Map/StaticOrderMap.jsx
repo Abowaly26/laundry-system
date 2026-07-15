@@ -115,28 +115,6 @@ const StaticOrderMap = ({ lat, lng, address, height = '220px', interactive = fal
     >
       <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
 
-      {/* Badge فوق الخريطة */}
-      <div
-        style={{
-          position: 'absolute',
-          top: '0.6rem',
-          insetInlineEnd: '0.6rem',
-          zIndex: 900,
-          background: 'rgba(15,23,42,0.8)',
-          backdropFilter: 'blur(6px)',
-          color: '#fff',
-          padding: '0.3rem 0.7rem',
-          borderRadius: '8px',
-          fontSize: '0.78rem',
-          fontWeight: 700,
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.35rem',
-          border: '1px solid rgba(255,255,255,0.15)',
-        }}
-      >
-        📍 موقع العميل
-      </div>
 
       {/* Open in Google Maps Link */}
       <a
