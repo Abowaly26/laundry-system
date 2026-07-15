@@ -373,7 +373,7 @@ export default function Customers() {
         isOpen={showDetailModal}
         onClose={() => setShowDetailModal(false)}
         title={t('customers.detailModalTitle') || 'ملف العميل وسجل الطلبات'}
-        size="large"
+        size="lg"
       >
         {loadingDetail || !customerDetail ? (
           <div className="flex justify-center items-center" style={{ height: '200px' }}>
