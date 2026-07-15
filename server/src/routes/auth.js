@@ -26,7 +26,7 @@ router.post('/login', async (req, res) => {
 
     // البحث عن المستخدم مع بيانات المغسلة
     const result = await query(
-      `SELECT u.*, l.name as laundry_name, l.currency as laundry_currency, l.is_active as laundry_active
+      `SELECT u.*, l.name as laundry_name, l.currency as laundry_currency, l.language as laundry_language, l.is_active as laundry_active
        FROM users u 
        LEFT JOIN laundries l ON u.laundry_id = l.id 
        WHERE u.email = $1`,
@@ -86,7 +86,8 @@ router.post('/login', async (req, res) => {
           role: user.role,
           laundry_id: user.laundry_id,
           laundry_name: user.laundry_name,
-          laundry_currency: user.laundry_currency
+          laundry_currency: user.laundry_currency,
+          laundry_language: user.laundry_language || 'ar'
         }
       }
     });
@@ -115,7 +116,8 @@ router.get('/me', authMiddleware, (req, res) => {
         role: req.user.role,
         laundry_id: req.user.laundry_id,
         laundry_name: req.user.laundry_name,
-        laundry_currency: req.user.laundry_currency
+        laundry_currency: req.user.laundry_currency,
+        laundry_language: req.user.laundry_language || 'ar'
       }
     });
   } catch (error) {

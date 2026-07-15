@@ -553,6 +553,70 @@
 }
 
 /* ========================
+   Language Selector
+======================== */
+.laundry-lang-select-wrapper {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.laundry-lang-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+  background: var(--bg);
+  position: relative;
+}
+.laundry-lang-option:hover {
+  border-color: var(--primary);
+  background: var(--primary-light, #eff6ff);
+}
+.laundry-lang-option.selected {
+  border-color: var(--primary);
+  background: var(--primary-light, #eff6ff);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.laundry-lang-flag {
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.laundry-lang-name {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.laundry-lang-sub {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.laundry-lang-check {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #fff;
+  font-size: 0.7rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+}
+
+/* ========================
    Responsive
 ======================== */
 @media (max-width: 768px) {

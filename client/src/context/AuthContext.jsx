@@ -1,8 +1,18 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { authAPI } from '../services/api';
+import i18n from '../i18n';
 
 const AuthContext = createContext(null);
+
+// Helper: apply laundry language to i18n and document direction
+function applyLaundryLanguage(user) {
+  if (!user || user.role === 'super_owner') return; // super owner controls their own language
+  const lang = user.laundry_language || 'ar';
+  if (i18n.language !== lang) {
+    i18n.changeLanguage(lang);
+  }
+}
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -21,6 +31,7 @@ export function AuthProvider({ children }) {
       const userData = response.data;
       setUser(userData);
       setToken(storedToken);
+      applyLaundryLanguage(userData);
     } catch (error) {
       console.error('Auth check failed:', error);
       localStorage.removeItem('token');
@@ -50,6 +61,9 @@ export function AuthProvider({ children }) {
       localStorage.setItem('user', JSON.stringify(usr));
       setToken(tkn);
       setUser(usr);
+
+      // Apply laundry language immediately on login
+      applyLaundryLanguage(usr);
 
       return usr;
     } catch (error) {

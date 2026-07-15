@@ -75,7 +75,7 @@ router.get('/:id', authorizeRoles('super_owner'), async (req, res) => {
 router.post('/', authorizeRoles('super_owner'), async (req, res) => {
   try {
     const {
-      name, address, phone, currency,
+      name, address, phone, currency, language,
       admin_name, admin_email, admin_password
     } = req.body;
 
@@ -101,8 +101,8 @@ router.post('/', authorizeRoles('super_owner'), async (req, res) => {
 
     // إنشاء المغسلة
     const laundryResult = await query(
-      `INSERT INTO laundries (name, address, phone, currency) VALUES ($1, $2, $3, $4) RETURNING *`,
-      [name, address || '', phone || '', currency || 'ر.س']
+      `INSERT INTO laundries (name, address, phone, currency, language) VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      [name, address || '', phone || '', currency || 'ر.س', language || 'ar']
     );
     const laundry = laundryResult.rows[0];
 
@@ -136,7 +136,7 @@ router.post('/', authorizeRoles('super_owner'), async (req, res) => {
 router.put('/:id', authorizeRoles('super_owner'), async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, address, phone, currency, is_active } = req.body;
+    const { name, address, phone, currency, language, is_active } = req.body;
 
     const existing = await query('SELECT * FROM laundries WHERE id = $1', [id]);
     if (existing.rows.length === 0) {
@@ -151,6 +151,7 @@ router.put('/:id', authorizeRoles('super_owner'), async (req, res) => {
     if (address !== undefined) { updateFields.push(`address = $${paramCount++}`); updateParams.push(address); }
     if (phone !== undefined) { updateFields.push(`phone = $${paramCount++}`); updateParams.push(phone); }
     if (currency !== undefined) { updateFields.push(`currency = $${paramCount++}`); updateParams.push(currency); }
+    if (language !== undefined) { updateFields.push(`language = $${paramCount++}`); updateParams.push(language); }
     if (is_active !== undefined) { updateFields.push(`is_active = $${paramCount++}`); updateParams.push(is_active); }
 
     if (updateFields.length === 0) {

@@ -26,7 +26,7 @@ export default function Laundries() {
   const [modalMode, setModalMode] = useState('add');
   const [selectedLaundry, setSelectedLaundry] = useState(null);
   const [formData, setFormData] = useState({
-    name: '', address: '', phone: '',
+    name: '', address: '', phone: '', currency: 'ر.س', language: 'ar',
     admin_name: '', admin_email: '', admin_password: ''
   });
   const [saving, setSaving] = useState(false);
@@ -48,14 +48,14 @@ export default function Laundries() {
   const handleOpenAdd = () => {
     setModalMode('add');
     setSelectedLaundry(null);
-    setFormData({ name: '', address: '', phone: '', currency: 'ر.س', admin_name: '', admin_email: '', admin_password: '' });
+    setFormData({ name: '', address: '', phone: '', currency: 'ر.س', language: 'ar', admin_name: '', admin_email: '', admin_password: '' });
     setShowModal(true);
   };
 
   const handleOpenEdit = (laundry) => {
     setModalMode('edit');
     setSelectedLaundry(laundry);
-    setFormData({ name: laundry.name, address: laundry.address || '', phone: laundry.phone || '', currency: laundry.currency || 'ر.س', admin_name: '', admin_email: '', admin_password: '' });
+    setFormData({ name: laundry.name, address: laundry.address || '', phone: laundry.phone || '', currency: laundry.currency || 'ر.س', language: laundry.language || 'ar', admin_name: '', admin_email: '', admin_password: '' });
     setShowModal(true);
   };
 
@@ -73,7 +73,7 @@ export default function Laundries() {
         res = await laundriesAPI.create(formData);
       } else {
         res = await laundriesAPI.update(selectedLaundry.id, {
-          name: formData.name, address: formData.address, phone: formData.phone, currency: formData.currency
+          name: formData.name, address: formData.address, phone: formData.phone, currency: formData.currency, language: formData.language
         });
       }
 
@@ -371,6 +371,38 @@ export default function Laundries() {
             onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
             placeholder={t('settings.currencyPlaceholder') || 'مثال: ر.س، د.إ، $'}
           />
+
+          {/* لغة المغسلة */}
+          <div className="form-group">
+            <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span>🌐</span>
+              لغة واجهة المغسلة
+            </label>
+            <div className="laundry-lang-select-wrapper">
+              <div
+                className={`laundry-lang-option ${formData.language === 'ar' ? 'selected' : ''}`}
+                onClick={() => setFormData({ ...formData, language: 'ar' })}
+              >
+                <span className="laundry-lang-flag">🇸🇦</span>
+                <div>
+                  <div className="laundry-lang-name">العربية</div>
+                  <div className="laundry-lang-sub">Arabic · RTL</div>
+                </div>
+                {formData.language === 'ar' && <span className="laundry-lang-check">✓</span>}
+              </div>
+              <div
+                className={`laundry-lang-option ${formData.language === 'en' ? 'selected' : ''}`}
+                onClick={() => setFormData({ ...formData, language: 'en' })}
+              >
+                <span className="laundry-lang-flag">🇺🇸</span>
+                <div>
+                  <div className="laundry-lang-name">English</div>
+                  <div className="laundry-lang-sub">English · LTR</div>
+                </div>
+                {formData.language === 'en' && <span className="laundry-lang-check">✓</span>}
+              </div>
+            </div>
+          </div>
 
           {/* بيانات المدير - فقط عند الإنشاء */}
           {modalMode === 'add' && (
