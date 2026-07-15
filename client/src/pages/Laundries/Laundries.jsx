@@ -13,6 +13,36 @@ import Input from '../../components/UI/Input';
 import LoadingSpinner from '../../components/UI/LoadingSpinner';
 import './Laundries.css';
 
+const COUNTRY_PRESETS = [
+  { name: 'اختر الدولة لتحديد الموقع الافتراضي للمغسلة تلقائياً...', lat: '', lng: '' },
+  { name: '🇸🇦 المملكة العربية السعودية', lat: '24.7136', lng: '46.6753' },
+  { name: '🇪🇬 جمهورية مصر العربية', lat: '30.0444', lng: '31.2357' },
+  { name: '🇦🇪 الإمارات العربية المتحدة', lat: '25.2048', lng: '55.2708' },
+  { name: '🇰🇼 الكويت', lat: '29.3759', lng: '47.9774' },
+  { name: '🇶🇦 قطر', lat: '25.2854', lng: '51.5310' },
+  { name: '🇧🇭 البحرين', lat: '26.2285', lng: '50.5860' },
+  { name: '🇴🇲 سلطنة عمان', lat: '23.5859', lng: '58.4059' },
+  { name: '🇯🇴 الأردن', lat: '31.9522', lng: '35.9106' },
+  { name: '🇱🇧 لبنان', lat: '33.8938', lng: '35.5018' },
+  { name: '🇸🇾 سوريا', lat: '33.5138', lng: '36.2765' },
+  { name: '🇮🇶 العراق', lat: '33.3152', lng: '44.3661' },
+  { name: '🇵🇸 فلسطين', lat: '31.7683', lng: '35.2137' },
+  { name: '🇾🇪 اليمن', lat: '15.3694', lng: '44.1910' },
+  { name: '🇱🇾 ليبيا', lat: '32.8872', lng: '13.1913' },
+  { name: '🇹🇳 تونس', lat: '36.8065', lng: '10.1815' },
+  { name: '🇩🇿 الجزائر', lat: '36.7538', lng: '3.0588' },
+  { name: '🇲🇦 المغرب', lat: '34.0209', lng: '6.8416' },
+  { name: '🇸🇩 السودان', lat: '15.5007', lng: '32.5599' },
+  { name: '🇸🇴 الصومال', lat: '2.0469', lng: '45.3182' },
+  { name: '🇲🇷 موريتانيا', lat: '18.0735', lng: '15.9582' },
+  { name: '🇹🇷 تركيا', lat: '39.9334', lng: '32.8597' },
+  { name: '🇬🇧 المملكة المتحدة', lat: '51.5074', lng: '-0.1278' },
+  { name: '🇺🇸 الولايات المتحدة الأمريكية', lat: '38.9072', lng: '-77.0369' },
+  { name: '🇨🇦 كندا', lat: '45.4215', lng: '-75.6972' },
+  { name: '🇫🇷 فرنسا', lat: '48.8566', lng: '2.3522' },
+  { name: '🇩🇪 ألمانيا', lat: '52.5200', lng: '13.4050' }
+];
+
 export default function Laundries() {
   const { t } = useTranslation();
   const { showToast } = useToast();
@@ -601,33 +631,37 @@ export default function Laundries() {
               اختر الدولة لتحديد الموقع الافتراضي للمغسلة على الخريطة عند تسجيل الطلبات أو أدخل الإحداثيات يدوياً.
             </p>
             
-            {/* أزرار التحديد السريع للدول */}
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '12px' }}>
-              {[
-                { name: 'السعودية (الرياض)', lat: '24.7136', lng: '46.6753' },
-                { name: 'مصر (القاهرة)', lat: '30.0444', lng: '31.2357' },
-                { name: 'الإمارات (دبي)', lat: '25.2048', lng: '55.2708' },
-                { name: 'الكويت (الكويت)', lat: '29.3759', lng: '47.9774' }
-              ].map((preset) => (
-                <button
-                  key={preset.name}
-                  type="button"
-                  onClick={() => setFormData({ ...formData, latitude: preset.lat, longitude: preset.lng })}
-                  style={{
-                    padding: '5px 10px',
-                    fontSize: '0.72rem',
-                    borderRadius: '6px',
-                    border: '1px solid var(--border)',
-                    background: String(formData.latitude) === preset.lat && String(formData.longitude) === preset.lng ? 'var(--primary)' : 'var(--bg-card)',
-                    color: String(formData.latitude) === preset.lat && String(formData.longitude) === preset.lng ? '#fff' : 'var(--text-secondary)',
-                    fontWeight: 'bold',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s'
-                  }}
-                >
-                  {preset.name}
-                </button>
-              ))}
+            {/* قائمة تحديد الدول الممتدة */}
+            <div style={{ marginBottom: '12px' }}>
+              <select
+                id="laundry-country-preset"
+                className="form-input"
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--border)',
+                  background: 'var(--bg-card)',
+                  color: 'var(--text-main)',
+                  fontSize: '0.85rem',
+                  fontWeight: 'bold',
+                  outline: 'none',
+                  cursor: 'pointer'
+                }}
+                onChange={(e) => {
+                  const selectedPreset = COUNTRY_PRESETS.find(p => p.name === e.target.value);
+                  if (selectedPreset && selectedPreset.lat !== '') {
+                    setFormData({ ...formData, latitude: selectedPreset.lat, longitude: selectedPreset.lng });
+                  }
+                }}
+                value={COUNTRY_PRESETS.find(p => String(p.lat) === String(formData.latitude) && String(p.lng) === String(formData.longitude))?.name || 'اختر الدولة لتحديد الموقع الافتراضي للمغسلة تلقائياً...'}
+              >
+                {COUNTRY_PRESETS.map((preset) => (
+                  <option key={preset.name} value={preset.name}>
+                    {preset.name}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
