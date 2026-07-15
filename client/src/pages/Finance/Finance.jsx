@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Wallet, CreditCard, TrendingUp, Download, Search } from 'lucide-react';
+import { Wallet, CreditCard, TrendingUp, Download, Search, ChevronRight, ChevronLeft } from 'lucide-react';
 import { paymentsAPI, dashboardAPI } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import Card from '../../components/UI/Card';
@@ -35,13 +35,31 @@ export default function Finance() {
   });
 
   const [showMethodDropdown, setShowMethodDropdown] = useState(false);
-  const methodDropdownRef = useRef(null);
+  const [showStartDateDropdown, setShowStartDateDropdown] = useState(false);
+  const [showEndDateDropdown, setShowEndDateDropdown] = useState(false);
 
-  // Click outside to close method dropdown
+  const [viewStartDate, setViewStartDate] = useState(new Date());
+  const [viewEndDate, setViewEndDate] = useState(new Date());
+
+  const methodDropdownRef = useRef(null);
+  const startDateRef = useRef(null);
+  const endDateRef = useRef(null);
+
+  const WEEKDAYS = i18n.language === 'en' 
+    ? ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'] 
+    : ['أح', 'اث', 'ثلا', 'أر', 'خم', 'جم', 'سب'];
+
+  // Click outside to close dropdowns
   useEffect(() => {
     const handleOutsideClick = (event) => {
       if (methodDropdownRef.current && !methodDropdownRef.current.contains(event.target)) {
         setShowMethodDropdown(false);
+      }
+      if (startDateRef.current && !startDateRef.current.contains(event.target)) {
+        setShowStartDateDropdown(false);
+      }
+      if (endDateRef.current && !endDateRef.current.contains(event.target)) {
+        setShowEndDateDropdown(false);
       }
     };
     document.addEventListener('mousedown', handleOutsideClick);
@@ -93,6 +111,83 @@ export default function Finance() {
       endDate: ''
     });
     setSearchQuery('');
+  };
+
+  const handlePrevMonthStartDate = () => {
+    setViewStartDate(new Date(viewStartDate.getFullYear(), viewStartDate.getMonth() - 1, 1));
+  };
+  const handleNextMonthStartDate = () => {
+    setViewStartDate(new Date(viewStartDate.getFullYear(), viewStartDate.getMonth() + 1, 1));
+  };
+
+  const handlePrevMonthEndDate = () => {
+    setViewEndDate(new Date(viewEndDate.getFullYear(), viewEndDate.getMonth() - 1, 1));
+  };
+  const handleNextMonthEndDate = () => {
+    setViewEndDate(new Date(viewEndDate.getFullYear(), viewEndDate.getMonth() + 1, 1));
+  };
+
+  const formatLocalDate = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const handleSelectStartDate = (date) => {
+    setFilters(prev => ({ ...prev, startDate: formatLocalDate(date) }));
+    setShowStartDateDropdown(false);
+  };
+
+  const handleSelectEndDate = (date) => {
+    setFilters(prev => ({ ...prev, endDate: formatLocalDate(date) }));
+    setShowEndDateDropdown(false);
+  };
+
+  const getDaysInMonthGrid = (date) => {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const startDayOfWeek = firstDay.getDay();
+    const totalDays = new Date(year, month + 1, 0).getDate();
+    const prevTotalDays = new Date(year, month, 0).getDate();
+    const daysGrid = [];
+    
+    for (let i = startDayOfWeek - 1; i >= 0; i--) {
+      daysGrid.push({
+        dayNum: prevTotalDays - i,
+        isCurrentMonth: false,
+        date: new Date(year, month - 1, prevTotalDays - i)
+      });
+    }
+    
+    for (let i = 1; i <= totalDays; i++) {
+      daysGrid.push({
+        dayNum: i,
+        isCurrentMonth: true,
+        date: new Date(year, month, i)
+      });
+    }
+    
+    const remaining = 42 - daysGrid.length;
+    for (let i = 1; i <= remaining; i++) {
+      daysGrid.push({
+        dayNum: i,
+        isCurrentMonth: false,
+        date: new Date(year, month + 1, i)
+      });
+    }
+    return daysGrid;
+  };
+
+  const getFormattedDateLabel = (dateStr, fallback) => {
+    if (!dateStr) return fallback;
+    const date = new Date(dateStr);
+    return isNaN(date.getTime()) ? fallback : date.toLocaleDateString(i18n.language === 'en' ? 'en-US' : 'ar-EG', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
   };
 
   const formatDate = (dateStr) => {
@@ -318,22 +413,104 @@ export default function Finance() {
 
           <div className="form-group">
             <label className="form-label">{t('finance.startDate') || 'تاريخ البداية'}</label>
-            <input
-              type="date"
-              className="form-input"
-              value={filters.startDate}
-              onChange={(e) => setFilters({ ...filters, startDate: e.target.value })}
-            />
+            <div className="custom-date-select-container" ref={startDateRef}>
+              <button
+                type="button"
+                className="date-select-trigger"
+                onClick={() => setShowStartDateDropdown(!showStartDateDropdown)}
+              >
+                {getFormattedDateLabel(filters.startDate, t('orders.startDate') || 'من تاريخ...')}
+              </button>
+              {showStartDateDropdown && (
+                <div className="date-select-dropdown">
+                  <div className="calendar-header">
+                    <button type="button" className="btn-month-nav" onClick={handlePrevMonthStartDate}>
+                      <ChevronRight size={16} />
+                    </button>
+                    <span className="month-year-label">
+                      {viewStartDate.toLocaleString(i18n.language === 'en' ? 'en-US' : 'ar-EG', { month: 'long', year: 'numeric' })}
+                    </span>
+                    <button type="button" className="btn-month-nav" onClick={handleNextMonthStartDate}>
+                      <ChevronLeft size={16} />
+                    </button>
+                  </div>
+                  <div className="calendar-grid-weekdays">
+                    {WEEKDAYS.map(day => (
+                      <div key={day} className="weekday-header">{day}</div>
+                    ))}
+                  </div>
+                  <div className="calendar-grid-days">
+                    {getDaysInMonthGrid(viewStartDate).map((cell, idx) => {
+                      const cellDateStr = formatLocalDate(cell.date);
+                      const isSelected = filters.startDate === cellDateStr;
+                      const isToday = formatLocalDate(new Date()) === cellDateStr;
+                      
+                      return (
+                        <button
+                          key={idx}
+                          type="button"
+                          className={`calendar-day-cell ${!cell.isCurrentMonth ? 'other-month' : ''} ${isSelected ? 'selected' : ''} ${isToday ? 'today' : ''}`}
+                          onClick={() => handleSelectStartDate(cell.date)}
+                        >
+                          {cell.dayNum}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="form-group">
             <label className="form-label">{t('finance.endDate') || 'تاريخ النهاية'}</label>
-            <input
-              type="date"
-              className="form-input"
-              value={filters.endDate}
-              onChange={(e) => setFilters({ ...filters, endDate: e.target.value })}
-            />
+            <div className="custom-date-select-container" ref={endDateRef}>
+              <button
+                type="button"
+                className="date-select-trigger"
+                onClick={() => setShowEndDateDropdown(!showEndDateDropdown)}
+              >
+                {getFormattedDateLabel(filters.endDate, t('orders.endDate') || 'إلى تاريخ...')}
+              </button>
+              {showEndDateDropdown && (
+                <div className="date-select-dropdown">
+                  <div className="calendar-header">
+                    <button type="button" className="btn-month-nav" onClick={handlePrevMonthEndDate}>
+                      <ChevronRight size={16} />
+                    </button>
+                    <span className="month-year-label">
+                      {viewEndDate.toLocaleString(i18n.language === 'en' ? 'en-US' : 'ar-EG', { month: 'long', year: 'numeric' })}
+                    </span>
+                    <button type="button" className="btn-month-nav" onClick={handleNextMonthEndDate}>
+                      <ChevronLeft size={16} />
+                    </button>
+                  </div>
+                  <div className="calendar-grid-weekdays">
+                    {WEEKDAYS.map(day => (
+                      <div key={day} className="weekday-header">{day}</div>
+                    ))}
+                  </div>
+                  <div className="calendar-grid-days">
+                    {getDaysInMonthGrid(viewEndDate).map((cell, idx) => {
+                      const cellDateStr = formatLocalDate(cell.date);
+                      const isSelected = filters.endDate === cellDateStr;
+                      const isToday = formatLocalDate(new Date()) === cellDateStr;
+                      
+                      return (
+                        <button
+                          key={idx}
+                          type="button"
+                          className={`calendar-day-cell ${!cell.isCurrentMonth ? 'other-month' : ''} ${isSelected ? 'selected' : ''} ${isToday ? 'today' : ''}`}
+                          onClick={() => handleSelectEndDate(cell.date)}
+                        >
+                          {cell.dayNum}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="flex items-end" style={{ paddingBottom: '16px' }}>
