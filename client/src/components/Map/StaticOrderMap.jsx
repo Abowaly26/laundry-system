@@ -16,12 +16,8 @@ const TILE_LAYERS = {
     url: 'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=ar',
   },
   osm: {
-    name: 'هجين',
-    url: 'https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}&hl=ar',
-  },
-  positron: {
     name: 'قمر صناعي',
-    url: 'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
+    url: 'https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}&hl=ar',
   },
 };
 
