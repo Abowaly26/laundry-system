@@ -338,3 +338,11 @@
   background: var(--primary) !important;
   color: white !important;
 }
+
+/* Prevent dropdown and calendar clipping in the finance filters card */
+.finance-page .card,
+.finance-filters-grid,
+.custom-date-select-container,
+.table-select-container {
+  overflow: visible !important;
+}
