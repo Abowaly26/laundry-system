@@ -210,17 +210,18 @@ export default function Laundries() {
                     </div>
                   </div>
                 </div>
-                <div className="laundry-card-actions">
+                <div className="laundry-card-actions" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <button className="laundry-icon-btn" onClick={() => handleOpenEdit(laundry)} title={t('usersList.editBtn') || "تعديل"}>
                     <Edit2 size={16} />
                   </button>
-                  <button
-                    className={`laundry-icon-btn ${laundry.is_active ? 'danger' : 'success'}`}
-                    onClick={() => handleToggleStatus(laundry)}
-                    title={laundry.is_active ? (t('usersList.deactivateTitle') || 'تعطيل') : (t('usersList.activateTitle') || 'تفعيل')}
-                  >
-                    <Power size={16} />
-                  </button>
+                  <label className="laundry-switch" title={laundry.is_active ? (t('usersList.deactivateTitle') || 'تعطيل') : (t('usersList.activateTitle') || 'تفعيل')}>
+                    <input 
+                      type="checkbox" 
+                      checked={laundry.is_active} 
+                      onChange={() => handleToggleStatus(laundry)}
+                    />
+                    <span className="laundry-switch-slider"></span>
+                  </label>
                 </div>
               </div>
 
