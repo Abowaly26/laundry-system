@@ -51,6 +51,10 @@ export default function Dashboard() {
   const { settings } = useSettings();
   const navigate = useNavigate();
 
+  if (isSuperOwner) {
+    return <Navigate to="/laundries" replace />;
+  }
+
   if (isWorker) {
     return <Navigate to="/tracking" replace />;
   }

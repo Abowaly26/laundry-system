@@ -61,6 +61,8 @@ export function AuthProvider({ children }) {
   const logout = useCallback(() => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    localStorage.removeItem('laundry_settings');
+    localStorage.removeItem('order_draft');
     setToken(null);
     setUser(null);
   }, []);
