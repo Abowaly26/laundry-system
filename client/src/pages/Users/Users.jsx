@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Plus, User, Edit2, Building2 } from 'lucide-react';
+import { Plus, User, Edit2, Building2, Trash2 } from 'lucide-react';
 import { usersAPI, laundriesAPI } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import { useAuth } from '../../context/AuthContext';
@@ -164,6 +164,24 @@ export default function Users() {
     }
   };
 
+  const handleDeleteUser = async (user) => {
+    if (!window.confirm(t('usersList.confirmDelete', { name: user.name }) || `هل أنت متأكد من رغبتك في حذف المستخدم: ${user.name} نهائياً؟ لا يمكن التراجع عن هذا الإجراء.`)) {
+      return;
+    }
+
+    try {
+      const res = await usersAPI.delete(user.id);
+      if (res.success) {
+        showToast(t('usersList.deleteSuccess') || 'تم حذف المستخدم نهائياً بنجاح', 'success');
+        loadUsers();
+      } else {
+        showToast(res.message || t('usersList.deleteError') || 'فشل في حذف المستخدم', 'error');
+      }
+    } catch (err) {
+      showToast(err.message || t('usersList.deleteNetworkError') || 'خطأ أثناء حذف المستخدم', 'error');
+    }
+  };
+
   const getRoleAr = (role) => {
     const rolesMapping = {
       super_owner: t('roles.super_owner') || '👑 صاحب النظام',
@@ -206,7 +224,7 @@ export default function Users() {
                 {isSuperOwner && <th><Building2 size={14} style={{verticalAlign:'middle', marginLeft:'4px'}}/>{t('usersList.colLaundry') || 'المغسلة'}</th>}
                 <th>{t('usersList.colRole') || 'الصلاحية (الدور)'}</th>
                 <th>{t('usersList.colStatus') || 'الحالة'}</th>
-                <th style={{ width: '180px', textAlign: 'center' }}>{t('usersList.colActions') || 'العمليات'}</th>
+                <th style={{ width: '240px', textAlign: 'center' }}>{t('usersList.colActions') || 'العمليات'}</th>
               </tr>
             </thead>
             <tbody>
@@ -250,10 +268,14 @@ export default function Users() {
                     )}
                   </td>
                   <td className="text-center">
-                    <div className="flex justify-center gap-sm">
+                    <div className="flex justify-center gap-sm items-center">
                       <Button variant="secondary" size="small" onClick={() => handleOpenEdit(user)}>
                         <Edit2 size={14} style={{ marginLeft: '4px' }} />
                         {t('usersList.editBtn') || 'تعديل'}
+                      </Button>
+                      <Button variant="danger" size="small" onClick={() => handleDeleteUser(user)}>
+                        <Trash2 size={14} style={{ marginLeft: '4px' }} />
+                        {t('usersList.deleteBtn') || 'حذف'}
                       </Button>
                       <div className="flex items-center" title={user.is_active ? (t('usersList.deactivateTitle') || 'تعطيل الحساب') : (t('usersList.activateTitle') || 'تفعيل الحساب')}>
                         <Switch 

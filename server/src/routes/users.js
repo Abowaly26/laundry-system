@@ -224,7 +224,7 @@ router.delete('/:id', async (req, res) => {
     const { id } = req.params;
 
     if (parseInt(id) === req.user.id) {
-      return res.status(400).json({ success: false, message: 'لا يمكنك تعطيل حسابك الخاص' });
+      return res.status(400).json({ success: false, message: 'لا يمكنك حذف حسابك الخاص' });
     }
 
     const existingResult = await query('SELECT * FROM users WHERE id = $1', [id]);
@@ -234,20 +234,20 @@ router.delete('/:id', async (req, res) => {
 
     const existing = existingResult.rows[0];
 
-    // admin يعطل موظفي مغسلته فقط
+    // admin يحذف موظفي مغسلته فقط
     if (req.user.role === 'admin' && existing.laundry_id !== req.user.laundry_id) {
       return res.status(403).json({
         success: false,
-        message: 'لا يمكنك تعطيل موظفين من مغاسل أخرى'
+        message: 'لا يمكنك حذف موظفين من مغاسل أخرى'
       });
     }
 
-    await query('UPDATE users SET is_active = false WHERE id = $1', [id]);
+    await query('DELETE FROM users WHERE id = $1', [id]);
 
-    res.json({ success: true, message: 'تم تعطيل المستخدم بنجاح' });
+    res.json({ success: true, message: 'تم حذف المستخدم نهائياً بنجاح' });
   } catch (error) {
     console.error('Delete user error:', error);
-    res.status(500).json({ success: false, message: 'خطأ في تعطيل المستخدم' });
+    res.status(500).json({ success: false, message: 'خطأ في حذف المستخدم' });
   }
 });
 

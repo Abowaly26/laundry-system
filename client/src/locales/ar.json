@@ -510,7 +510,12 @@
     "laundryLabel": "المغسلة",
     "statusLabel": "الحالة",
     "cancelBtn": "إلغاء",
-    "saveBtn": "حفظ البيانات"
+    "saveBtn": "حفظ البيانات",
+    "deleteBtn": "حذف",
+    "confirmDelete": "هل أنت متأكد من رغبتك في حذف المستخدم: {{name}} نهائياً؟ لا يمكن التراجع عن هذا الإجراء.",
+    "deleteSuccess": "تم حذف المستخدم نهائياً بنجاح",
+    "deleteError": "فشل في حذف المستخدم",
+    "deleteNetworkError": "خطأ أثناء حذف المستخدم"
   },
   "laundriesList": {
     "fetchError": "خطأ في جلب المغاسل",

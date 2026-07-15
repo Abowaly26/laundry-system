@@ -508,7 +508,12 @@
     "laundryLabel": "Laundry",
     "statusLabel": "Status",
     "cancelBtn": "Cancel",
-    "saveBtn": "Save Data"
+    "saveBtn": "Save Data",
+    "deleteBtn": "Delete",
+    "confirmDelete": "Are you sure you want to permanently delete user: {{name}}? This action cannot be undone.",
+    "deleteSuccess": "User deleted permanently successfully",
+    "deleteError": "Failed to delete user",
+    "deleteNetworkError": "Error during user deletion"
   },
   "laundriesList": {
     "fetchError": "Error fetching laundries",
