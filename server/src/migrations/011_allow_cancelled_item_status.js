@@ -6,12 +6,14 @@ async function up() {
     // 1. Drop existing check constraints on order_items.status
     const constraintsResult = await query(`
       SELECT con.conname
-      FROM pg_constraint con
-      JOIN pg_class rel ON rel.oid = con.conclass
+      FROM pg_catalog.pg_constraint con
+      INNER JOIN pg_catalog.pg_class rel ON rel.oid = con.conrelid
+      INNER JOIN pg_catalog.pg_namespace nsp ON nsp.oid = rel.relnamespace
       WHERE rel.relname = 'order_items' AND con.contype = 'c' AND con.conname LIKE '%status%';
     `);
 
     for (let row of constraintsResult.rows) {
+      console.log(`   - Dropping constraint: ${row.conname}`);
       await query(`ALTER TABLE order_items DROP CONSTRAINT IF EXISTS "${row.conname}"`);
     }
 
@@ -34,8 +36,9 @@ async function down() {
     // Revert check constraint back to not containing 'cancelled'
     const constraintsResult = await query(`
       SELECT con.conname
-      FROM pg_constraint con
-      JOIN pg_class rel ON rel.oid = con.conclass
+      FROM pg_catalog.pg_constraint con
+      INNER JOIN pg_catalog.pg_class rel ON rel.oid = con.conrelid
+      INNER JOIN pg_catalog.pg_namespace nsp ON nsp.oid = rel.relnamespace
       WHERE rel.relname = 'order_items' AND con.contype = 'c' AND con.conname LIKE '%status%';
     `);
 
