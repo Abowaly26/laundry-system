@@ -460,7 +460,8 @@
     "addServiceBtn": "إضافة خدمة"
   },
   "common": {
-    "noData": "لا توجد بيانات"
+    "noData": "لا توجد بيانات",
+    "loading": "جاري التحميل..."
   },
   "roles": {
     "super_owner": "👑 صاحب النظام",

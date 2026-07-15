@@ -460,7 +460,8 @@
     "addServiceBtn": "Add Service"
   },
   "common": {
-    "noData": "No data available"
+    "noData": "No data available",
+    "loading": "Loading..."
   },
   "roles": {
     "super_owner": "👑 System Owner",
