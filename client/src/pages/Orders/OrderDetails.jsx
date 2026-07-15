@@ -525,7 +525,7 @@ export default function OrderDetails() {
         {/* جدول تتبع القطع وسجل المدفوعات */}
         <div className="details-main no-print">
           <Card title={t('orders.includedItems', { count: order.items?.length || 0 }) || `القطع المشمولة في الطلب (${order.items?.length || 0} قطع)`}>
-            <div className="table-container">
+            <div className="table-container" style={openItemStatusDropdownId ? { paddingBottom: '180px', transition: 'padding-bottom 0.15s ease' } : { transition: 'padding-bottom 0.15s ease' }}>
               <table className="items-tracking-table">
                 <thead>
                   <tr>
