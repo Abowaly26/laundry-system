@@ -517,7 +517,8 @@
     "confirmDelete": "هل أنت متأكد من رغبتك في حذف المستخدم: {{name}} نهائياً؟ لا يمكن التراجع عن هذا الإجراء.",
     "deleteSuccess": "تم حذف المستخدم نهائياً بنجاح",
     "deleteError": "فشل في حذف المستخدم",
-    "deleteNetworkError": "خطأ أثناء حذف المستخدم"
+    "deleteNetworkError": "خطأ أثناء حذف المستخدم",
+    "closeBtn": "إغلاق"
   },
   "laundriesList": {
     "fetchError": "خطأ في جلب المغاسل",
@@ -569,7 +570,8 @@
     "noStaff": "لا يوجد موظفون بعد",
     "adminAccountEdit": "تعديل حساب مدير المغسلة",
     "adminEditNote": "تعديل البريد الإلكتروني أو تعيين كلمة مرور جديدة للمدير",
-    "adminPasswordEditLabel": "كلمة مرور جديدة (اتركها فارغة لعدم التغيير)"
+    "adminPasswordEditLabel": "كلمة مرور جديدة (اتركها فارغة لعدم التغيير)",
+    "teamTitlePopup": "فريق عمل مغسلة"
   },
   "login": {
     "emailRequired": "يرجى إدخال البريد الإلكتروني",

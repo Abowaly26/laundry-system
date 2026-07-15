@@ -515,7 +515,8 @@
     "confirmDelete": "Are you sure you want to permanently delete user: {{name}}? This action cannot be undone.",
     "deleteSuccess": "User deleted permanently successfully",
     "deleteError": "Failed to delete user",
-    "deleteNetworkError": "Error during user deletion"
+    "deleteNetworkError": "Error during user deletion",
+    "closeBtn": "Close"
   },
   "laundriesList": {
     "fetchError": "Error fetching laundries",
@@ -567,7 +568,8 @@
     "noStaff": "No employees yet",
     "adminAccountEdit": "Edit Laundry Admin Account",
     "adminEditNote": "Change the admin's email address or set a new password",
-    "adminPasswordEditLabel": "New Password (leave empty to keep unchanged)"
+    "adminPasswordEditLabel": "New Password (leave empty to keep unchanged)",
+    "teamTitlePopup": "Staff of Laundry"
   },
   "login": {
     "emailRequired": "Please enter your email",
