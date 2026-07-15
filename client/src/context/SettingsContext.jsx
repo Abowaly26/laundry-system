@@ -38,6 +38,31 @@ export function SettingsProvider({ children }) {
     return DEFAULT_SETTINGS;
   });
 
+  // Keep state in sync if laundry_settings is cleared (e.g. on logout)
+  useEffect(() => {
+    const handleStorageChange = () => {
+      try {
+        const saved = localStorage.getItem('laundry_settings');
+        if (saved) {
+          setSettings({ ...DEFAULT_SETTINGS, ...JSON.parse(saved) });
+        } else {
+          setSettings(DEFAULT_SETTINGS);
+        }
+      } catch (e) {
+        setSettings(DEFAULT_SETTINGS);
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    // Also periodically check or use custom event / interval because storage event only fires for other windows
+    const interval = setInterval(handleStorageChange, 1000);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(interval);
+    };
+  }, []);
+
   const getSettingsWithUserCurrency = () => {
     // Determine current language from localStorage or global i18next state
     let currentLang = 'ar';
