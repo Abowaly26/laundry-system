@@ -39,18 +39,48 @@ export function SettingsProvider({ children }) {
   });
 
   const getSettingsWithUserCurrency = () => {
+    // Determine current language from localStorage or global i18next state
+    let currentLang = 'ar';
+    try {
+      const savedLang = localStorage.getItem('i18nextLng');
+      if (savedLang) {
+        currentLang = savedLang.startsWith('en') ? 'en' : 'ar';
+      }
+    } catch (e) {}
+
+    const englishWhatsappTemplate = `Hello {customer_name},
+Your order #{order_id} has been registered successfully.
+
+Invoice Details:
+- Items Count: {items_count}
+- Total Amount: {total_amount} {currency}
+- Remaining Amount: {remaining_amount} {currency}
+- Delivery Date: {delivery_date}
+
+You can track your laundry status directly via this tracking link:
+{tracking_link}
+
+Thank you for choosing us! ✨`;
+
+    let resolvedSettings = { ...settings };
+    
+    // Auto translate default template only if user hasn't customized it, or if they are just viewing standard defaults in English
+    if (currentLang === 'en' && settings.whatsappTemplate === DEFAULT_SETTINGS.whatsappTemplate) {
+      resolvedSettings.whatsappTemplate = englishWhatsappTemplate;
+    }
+
     try {
       const userStr = localStorage.getItem('user');
       if (userStr) {
         const user = JSON.parse(userStr);
         if (user.laundry_currency) {
-          return { ...settings, currency: user.laundry_currency };
+          resolvedSettings.currency = user.laundry_currency;
         }
       }
     } catch (e) {
       console.error('Failed to resolve dynamic currency', e);
     }
-    return settings;
+    return resolvedSettings;
   };
 
   const updateSettings = (newSettings) => {

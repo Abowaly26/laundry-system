@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSettings } from '../../context/SettingsContext';
 import { useToast } from '../../context/ToastContext';
@@ -24,6 +24,14 @@ export default function Settings() {
     defaultCountryCode: settings.defaultCountryCode || '966',
     whatsappTemplate: settings.whatsappTemplate || ''
   });
+
+  // Dynamically update template when switching language
+  useEffect(() => {
+    setFormData(prev => ({
+      ...prev,
+      whatsappTemplate: settings.whatsappTemplate || ''
+    }));
+  }, [settings.whatsappTemplate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
