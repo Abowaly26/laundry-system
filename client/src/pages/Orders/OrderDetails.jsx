@@ -343,6 +343,8 @@ export default function OrderDetails() {
     );
   }
 
+  const isAnyModalOpen = showPaymentModal || showViewMapModal || showMapModal || !!qrModalItem;
+
   return (
     <div className="page order-details-page">
       {/* رأس الصفحة */}
@@ -417,7 +419,7 @@ export default function OrderDetails() {
 
             {/* خريطة التوصيل inline - قابلة للضغط للتكبير */}
             {((order.delivery_lat && order.delivery_lng) || (order.customer_lat && order.customer_lng)) ? (
-              !showViewMapModal ? (
+              !isAnyModalOpen ? (
                 <StaticOrderMap
                   lat={order.delivery_lat || order.customer_lat}
                   lng={order.delivery_lng || order.customer_lng}
@@ -426,8 +428,8 @@ export default function OrderDetails() {
                   onClick={() => setShowViewMapModal(true)}
                 />
               ) : (
-                <div style={{ height: '230px', background: 'var(--bg-body, #f8fafc)', border: '2px solid var(--border-color, #e2e8f0)', borderRadius: '14px', display: 'flex', alignItems: 'center', justifycontent: 'center', color: 'var(--text-muted)' }}>
-                  📍 جاري عرض الخريطة المكبرة...
+                <div style={{ height: '230px', background: 'var(--bg-body, #f8fafc)', border: '2px solid var(--border-color, #e2e8f0)', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
+                  📍 موقع التوصيل على الخريطة
                 </div>
               )
             ) : (
