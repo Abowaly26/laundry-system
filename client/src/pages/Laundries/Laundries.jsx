@@ -31,6 +31,10 @@ export default function Laundries() {
   });
   const [saving, setSaving] = useState(false);
 
+  // Modal لعرض الموظفين
+  const [showStaffModal, setShowStaffModal] = useState(false);
+  const [staffModalLaundry, setStaffModalLaundry] = useState(null);
+
   const loadLaundries = async () => {
     setLoading(true);
     try {
@@ -121,7 +125,10 @@ export default function Laundries() {
     }
   };
 
-  const toggleExpand = (id) => setExpandedId(expandedId === id ? null : id);
+  const handleOpenStaffModal = (laundry) => {
+    setStaffModalLaundry(laundry);
+    setShowStaffModal(true);
+  };
 
   const formatCurrency = (amount, currency = 'ر.س') => {
     return `${parseFloat(amount || 0).toFixed(2)} ${currency}`;
@@ -324,20 +331,11 @@ export default function Laundries() {
                 {/* زر التوسيع لعرض الموظفين */}
                 <button
                   className="laundry-expand-btn"
-                  onClick={() => toggleExpand(laundry.id)}
+                  onClick={() => handleOpenStaffModal(laundry)}
                 >
-                  {expandedId === laundry.id ? (
-                    <><ChevronUp size={16} /> {t('laundriesList.hideTeam') || 'إخفاء الفريق'}</>
-                  ) : (
-                    <><ChevronDown size={16} /> {t('laundriesList.showTeam') || 'عرض الفريق'}</>
-                  )}
+                  <Users size={16} /> {t('laundriesList.showTeam') || 'عرض الفريق'}
                 </button>
               </div>
-
-              {/* قائمة الموظفين المطوية */}
-              {expandedId === laundry.id && (
-                <LaundryStaffPanel laundryId={laundry.id} />
-              )}
             </div>
               ))}
             </div>
@@ -346,7 +344,27 @@ export default function Laundries() {
         </>
       )}
 
-      {/* Modal إنشاء/تعديل */}
+      {/* Modal لعرض الموظفين كـ Pop-up */}
+      <Modal
+        isOpen={showStaffModal}
+        onClose={() => {
+          setShowStaffModal(false);
+          setStaffModalLaundry(null);
+        }}
+        title={`👥 ${t('laundriesList.teamTitlePopup') || 'فريق عمل مغسلة'} ${staffModalLaundry?.name || ''}`}
+      >
+        {staffModalLaundry && (
+          <LaundryStaffPanel laundryId={staffModalLaundry.id} />
+        )}
+        <div className="flex justify-end mt-md">
+          <Button variant="secondary" onClick={() => {
+            setShowStaffModal(false);
+            setStaffModalLaundry(null);
+          }}>
+            {t('usersList.closeBtn') || 'إغلاق'}
+          </Button>
+        </div>
+      </Modal>
       <Modal
         isOpen={showModal}
         onClose={() => setShowModal(false)}
