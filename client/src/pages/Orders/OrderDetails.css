@@ -205,12 +205,18 @@
   backdrop-filter: blur(20px);
   border: 1.5px solid var(--border);
   border-radius: 10px;
-  box-shadow: 0 -12px 30px -4px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 12px 30px -4px rgba(0, 0, 0, 0.08);
   z-index: 9999 !important; /* Display on top of cards and containers */
   padding: 6px;
   display: flex;
   flex-direction: column;
   gap: 3px;
+}
+
+.table-select-dropdown.open-upwards {
+  bottom: calc(100% + 6px) !important;
+  top: auto !important;
+  box-shadow: 0 -12px 30px -4px rgba(0, 0, 0, 0.08);
 }
 
 .table-select-item {
