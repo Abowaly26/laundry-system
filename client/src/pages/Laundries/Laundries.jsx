@@ -629,7 +629,30 @@ export default function Laundries() {
             <select
               className="form-select"
               value={formData.plan_type}
-              onChange={(e) => setFormData({ ...formData, plan_type: e.target.value })}
+              onChange={(e) => {
+                const plan = e.target.value;
+                const startDateStr = formData.subscription_start_date || new Date().toISOString().split('T')[0];
+                let endDateStr = '';
+                
+                if (plan !== 'lifetime') {
+                  const sDate = new Date(startDateStr);
+                  if (plan === 'monthly') {
+                    sDate.setMonth(sDate.getMonth() + 1);
+                  } else if (plan === 'semi_annual') {
+                    sDate.setMonth(sDate.getMonth() + 6);
+                  } else if (plan === 'yearly') {
+                    sDate.setFullYear(sDate.getFullYear() + 1);
+                  }
+                  endDateStr = sDate.toISOString().split('T')[0];
+                }
+                
+                setFormData({ 
+                  ...formData, 
+                  plan_type: plan, 
+                  subscription_start_date: startDateStr,
+                  subscription_end_date: endDateStr 
+                });
+              }}
             >
               <option value="lifetime">دائم (مدى الحياة)</option>
               <option value="monthly">شهري</option>
@@ -644,7 +667,29 @@ export default function Laundries() {
               id="sub-start"
               type="date"
               value={formData.subscription_start_date}
-              onChange={(e) => setFormData({ ...formData, subscription_start_date: e.target.value })}
+              onChange={(e) => {
+                const startDateStr = e.target.value;
+                const plan = formData.plan_type;
+                let endDateStr = '';
+                
+                if (plan !== 'lifetime' && startDateStr) {
+                  const sDate = new Date(startDateStr);
+                  if (plan === 'monthly') {
+                    sDate.setMonth(sDate.getMonth() + 1);
+                  } else if (plan === 'semi_annual') {
+                    sDate.setMonth(sDate.getMonth() + 6);
+                  } else if (plan === 'yearly') {
+                    sDate.setFullYear(sDate.getFullYear() + 1);
+                  }
+                  endDateStr = sDate.toISOString().split('T')[0];
+                }
+                
+                setFormData({ 
+                  ...formData, 
+                  subscription_start_date: startDateStr, 
+                  subscription_end_date: endDateStr 
+                });
+              }}
             />
           </div>
 
