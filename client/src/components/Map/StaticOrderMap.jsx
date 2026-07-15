@@ -179,7 +179,7 @@ const StaticOrderMap = ({ lat, lng, address, height = '220px', interactive = fal
         onClick={(e) => e.stopPropagation()} // منع انتشار الحدث لفتح المودال عند الضغط على فتح خرائط جوجل
         style={{
           position: 'absolute',
-          bottom: '0.6rem',
+          top: '0.6rem',
           insetInlineEnd: '0.6rem',
           zIndex: 900,
           background: 'rgba(255,255,255,0.92)',
