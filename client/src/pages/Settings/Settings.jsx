@@ -25,13 +25,19 @@ export default function Settings() {
     whatsappTemplate: settings.whatsappTemplate || ''
   });
 
-  // Dynamically update template when switching language
+  // Dynamically update form fields when settings change (e.g. on language change or logout/login)
   useEffect(() => {
-    setFormData(prev => ({
-      ...prev,
+    setFormData({
+      laundryName: settings.laundryName || '',
+      laundryPhone: settings.laundryPhone || '',
+      laundryAddress: settings.laundryAddress || '',
+      taxNumber: settings.taxNumber || '',
+      vatPercent: settings.vatPercent !== undefined ? settings.vatPercent : 15,
+      currency: settings.currency || 'ر.س',
+      defaultCountryCode: settings.defaultCountryCode || '966',
       whatsappTemplate: settings.whatsappTemplate || ''
-    }));
-  }, [settings.whatsappTemplate]);
+    });
+  }, [settings]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
