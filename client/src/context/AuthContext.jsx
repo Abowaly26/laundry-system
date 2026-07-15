@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { authAPI } from '../services/api';
+import { useTranslation } from 'react-i18next';
 import i18n from '../i18n';
 
 const AuthContext = createContext(null);
@@ -108,13 +109,14 @@ export function useAuth() {
 
 export function ProtectedRoute({ children, adminOnly = false, superOwnerOnly = false, noWorker = false }) {
   const { isAuthenticated, isAdmin, isSuperOwner, isWorker, loading } = useAuth();
+  const { t } = useTranslation();
   const location = useLocation();
 
   if (loading) {
     return (
       <div className="loading-screen">
         <div className="loading-spinner" />
-        <p>جاري التحميل...</p>
+        <p>{t('common.loading') || 'جاري التحميل...'}</p>
       </div>
     );
   }
