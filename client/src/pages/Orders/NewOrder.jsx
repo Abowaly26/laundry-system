@@ -1116,6 +1116,7 @@ export default function NewOrder() {
                               className="form-input form-input-compact price-input"
                               value={item.price === 0 ? '' : item.price}
                               onChange={(e) => handlePriceChange(index, e.target.value)}
+                              onFocus={(e) => e.target.select()}
                               min="0"
                               step="any"
                               placeholder="0"
@@ -1183,6 +1184,7 @@ export default function NewOrder() {
                       className="form-input inline-input"
                       value={paidAmount === 0 ? '' : paidAmount}
                       onChange={(e) => setPaidAmount(parseFloat(e.target.value) || 0)}
+                      onFocus={(e) => e.target.select()}
                       max={totalAmount}
                       min="0"
                       step="any"

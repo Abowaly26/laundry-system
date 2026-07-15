@@ -609,11 +609,13 @@ export default function OrderDetails() {
             <input
               type="number"
               className="form-input"
-              value={paymentAmount}
+              value={paymentAmount === 0 ? '' : paymentAmount}
               onChange={(e) => setPaymentAmount(parseFloat(e.target.value) || 0)}
+              onFocus={(e) => e.target.select()}
               max={order?.remaining_amount}
               min="0.01"
               step="any"
+              placeholder="0"
               required
             />
             <span className="help-text">{t('orders.maxRemaining') || 'الحد الأقصى المتبقي:'} {order?.remaining_amount} {settings.currency}</span>
