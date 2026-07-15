@@ -75,17 +75,7 @@ const StaticOrderMap = ({ lat, lng, address, height = '220px', interactive = fal
     });
 
     L.marker([parseFloat(lat), parseFloat(lng)], { icon })
-      .addTo(map)
-      .bindPopup(
-        `<div style="font-family:system-ui,sans-serif;direction:rtl;text-align:right;min-width:200px;">
-          <strong style="color:#1e40af;font-size:0.9rem;">📍 موقع التوصيل</strong><br/>
-          <span style="font-size:0.85rem;color:#374151;line-height:1.5;">${address || 'موقع محدد على الخريطة'}</span>
-          <br/>
-          <small style="color:#9ca3af;">${parseFloat(lat).toFixed(5)}, ${parseFloat(lng).toFixed(5)}</small>
-        </div>`,
-        { maxWidth: 280, className: 'custom-map-popup' }
-      )
-      .openPopup();
+      .addTo(map);
 
     mapRef.current = map;
 
