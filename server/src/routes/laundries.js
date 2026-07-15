@@ -241,13 +241,14 @@ router.delete('/:id', authorizeRoles('super_owner'), async (req, res) => {
       return res.status(404).json({ success: false, message: 'المغسلة غير موجودة' });
     }
 
-    // حذف المغسلة تماماً (العلاقات مثل الموظفين والخدمات والعملاء ستحذف تلقائياً بفضل الـ ON DELETE CASCADE)
-    await query('DELETE FROM laundries WHERE id = $1', [id]);
+    // تعطيل المغسلة وموظفيها بدلاً من الحذف الكلي
+    await query('UPDATE laundries SET is_active = false WHERE id = $1', [id]);
+    await query('UPDATE users SET is_active = false WHERE laundry_id = $1', [id]);
 
-    res.json({ success: true, message: 'تم حذف المغسلة وجميع بياناتها بنجاح' });
+    res.json({ success: true, message: 'تم تعطيل المغسلة وجميع موظفيها بنجاح' });
   } catch (error) {
     console.error('Delete laundry error:', error);
-    res.status(500).json({ success: false, message: 'خطأ في حذف المغسلة' });
+    res.status(500).json({ success: false, message: 'خطأ في تعطيل المغسلة' });
   }
 });
 

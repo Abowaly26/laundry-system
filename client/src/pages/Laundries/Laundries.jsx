@@ -138,17 +138,18 @@ export default function Laundries() {
     }
   };
 
-  const handleDeleteLaundry = async (laundry) => {
-    if (!window.confirm(`⚠️ تحذير مهم جداً: هل أنت متأكد من حذف مغسلة "${laundry.name}" تماماً؟\nسيتم حذف جميع الموظفين، العملاء، الخدمات، والطلبات الخاصة بهذه المغسلة نهائياً ولا يمكن التراجع عن هذا الإجراء!`)) return;
+  const handleToggleStatus = async (laundry) => {
+    const action = laundry.is_active ? (t('laundriesList.deactivate') || 'تعطيل') : (t('laundriesList.activate') || 'تفعيل');
+    if (!window.confirm(t('laundriesList.confirmToggleStatus', { action, name: laundry.name, warning: laundry.is_active ? (t('laundriesList.disableWarning') || 'سيتم تعطيل جميع موظفيها.') : '' }) || `هل أنت متأكد من ${action} مغسلة "${laundry.name}"؟ ${laundry.is_active ? 'سيتم تعطيل جميع موظفيها.' : ''}`)) return;
 
     try {
-      const res = await laundriesAPI.delete(laundry.id);
+      const res = await laundriesAPI.update(laundry.id, { is_active: !laundry.is_active });
       if (res.success) {
-        showToast(t('laundriesList.deleteSuccess') || 'تم حذف المغسلة وجميع بياناتها بنجاح', 'success');
+        showToast(t('laundriesList.statusSuccess', { action }) || `تم ${action} المغسلة بنجاح`, 'success');
         loadLaundries();
       }
     } catch (err) {
-      showToast(err.message || 'خطأ أثناء حذف المغسلة', 'error');
+      showToast(err.message || t('laundriesList.statusError') || 'خطأ', 'error');
     }
   };
 
@@ -367,13 +368,18 @@ export default function Laundries() {
                     </div>
                   </div>
                 </div>
-                <div className="laundry-card-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div className="laundry-card-actions" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <button className="laundry-icon-btn" onClick={() => handleOpenEdit(laundry)} title={t('usersList.editBtn') || "تعديل"}>
                     <Edit2 size={16} />
                   </button>
-                  <button className="laundry-icon-btn danger" onClick={() => handleDeleteLaundry(laundry)} title="حذف نهائي">
-                    <X size={16} />
-                  </button>
+                  <label className="laundry-switch" title={laundry.is_active ? (t('usersList.deactivateTitle') || 'تعطيل') : (t('usersList.activateTitle') || 'تفعيل')}>
+                    <input 
+                      type="checkbox" 
+                      checked={laundry.is_active} 
+                      onChange={() => handleToggleStatus(laundry)}
+                    />
+                    <span className="laundry-switch-slider"></span>
+                  </label>
                 </div>
               </div>
 
