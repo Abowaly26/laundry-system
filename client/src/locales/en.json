@@ -564,7 +564,10 @@
     "roleCashier": "Reception",
     "roleWorker": "Worker",
     "teamTitle": "Team ({{count}} people)",
-    "noStaff": "No employees yet"
+    "noStaff": "No employees yet",
+    "adminAccountEdit": "Edit Laundry Admin Account",
+    "adminEditNote": "Change the admin's email address or set a new password",
+    "adminPasswordEditLabel": "New Password (leave empty to keep unchanged)"
   },
   "login": {
     "emailRequired": "Please enter your email",

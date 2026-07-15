@@ -566,7 +566,10 @@
     "roleCashier": "استقبال",
     "roleWorker": "عامل",
     "teamTitle": "الفريق ({{count}} شخص)",
-    "noStaff": "لا يوجد موظفون بعد"
+    "noStaff": "لا يوجد موظفون بعد",
+    "adminAccountEdit": "تعديل حساب مدير المغسلة",
+    "adminEditNote": "تعديل البريد الإلكتروني أو تعيين كلمة مرور جديدة للمدير",
+    "adminPasswordEditLabel": "كلمة مرور جديدة (اتركها فارغة لعدم التغيير)"
   },
   "login": {
     "emailRequired": "يرجى إدخال البريد الإلكتروني",
