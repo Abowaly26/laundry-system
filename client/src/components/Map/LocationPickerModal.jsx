@@ -476,6 +476,7 @@ const LocationPickerModal = ({
               className="map-control-btn zoom-btn"
               onClick={handleZoomIn}
               title="تكبير الخريطة"
+              style={{ alignSelf: 'center' }}
             >
               <Plus size={18} />
             </button>
@@ -486,6 +487,7 @@ const LocationPickerModal = ({
               className="map-control-btn zoom-btn"
               onClick={handleZoomOut}
               title="تصغير الخريطة"
+              style={{ alignSelf: 'center' }}
             >
               <Minus size={18} />
             </button>
@@ -498,9 +500,11 @@ const LocationPickerModal = ({
               type="button"
               className="map-control-btn cashier-locate"
               onClick={handleJumpToCashier}
-              title="العودة لموقعي"
+              title="الانتقال إلى موقعي الحالي"
+              style={{ display: 'flex', alignItems: 'center', gap: '8px', width: 'auto', padding: '0 10px', height: '40px', justifyContent: 'flex-start' }}
             >
-              <Navigation size={16} />
+              <Navigation size={15} style={{ flexShrink: 0 }} />
+              <span style={{ fontSize: '0.78rem', fontWeight: 'bold', whiteSpace: 'nowrap' }}>موقعي الحالي</span>
             </button>
 
             {/* Focus on Customer Pin */}
@@ -509,9 +513,11 @@ const LocationPickerModal = ({
                 type="button"
                 className="map-control-btn customer-locate"
                 onClick={handleJumpToCustomer}
-                title="دبوس العميل"
+                title="الانتقال إلى موقع العميل"
+                style={{ display: 'flex', alignItems: 'center', gap: '8px', width: 'auto', padding: '0 10px', height: '40px', justifyContent: 'flex-start' }}
               >
-                <Compass size={16} />
+                <Compass size={15} style={{ flexShrink: 0 }} />
+                <span style={{ fontSize: '0.78rem', fontWeight: 'bold', whiteSpace: 'nowrap' }}>موقع العميل</span>
               </button>
             )}
           </div>
