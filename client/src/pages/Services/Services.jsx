@@ -397,10 +397,14 @@ export default function Services() {
     }
 
     const activeServices = (Array.isArray(services) ? services : []).filter(s => s.is_active);
-    const headers = [
+    const headers = i18n.language === 'en' ? [
+      t('services.colId') || 'Item ID',
+      t('services.colName') || 'Item Name',
+      t('services.colSize') || 'Size',
+      ...activeServices.map(svc => svc.name_en || svc.name_ar)
+    ] : [
       t('services.colId') || 'رقم القطعة',
-      t('services.colNameAr') || 'اسم القطعة بالعربية',
-      t('services.colNameEn') || 'اسم القطعة بالإنجليزية',
+      t('services.colName') || 'اسم القطعة',
       t('services.colSize') || 'الحجم',
       ...activeServices.map(svc => svc.name_ar)
     ];
@@ -414,21 +418,45 @@ export default function Services() {
     const rows = [];
     typesToExport.forEach(itemType => {
       const sortedSizes = sortSizes(itemType.sizes || []);
+      
+      const getItemName = () => {
+        const nameAr = itemType.name_ar || '-';
+        const nameEn = itemType.name_en;
+        if (i18n.language === 'en') {
+          if (nameEn) return nameEn;
+          const dict = {
+            'بدلة كاملة': 'Full Suit',
+            'بطانية': 'Blanket',
+            'سجادة': 'Carpet',
+            'ثوب': 'Thobe',
+            'فستان': 'Dress',
+            'جاكيت': 'Jacket',
+            'قميص': 'Shirt',
+            'بنطلون': 'Pants'
+          };
+          return dict[nameAr] || nameAr;
+        }
+        return nameAr;
+      };
+
       if (sortedSizes.length === 0) {
         rows.push([
           formatCSVField(`#${itemType.id}`),
-          formatCSVField(itemType.name_ar || '-'),
-          formatCSVField(itemType.name_en || '-'),
-          formatCSVField(t('services.generalSize') || 'عام'),
+          formatCSVField(getItemName()),
+          formatCSVField(t('services.generalSize') || (i18n.language === 'en' ? 'General' : 'عام')),
           ...activeServices.map(() => formatCSVField('0.00'))
         ]);
       } else {
         sortedSizes.forEach(sz => {
+          const sName = typeof sz === 'object' && sz !== null ? (sz.size_name || '-') : String(sz);
+          const translatedSize = i18n.language === 'en' && sName === 'عادي' ? 'Normal' : 
+                                 i18n.language === 'en' && sName === 'مفرد' ? 'Single' :
+                                 i18n.language === 'en' && sName === 'مزدوج' ? 'Double' : sName;
+          
           const sizeRow = [
             formatCSVField(`#${itemType.id}`),
-            formatCSVField(itemType.name_ar || '-'),
-            formatCSVField(itemType.name_en || '-'),
-            formatCSVField(typeof sz === 'object' && sz !== null ? (sz.size_name || '-') : String(sz))
+            formatCSVField(getItemName()),
+            formatCSVField(translatedSize)
           ];
           activeServices.forEach(svc => {
             const priceObj = (sz.prices || []).find(p => p.service_id === svc.id);
