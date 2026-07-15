@@ -688,7 +688,7 @@ export default function Services() {
                               };
                               return dict[nameAr] || '';
                             }
-                            return nameAr;
+                            return null;
                           })()}
                         </span>
                       </div>
