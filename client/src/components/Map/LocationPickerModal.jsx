@@ -17,20 +17,20 @@ L.Icon.Default.mergeOptions({
 // ─── Tile Layer Definitions (outside component to avoid re-creation) ──────────
 const TILE_LAYERS = {
   voyager: {
-    name: 'خريطة حديثة',
-    url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
-  },
-  positron: {
-    name: 'خريطة فاتحة',
-    url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-  },
-  dark: {
-    name: 'خريطة داكنة',
-    url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+    name: 'خريطة جوجل مابز',
+    url: 'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=ar',
   },
   osm: {
-    name: 'شوارع',
-    url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    name: 'خريطة هجينة',
+    url: 'https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}&hl=ar',
+  },
+  positron: {
+    name: 'قمر صناعي',
+    url: 'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
+  },
+  terrain: {
+    name: 'خريطة التضاريس',
+    url: 'https://mt1.google.com/vt/lyrs=p&x={x}&y={y}&z={z}&hl=ar',
   },
 };
 

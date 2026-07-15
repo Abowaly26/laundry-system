@@ -39,7 +39,7 @@ const StaticOrderMap = ({ lat, lng, address, height = '220px' }) => {
     });
 
     L.tileLayer(
-      'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+      'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=ar',
       { maxZoom: 19 }
     ).addTo(map);
 
