@@ -123,6 +123,8 @@
     "customerName": "اسم العميل",
     "phone": "رقم الجوال",
     "orderDate": "تاريخ الطلب",
+    "totalCost": "إجمالي التكلفة",
+    "paid": "المدفوع",
     "itemsCount": "عدد القطع",
     "totalAmount": "إجمالي المبلغ",
     "remaining": "المتبقي",

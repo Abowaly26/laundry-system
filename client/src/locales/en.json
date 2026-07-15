@@ -123,6 +123,8 @@
     "customerName": "Customer Name",
     "phone": "Phone",
     "orderDate": "Order Date",
+    "totalCost": "Total Cost",
+    "paid": "Paid",
     "itemsCount": "Items Count",
     "totalAmount": "Total Amount",
     "remaining": "Remaining",
