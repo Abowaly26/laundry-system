@@ -5,9 +5,8 @@
 .location-picker-overlay {
   position: fixed;
   inset: 0;
-  z-index: 9999;
-  background: rgba(15, 23, 42, 0.75);
-  backdrop-filter: blur(8px);
+  z-index: 9998;
+  background: rgba(15, 23, 42, 0.72);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -203,17 +202,32 @@
 .location-picker-body {
   display: flex;
   flex: 1;
+  height: 420px;
   min-height: 420px;
-  max-height: 520px;
   position: relative;
+  overflow: hidden;
 }
 
 .map-container-inner {
   flex: 1;
-  height: 100%;
+  height: 420px;
+  min-height: 420px;
   width: 100%;
   position: relative;
   background: #e5e3df;
+  /* Leaflet يحتاج z-index صريح للـ tiles */
+  z-index: 1;
+}
+
+/* ضمان ظهور الـ tiles داخل الـ Modal بشكل صحيح */
+.map-container-inner .leaflet-tile-pane {
+  z-index: 200 !important;
+}
+.map-container-inner .leaflet-map-pane {
+  z-index: 200 !important;
+}
+.map-container-inner .leaflet-control-container {
+  z-index: 500 !important;
 }
 
 /* --- Custom Floating Controls Over Map --- */

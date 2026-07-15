@@ -221,6 +221,15 @@ const LocationPickerModal = ({
       });
 
       mapRef.current = map;
+
+      // ✅ الإصلاح الأساسي: نعطي الـ DOM وقت يرسم الـ Modal كاملاً
+      // قبل ما Leaflet يحسب الأبعاد — بدونه الـ tiles بتظهر فاضية
+      setTimeout(() => {
+        if (mapRef.current) {
+          mapRef.current.invalidateSize();
+          mapRef.current.setView([initialCenter.lat, initialCenter.lng], 15);
+        }
+      }, 150);
     }
 
     // تنظيف الخريطة عند الإغلاق أو تغيير التركيب
