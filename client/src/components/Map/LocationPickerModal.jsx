@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import L from 'leaflet';
 import {
   MapPin, Navigation, Search, X, Check,
-  Layers, Compass, Building, Hash, AlertCircle, Map as MapIcon
+  Layers, Compass, Building, Hash, AlertCircle, Plus, Minus, Map as MapIcon
 } from 'lucide-react';
 import './LocationPickerModal.css';
 
@@ -359,6 +359,18 @@ const LocationPickerModal = ({
     }
   }, []);
 
+  const handleZoomIn = useCallback(() => {
+    if (mapRef.current) {
+      mapRef.current.zoomIn();
+    }
+  }, []);
+
+  const handleZoomOut = useCallback(() => {
+    if (mapRef.current) {
+      mapRef.current.zoomOut();
+    }
+  }, []);
+
   const handleJumpToCashier = useCallback(() => {
     if (mapRef.current && cashierCoords) {
       mapRef.current.flyTo([cashierCoords.lat, cashierCoords.lng], 16, { duration: 0.9 });
@@ -485,8 +497,32 @@ const LocationPickerModal = ({
           {/* The actual Leaflet map container */}
           <div ref={mapContainerRef} className="map-container-inner" />
 
-          {/* Floating action buttons */}
+          {/* Floating custom toolbar */}
           <div className="map-floating-controls">
+            {/* Zoom In */}
+            <button
+              type="button"
+              className="map-control-btn zoom-btn"
+              onClick={handleZoomIn}
+              title="تكبير الخريطة"
+            >
+              <Plus size={18} />
+            </button>
+
+            {/* Zoom Out */}
+            <button
+              type="button"
+              className="map-control-btn zoom-btn"
+              onClick={handleZoomOut}
+              title="تصغير الخريطة"
+            >
+              <Minus size={18} />
+            </button>
+
+            {/* Divider */}
+            <div className="toolbar-divider"></div>
+
+            {/* Locate Me / Cashier */}
             <button
               type="button"
               className="map-control-btn cashier-locate"
@@ -494,18 +530,17 @@ const LocationPickerModal = ({
               title="العودة لموقعي"
             >
               <Navigation size={16} />
-              <span>موقعي</span>
             </button>
 
+            {/* Focus on Customer Pin */}
             {customerCoords && (
               <button
                 type="button"
-                className="map-control-btn"
+                className="map-control-btn customer-locate"
                 onClick={handleJumpToCustomer}
                 title="دبوس العميل"
               >
                 <Compass size={16} />
-                <span>دبوس العميل</span>
               </button>
             )}
           </div>

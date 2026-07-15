@@ -251,49 +251,70 @@
   z-index: 800;
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  border-radius: 14px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  padding: 4px;
+  gap: 2px;
 }
 
 .map-control-btn {
-  background: var(--bg-surface, #ffffff);
-  color: var(--text-main, #1e293b);
-  border: 1px solid var(--border-color, #cbd5e1);
+  background: transparent;
+  color: #475569;
+  border: none;
+  width: 40px;
+  height: 40px;
   border-radius: 10px;
-  padding: 0.6rem 0.9rem;
-  font-size: 0.85rem;
-  font-weight: 600;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  justify-content: center;
   cursor: pointer;
-  transition: all 0.2s ease;
-  backdrop-filter: blur(4px);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  box-shadow: none;
+  backdrop-filter: none;
+  padding: 0;
 }
 
 .map-control-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px -2px rgba(0, 0, 0, 0.15);
-  background: var(--color-primary, #3b82f6);
-  color: #ffffff;
-  border-color: var(--color-primary, #3b82f6);
+  background: #f1f5f9;
+  color: #0f172a;
+  transform: none;
+  box-shadow: none;
 }
 
-.map-control-btn.active {
-  background: var(--color-primary, #3b82f6);
-  color: #ffffff;
-  border-color: var(--color-primary, #3b82f6);
+.map-control-btn:active {
+  transform: scale(0.95);
 }
 
 .map-control-btn.cashier-locate {
-  background: linear-gradient(135deg, #059669, #10b981);
-  color: white;
-  border: none;
+  background: transparent;
+  color: #059669;
 }
 
 .map-control-btn.cashier-locate:hover {
-  background: linear-gradient(135deg, #047857, #059669);
-  transform: scale(1.03);
+  background: rgba(16, 185, 129, 0.08);
+  color: #047857;
+}
+
+.map-control-btn.customer-locate {
+  background: transparent;
+  color: #e11d48;
+}
+
+.map-control-btn.customer-locate:hover {
+  background: rgba(244, 63, 94, 0.08);
+  color: #be185d;
+}
+
+.toolbar-divider {
+  height: 1px;
+  background: #e2e8f0;
+  margin: 4px 6px;
 }
 
 /* --- Tile Layers Switcher Pills --- */
