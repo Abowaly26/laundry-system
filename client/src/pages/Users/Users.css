@@ -1,42 +1,364 @@
-.role-tag {
-  display: inline-block;
-  padding: 4px 10px;
-  border-radius: var(--radius-sm);
-  font-size: 0.8rem;
+/* ========================
+   صفحة إدارة المستخدمين
+======================== */
+
+/* Role Tags */
+.ul-role-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  border: 1px solid transparent;
+  letter-spacing: 0.01em;
+}
+
+/* Status dot */
+.ul-status-dot {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
   font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 20px;
 }
-
-.role-tag.admin {
-  background: var(--error-light);
-  color: var(--error);
-}
-
-.role-tag.cashier {
-  background: var(--info-light);
-  color: var(--info);
-}
-
-.role-tag.worker {
-  background: var(--success-light);
-  color: var(--success);
-}
-
-.user-active-badge,
-.user-inactive-badge {
-  font-weight: bold;
-  font-size: 0.85rem;
-}
-
-.avatar-wrapper {
-  width: 36px;
-  height: 36px;
+.ul-status-dot::before {
+  content: '';
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
+  display: inline-block;
+}
+.ul-status-dot.active {
+  color: #059669;
+  background: #ecfdf5;
+}
+.ul-status-dot.active::before { background: #10b981; }
+.ul-status-dot.inactive {
+  color: #dc2626;
+  background: #fef2f2;
+}
+.ul-status-dot.inactive::before { background: #ef4444; }
+
+/* ========================
+   Page Layout
+======================== */
+.ul-page {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.ul-laundries-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ========================
+   Laundry Section
+======================== */
+.ul-laundry-section {
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+/* Laundry Header */
+.ul-laundry-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px;
+  cursor: pointer;
+  user-select: none;
+  transition: filter 0.15s;
+  gap: 12px;
+}
+.ul-laundry-header:hover { filter: brightness(1.06); }
+
+.ul-laundry-header__left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.ul-laundry-header__icon {
+  width: 48px;
+  height: 48px;
+  background: rgba(255,255,255,0.18);
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
+  color: #fff;
   flex-shrink: 0;
+}
+
+.ul-laundry-header__name {
+  font-size: 1.05rem;
   font-weight: 700;
-  font-size: 0.82rem;
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  color: #fff;
+  margin: 0 0 4px;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.ul-laundry-header__stats {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: rgba(255,255,255,0.85);
+  font-size: 0.78rem;
+}
+.ul-laundry-header__stats span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ul-laundry-header__right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.ul-laundry-badge {
+  padding: 3px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+.ul-laundry-badge--active {
+  background: rgba(16,185,129,0.2);
+  color: #ecfdf5;
+  border: 1px solid rgba(16,185,129,0.4);
+}
+.ul-laundry-badge--inactive {
+  background: rgba(255,255,255,0.2);
+  color: rgba(255,255,255,0.9);
+  border: 1px solid rgba(255,255,255,0.3);
+}
+
+.ul-add-staff-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
+  background: rgba(255,255,255,0.18);
+  border: 1px solid rgba(255,255,255,0.35);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.ul-add-staff-btn:hover { background: rgba(255,255,255,0.3); }
+
+.ul-expand-icon {
+  color: rgba(255,255,255,0.8);
+  display: flex;
+  align-items: center;
+}
+
+/* ========================
+   Laundry Body
+======================== */
+.ul-laundry-body {
+  padding: 20px 24px;
+  background: var(--bg);
+  animation: ul-slide-in 0.2s ease-out;
+}
+
+@keyframes ul-slide-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.ul-laundry-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+  gap: 12px;
+  text-align: center;
+}
+.ul-laundry-empty p { font-size: 0.9rem; margin: 0; }
+
+.ul-add-first-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.ul-add-first-btn:hover { opacity: 0.85; }
+
+/* ========================
+   Staff Groups
+======================== */
+.ul-staff-group {
+  margin-bottom: 20px;
+}
+.ul-staff-group:last-child { margin-bottom: 0; }
+
+.ul-staff-group__title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* ========================
+   Staff Grid & Cards
+======================== */
+.ul-staff-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 12px;
+}
+
+.ul-staff-grid--flat {
+  padding: 4px;
+}
+
+.ul-user-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--surface);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.ul-user-card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  transform: translateY(-2px);
+}
+.ul-user-card--inactive {
+  border-style: dashed;
+  opacity: 0.75;
+}
+
+.ul-user-card__avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.ul-user-card__info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ul-user-card__name {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ul-user-card__email {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ul-user-card__badges {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 2px;
+}
+
+.ul-user-card__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* Icon Buttons */
+.ul-icon-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.ul-icon-btn--edit {
+  background: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+}
+.ul-icon-btn--edit:hover { background: #dbeafe; }
+
+.ul-icon-btn--delete {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+.ul-icon-btn--delete:hover { background: #fee2e2; }
+
+/* Legacy role-tag kept for backwards compat */
+.role-tag { display: none; }
+.avatar-wrapper {
+  width: 36px; height: 36px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; font-weight: 700; font-size: 0.82rem;
+}
+
+/* ========================
+   Responsive
+======================== */
+@media (max-width: 768px) {
+  .ul-laundry-header { padding: 14px 16px; }
+  .ul-laundry-body { padding: 16px; }
+  .ul-staff-grid { grid-template-columns: 1fr; }
+  .ul-laundry-header__right .ul-laundry-badge { display: none; }
 }
