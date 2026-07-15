@@ -41,6 +41,7 @@ export default function Users() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expandedLaundries, setExpandedLaundries] = useState({});
+  const [searchTerm, setSearchTerm] = useState('');
 
   const [showModal, setShowModal] = useState(false);
   const [modalMode, setModalMode] = useState('add');
@@ -319,15 +320,43 @@ export default function Users() {
         </div>
       ) : isSuperOwner ? (
         /* Super Owner: grouped by laundry */
-        <div className="ul-laundries-list">
-          {laundries.length === 0 ? (
-            <EmptyState title="لا توجد مغاسل" message="لم يتم إنشاء أي مغسلة بعد" />
-          ) : (
-            laundries.map((laundry, idx) => (
-              <LaundrySection key={laundry.id} laundry={laundry} index={idx} />
-            ))
-          )}
-        </div>
+        <>
+          {/* Search Bar */}
+          <div className="ul-search-bar">
+            <div className="ul-search-input-wrapper">
+              <svg className="ul-search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input
+                className="ul-search-input"
+                type="text"
+                placeholder="ابحث باسم المغسلة..."
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+              />
+              {searchTerm && (
+                <button className="ul-search-clear" onClick={() => setSearchTerm('')}>✕</button>
+              )}
+            </div>
+          </div>
+
+          <div className="ul-laundries-list">
+            {laundries.length === 0 ? (
+              <EmptyState title="لا توجد مغاسل" message="لم يتم إنشاء أي مغسلة بعد" />
+            ) : (() => {
+              const filtered = laundries.filter(l =>
+                l.name.toLowerCase().includes(searchTerm.toLowerCase())
+              );
+              return filtered.length === 0 ? (
+                <div className="ul-search-empty">
+                  <p>لم يتم العثور على مغسلة باسم "<strong>{searchTerm}</strong>"</p>
+                </div>
+              ) : (
+                filtered.map((laundry, idx) => (
+                  <LaundrySection key={laundry.id} laundry={laundry} index={idx} />
+                ))
+              );
+            })()}
+          </div>
+        </>
       ) : (
         /* Admin: flat table */
         users.length === 0 ? (
