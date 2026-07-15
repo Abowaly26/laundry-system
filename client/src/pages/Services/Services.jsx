@@ -554,7 +554,20 @@ export default function Services() {
               }}
             >
               <span style={{ fontWeight: 500, color: s.is_active ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
-                {i18n.language === 'en' && s.name_en ? s.name_en : s.name_ar}
+                {(() => {
+                  if (i18n.language === 'en') {
+                    if (s.name_en) return s.name_en;
+                    const dict = {
+                      'تنظيف جاف': 'Dry Clean',
+                      'غسيل مستعجل': 'Urgent Wash',
+                      'كي فقط': 'Ironing Only',
+                      'غسيل وكي': 'Wash & Iron',
+                      'غسيل عادي': 'Normal Wash'
+                    };
+                    return dict[s.name_ar] || s.name_ar;
+                  }
+                  return s.name_ar;
+                })()}
               </span>
               {!s.is_active && <span style={{ fontSize: '10px', background: '#eee', padding: '2px 6px', borderRadius: '4px' }}>{t('usersList.statusInactive') || 'معطل'}</span>}
             </div>
@@ -720,7 +733,22 @@ export default function Services() {
                         <tr>
                           <th style={{ minWidth: '75px' }}>{t('services.colSize') || 'الحجم'}</th>
                           {displayServices.map(svc => (
-                            <th key={svc.id} style={{ minWidth: '95px', textAlign: 'center' }}>{i18n.language === 'en' && svc.name_en ? svc.name_en : svc.name_ar}</th>
+                            <th key={svc.id} style={{ minWidth: '95px', textAlign: 'center' }}>
+                              {(() => {
+                                if (i18n.language === 'en') {
+                                  if (svc.name_en) return svc.name_en;
+                                  const dict = {
+                                    'تنظيف جاف': 'Dry Clean',
+                                    'غسيل مستعجل': 'Urgent Wash',
+                                    'كي فقط': 'Ironing Only',
+                                    'غسيل وكي': 'Wash & Iron',
+                                    'غسيل عادي': 'Normal Wash'
+                                  };
+                                  return dict[svc.name_ar] || svc.name_ar;
+                                }
+                                return svc.name_ar;
+                              })()}
+                            </th>
                           ))}
                         </tr>
                       </thead>
