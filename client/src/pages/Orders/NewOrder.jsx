@@ -1304,7 +1304,7 @@ export default function NewOrder() {
             navigate('/orders');
           }}
           title={t('orders.orderSavedSuccess') || 'تم حفظ الطلب بنجاح'}
-          size="medium"
+          size="lg"
         >
           <div className="print-modal-content">
             <div className="success-banner text-center mb-md">

@@ -680,6 +680,7 @@
 
 .print-options-grid {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--space-sm);
   justify-content: center;
   margin-top: var(--space-md);
