@@ -635,8 +635,49 @@ export default function Services() {
                         <Tags size={22} />
                       </div>
                       <div>
-                        <h3 className="card-item-title">{i18n.language === 'en' && itemType.name_en ? itemType.name_en : itemType.name_ar}</h3>
-                        <span className="card-item-subtitle">{i18n.language === 'ar' ? itemType.name_en : itemType.name_ar}</span>
+                        <h3 className="card-item-title">
+                          {(() => {
+                            const nameAr = itemType.name_ar;
+                            const nameEn = itemType.name_en;
+                            if (i18n.language === 'en') {
+                              if (nameEn) return nameEn;
+                              // Auto translation dictionary for items
+                              const dict = {
+                                'بدلة كاملة': 'Full Suit',
+                                'بطانية': 'Blanket',
+                                'سجادة': 'Carpet',
+                                'ثوب': 'Thobe',
+                                'فستان': 'Dress',
+                                'جاكيت': 'Jacket',
+                                'قميص': 'Shirt',
+                                'بنطلون': 'Pants'
+                              };
+                              return dict[nameAr] || nameAr;
+                            }
+                            return nameAr;
+                          })()}
+                        </h3>
+                        <span className="card-item-subtitle">
+                          {(() => {
+                            const nameAr = itemType.name_ar;
+                            const nameEn = itemType.name_en;
+                            if (i18n.language === 'ar') {
+                              if (nameEn) return nameEn;
+                              const dict = {
+                                'بدلة كاملة': 'Full Suit',
+                                'بطانية': 'Blanket',
+                                'سجادة': 'Carpet',
+                                'ثوب': 'Thobe',
+                                'فستان': 'Dress',
+                                'جاكيت': 'Jacket',
+                                'قميص': 'Shirt',
+                                'بنطلون': 'Pants'
+                              };
+                              return dict[nameAr] || '';
+                            }
+                            return nameAr;
+                          })()}
+                        </span>
                       </div>
                     </div>
 
