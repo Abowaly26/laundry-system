@@ -54,8 +54,18 @@ export default function Login() {
 
     setLoading(true);
     try {
-      await login({ email, password });
-      navigate(from, { replace: true });
+      const loggedUser = await login({ email, password });
+      
+      // If the origin path was root, route specifically based on user role
+      let targetPath = from;
+      if (from === '/') {
+        if (loggedUser?.role === 'super_owner') {
+          targetPath = '/laundries';
+        } else if (loggedUser?.role === 'worker') {
+          targetPath = '/tracking';
+        }
+      }
+      navigate(targetPath, { replace: true });
     } catch (err) {
       setGeneralError(err.message || t('login.loginFailed') || 'فشل تسجيل الدخول. تحقق من البيانات.');
     } finally {
