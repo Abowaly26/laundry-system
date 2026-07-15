@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import {
   Plus, Store, Users, ShoppingBag, TrendingUp,
   Edit2, Power, Eye, X, ChevronDown, ChevronUp,
-  Crown, MapPin, Phone, User, Lock, Mail
+  Crown, MapPin, Phone, User, Lock, Mail, Coins
 } from 'lucide-react';
 import { laundriesAPI } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
@@ -47,14 +47,14 @@ export default function Laundries() {
   const handleOpenAdd = () => {
     setModalMode('add');
     setSelectedLaundry(null);
-    setFormData({ name: '', address: '', phone: '', admin_name: '', admin_email: '', admin_password: '' });
+    setFormData({ name: '', address: '', phone: '', currency: 'ر.س', admin_name: '', admin_email: '', admin_password: '' });
     setShowModal(true);
   };
 
   const handleOpenEdit = (laundry) => {
     setModalMode('edit');
     setSelectedLaundry(laundry);
-    setFormData({ name: laundry.name, address: laundry.address || '', phone: laundry.phone || '', admin_name: '', admin_email: '', admin_password: '' });
+    setFormData({ name: laundry.name, address: laundry.address || '', phone: laundry.phone || '', currency: laundry.currency || 'ر.س', admin_name: '', admin_email: '', admin_password: '' });
     setShowModal(true);
   };
 
@@ -72,7 +72,7 @@ export default function Laundries() {
         res = await laundriesAPI.create(formData);
       } else {
         res = await laundriesAPI.update(selectedLaundry.id, {
-          name: formData.name, address: formData.address, phone: formData.phone
+          name: formData.name, address: formData.address, phone: formData.phone, currency: formData.currency
         });
       }
 
@@ -107,8 +107,8 @@ export default function Laundries() {
 
   const toggleExpand = (id) => setExpandedId(expandedId === id ? null : id);
 
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('ar-SA', { style: 'currency', currency: 'SAR' }).format(amount || 0);
+  const formatCurrency = (amount, currency = 'ر.س') => {
+    return `${parseFloat(amount || 0).toFixed(2)} ${currency}`;
   };
 
   const getLaundryGradient = (index) => {
@@ -238,6 +238,12 @@ export default function Laundries() {
                     <span>{laundry.phone}</span>
                   </div>
                 )}
+                {laundry.currency && (
+                  <div className="laundry-info-row">
+                    <Coins size={14} />
+                    <span>{t('settings.currency') || 'العملة'}: {laundry.currency}</span>
+                  </div>
+                )}
 
                 {/* إحصائيات سريعة */}
                 <div className="laundry-stats-grid">
@@ -261,7 +267,7 @@ export default function Laundries() {
 
                 <div className="laundry-revenue">
                   <TrendingUp size={16} />
-                  <span>{t('laundriesList.totalRevenue') || 'إجمالي الإيرادات:'} <strong>{formatCurrency(laundry.total_revenue)}</strong></span>
+                  <span>{t('laundriesList.totalRevenue') || 'إجمالي الإيرادات:'} <strong>{formatCurrency(laundry.total_revenue, laundry.currency)}</strong></span>
                 </div>
 
                 {/* زر التوسيع لعرض الموظفين */}
@@ -316,13 +322,22 @@ export default function Laundries() {
             onChange={(e) => setFormData({ ...formData, address: e.target.value })}
             placeholder={t('laundriesList.addressPlaceholder') || 'المدينة، الحي'}
           />
-          <Input
+           <Input
             id="laundry-phone"
             label={t('customers.colPhone') || 'رقم الهاتف'}
             type="tel"
             value={formData.phone}
             onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
             placeholder="05xxxxxxxx"
+          />
+          <Input
+            id="laundry-currency"
+            label={t('settings.currency') || 'العملة'}
+            type="text"
+            required
+            value={formData.currency}
+            onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
+            placeholder={t('settings.currencyPlaceholder') || 'مثال: ر.س، د.إ، $'}
           />
 
           {/* بيانات المدير - فقط عند الإنشاء */}

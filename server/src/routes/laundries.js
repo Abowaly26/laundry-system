@@ -79,7 +79,7 @@ router.get('/:id', authorizeRoles('super_owner'), async (req, res) => {
 router.post('/', authorizeRoles('super_owner'), async (req, res) => {
   try {
     const {
-      name, address, phone,
+      name, address, phone, currency,
       admin_name, admin_email, admin_password
     } = req.body;
 
@@ -105,8 +105,8 @@ router.post('/', authorizeRoles('super_owner'), async (req, res) => {
 
     // إنشاء المغسلة
     const laundryResult = await query(
-      `INSERT INTO laundries (name, address, phone) VALUES ($1, $2, $3) RETURNING *`,
-      [name, address || '', phone || '']
+      `INSERT INTO laundries (name, address, phone, currency) VALUES ($1, $2, $3, $4) RETURNING *`,
+      [name, address || '', phone || '', currency || 'ر.س']
     );
     const laundry = laundryResult.rows[0];
 
@@ -140,7 +140,7 @@ router.post('/', authorizeRoles('super_owner'), async (req, res) => {
 router.put('/:id', authorizeRoles('super_owner'), async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, address, phone, is_active } = req.body;
+    const { name, address, phone, currency, is_active } = req.body;
 
     const existing = await query('SELECT * FROM laundries WHERE id = $1', [id]);
     if (existing.rows.length === 0) {
@@ -154,6 +154,7 @@ router.put('/:id', authorizeRoles('super_owner'), async (req, res) => {
     if (name !== undefined) { updateFields.push(`name = $${paramCount++}`); updateParams.push(name); }
     if (address !== undefined) { updateFields.push(`address = $${paramCount++}`); updateParams.push(address); }
     if (phone !== undefined) { updateFields.push(`phone = $${paramCount++}`); updateParams.push(phone); }
+    if (currency !== undefined) { updateFields.push(`currency = $${paramCount++}`); updateParams.push(currency); }
     if (is_active !== undefined) { updateFields.push(`is_active = $${paramCount++}`); updateParams.push(is_active); }
 
     if (updateFields.length === 0) {

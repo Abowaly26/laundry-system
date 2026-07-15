@@ -30,22 +30,24 @@ export default function Header({ title, onMenuClick }) {
       </div>
 
       <div className="header-left">
-        <button 
-          onClick={() => i18n.changeLanguage(i18n.language === 'en' ? 'ar' : 'en')}
-          style={{ 
-            background: 'var(--primary-light)', 
-            border: 'none', 
-            cursor: 'pointer', 
-            marginInlineEnd: '15px', 
-            color: 'var(--primary)', 
-            fontWeight: 'bold',
-            padding: '4px 12px',
-            borderRadius: '16px',
-            fontSize: '0.85rem'
-          }}
-        >
-          {i18n.language === 'en' ? 'العربية' : 'English'}
-        </button>
+        {isSuperOwner && (
+          <button 
+            onClick={() => i18n.changeLanguage(i18n.language === 'en' ? 'ar' : 'en')}
+            style={{ 
+              background: 'var(--primary-light)', 
+              border: 'none', 
+              cursor: 'pointer', 
+              marginInlineEnd: '15px', 
+              color: 'var(--primary)', 
+              fontWeight: 'bold',
+              padding: '4px 12px',
+              borderRadius: '16px',
+              fontSize: '0.85rem'
+            }}
+          >
+            {i18n.language === 'en' ? 'العربية' : 'English'}
+          </button>
+        )}
         <div className="header-user">
           <span className="header-user-name">{user?.name}</span>
           <div className="header-user-avatar">

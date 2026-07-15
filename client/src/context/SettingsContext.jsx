@@ -38,6 +38,21 @@ export function SettingsProvider({ children }) {
     return DEFAULT_SETTINGS;
   });
 
+  const getSettingsWithUserCurrency = () => {
+    try {
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        if (user.laundry_currency) {
+          return { ...settings, currency: user.laundry_currency };
+        }
+      }
+    } catch (e) {
+      console.error('Failed to resolve dynamic currency', e);
+    }
+    return settings;
+  };
+
   const updateSettings = (newSettings) => {
     const updated = { ...settings, ...newSettings };
     setSettings(updated);
@@ -45,7 +60,7 @@ export function SettingsProvider({ children }) {
   };
 
   return (
-    <SettingsContext.Provider value={{ settings, updateSettings, defaults: DEFAULT_SETTINGS }}>
+    <SettingsContext.Provider value={{ settings: getSettingsWithUserCurrency(), updateSettings, defaults: DEFAULT_SETTINGS }}>
       {children}
     </SettingsContext.Provider>
   );
