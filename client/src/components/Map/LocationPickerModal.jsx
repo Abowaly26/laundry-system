@@ -384,8 +384,8 @@ const LocationPickerModal = ({
       (extraParts.length ? ` (${extraParts.join(' - ')})` : '');
 
     const distKm =
-      cashierCoords
-        ? parseFloat(haversineKm(cashierCoords, customerCoords).toFixed(2))
+      laundryLocation
+        ? parseFloat(haversineKm(laundryLocation, customerCoords).toFixed(2))
         : 0;
 
     onSelectLocation({
@@ -398,16 +398,20 @@ const LocationPickerModal = ({
       landmark,
     });
     onClose();
-  }, [customerCoords, addressText, buildingNo, aptNo, landmark, cashierCoords, onSelectLocation, onClose]);
+  }, [customerCoords, addressText, buildingNo, aptNo, landmark, laundryLocation, onSelectLocation, onClose]);
 
   // ─────────────────────────────────────────────────────────────────────────
   // Distance card data (computed, no memo needed — cheap calc)
   // ─────────────────────────────────────────────────────────────────────────
-  const distKm = cashierCoords && customerCoords
-    ? haversineKm(cashierCoords, customerCoords)
+  const distKm = laundryLocation && customerCoords
+    ? haversineKm(laundryLocation, customerCoords)
     : null;
   const distanceCard = distKm !== null
-    ? { km: distKm.toFixed(1), mins: Math.max(5, Math.round((distKm / 30) * 60 + 3)) }
+    ? { 
+        km: distKm.toFixed(1), 
+        mins: Math.max(5, Math.round((distKm / 30) * 60 + 3)),
+        isOutOfBounds: distKm > 80
+      }
     : null;
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -525,13 +529,23 @@ const LocationPickerModal = ({
           {distanceCard && (
             <div className="distance-stats-card">
               <div className="stat-row">
-                <span>📏 المسافة:</span>
-                <span className="stat-val">{distanceCard.km} كم</span>
+                <span className="stat-label">📏 المسافة عن المغسلة:</span>
+                <span className={`stat-val ${distanceCard.isOutOfBounds ? 'warning' : ''}`}>
+                  {distanceCard.isOutOfBounds ? 'خارج النطاق المعتاد' : `${distanceCard.km} كم`}
+                </span>
               </div>
-              <div className="stat-row">
-                <span>⏱️ التوصيل التقريبي:</span>
-                <span className="stat-val">~{distanceCard.mins} دقيقة</span>
-              </div>
+              {!distanceCard.isOutOfBounds ? (
+                <div className="stat-row">
+                  <span className="stat-label">⏱️ وقت التوصيل التقريبي:</span>
+                  <span className="stat-val">~{distanceCard.mins} دقيقة</span>
+                </div>
+              ) : (
+                <div className="stat-row" style={{ border: 'none', paddingBottom: 0 }}>
+                  <span className="badge badge-warning text-xs w-full text-center" style={{ display: 'block', padding: '6px', borderRadius: '8px' }}>
+                    ⚠️ مسافة التوصيل تتجاوز الحدود المسموحة
+                  </span>
+                </div>
+              )}
             </div>
           )}
         </div>
