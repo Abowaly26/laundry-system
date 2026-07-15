@@ -395,7 +395,12 @@ router.get('/:id', authMiddleware, async (req, res) => {
     }
 
     const orderResult = await query(`
-      SELECT o.*, c.name as customer_name, c.phone as customer_phone, c.address as customer_address
+      SELECT o.*, 
+        c.name as customer_name, 
+        c.phone as customer_phone, 
+        c.address as customer_address,
+        c.latitude as customer_lat,
+        c.longitude as customer_lng
       FROM orders o
       JOIN customers c ON o.customer_id = c.id
       WHERE o.id = $1 ${laundryCheck}
@@ -441,7 +446,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
  */
 router.post('/', authMiddleware, authorizeRoles('admin', 'cashier', 'super_owner', 'worker'), async (req, res) => {
   try {
-    const { customer_id, items, notes, paid_amount, payment_method, expected_delivery_at } = req.body;
+    const { customer_id, items, notes, paid_amount, payment_method, expected_delivery_at, delivery_address, delivery_lat, delivery_lng } = req.body;
 
     if (!customer_id || !items || !Array.isArray(items) || items.length === 0) {
       return res.status(400).json({
@@ -495,10 +500,21 @@ router.post('/', authMiddleware, authorizeRoles('admin', 'cashier', 'super_owner
     const result = await transaction(async (client) => {
       // إنشاء الطلب
       const orderResult = await client.query(`
-        INSERT INTO orders (customer_id, status, total_amount, paid_amount, remaining_amount, expected_delivery_at, notes, laundry_id)
-        VALUES ($1, 'pending', $2, $3, $4, $5, $6, $7)
+        INSERT INTO orders (customer_id, status, total_amount, paid_amount, remaining_amount, expected_delivery_at, notes, laundry_id, delivery_address, delivery_lat, delivery_lng)
+        VALUES ($1, 'pending', $2, $3, $4, $5, $6, $7, $8, $9, $10)
         RETURNING id
-      `, [customer_id, totalAmount, paidAmount, remainingAmount, expectedDeliveryStr, notes || '', req.user.laundry_id]);
+      `, [
+        customer_id,
+        totalAmount,
+        paidAmount,
+        remainingAmount,
+        expectedDeliveryStr,
+        notes || '',
+        req.user.laundry_id,
+        delivery_address || null,
+        delivery_lat !== undefined && delivery_lat !== '' ? parseFloat(delivery_lat) : null,
+        delivery_lng !== undefined && delivery_lng !== '' ? parseFloat(delivery_lng) : null
+      ]);
 
       const orderId = orderResult.rows[0].id;
       const createdItems = [];

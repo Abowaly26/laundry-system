@@ -13,6 +13,7 @@ import LoadingSpinner from '../../components/UI/LoadingSpinner';
 import Modal from '../../components/UI/Modal';
 import PrintInvoice from '../../components/Print/PrintInvoice';
 import PrintQRLabels from '../../components/Print/PrintQRLabels';
+import StaticOrderMap from '../../components/Map/StaticOrderMap';
 import './OrderDetails.css';
 
 export default function OrderDetails() {
@@ -388,13 +389,23 @@ export default function OrderDetails() {
               <span className="detail-value">{order.customer_phone || order.customer?.phone || '-'}</span>
             </div>
             {(order.customer_address || order.customer?.address) && (
-              <div className="detail-item">
+              <div className="detail-item" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '0.25rem' }}>
                 <div className="detail-item-left">
                   <Clock size={16} className="detail-icon" />
                   <span className="detail-label">{t('orders.addressLabel') || 'العنوان:'}</span>
                 </div>
-                <span className="detail-value">{order.customer_address || order.customer?.address}</span>
+                <span className="detail-value" style={{ width: '100%' }}>{order.delivery_address || order.customer_address || order.customer?.address}</span>
               </div>
+            )}
+
+            {/* خريطة التوصيل inline */}
+            {((order.delivery_lat && order.delivery_lng) || (order.customer_lat && order.customer_lng)) && (
+              <StaticOrderMap
+                lat={order.delivery_lat || order.customer_lat}
+                lng={order.delivery_lng || order.customer_lng}
+                address={order.delivery_address || order.customer_address || ''}
+                height="230px"
+              />
             )}
           </Card>
 

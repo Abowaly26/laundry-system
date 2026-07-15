@@ -538,3 +538,63 @@ table tbody tr.clickable:active {
     padding: var(--space-sm);
   }
 }
+
+/* ===== Leaflet Custom Popup Styles ===== */
+.leaflet-popup-content-wrapper {
+  border-radius: 14px !important;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.18) !important;
+  border: 1px solid rgba(59,130,246,0.2) !important;
+  direction: rtl;
+}
+.leaflet-popup-content {
+  margin: 12px 16px !important;
+  direction: rtl;
+}
+.leaflet-popup-tip {
+  background: white !important;
+}
+
+/* ===== Badge Utilities ===== */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+.badge-success {
+  background: #d1fae5;
+  color: #065f46;
+}
+.badge-warning {
+  background: #fef3c7;
+  color: #92400e;
+}
+.badge-info {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+/* ===== Flex & Gap Utilities for Map Integration ===== */
+.flex { display: flex; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.gap-xs { gap: 0.35rem; }
+.gap-sm { gap: 0.5rem; }
+.gap-md { gap: 1rem; }
+.mt-xs { margin-top: 0.35rem; }
+.mb-xs { margin-bottom: 0.35rem; }
+.p-sm { padding: 0.75rem; }
+.px-md { padding-inline: 1rem; }
+.shrink-0 { flex-shrink: 0; }
+.flex-1 { flex: 1; }
+.text-xs { font-size: 0.78rem; }
+.font-bold { font-weight: 700; }
+.font-medium { font-weight: 500; }
+.text-primary { color: var(--primary, #2563eb); }
+.text-muted { color: var(--text-muted, #64748b); }
+.w-full { width: 100%; }
+.rounded-lg { border-radius: 12px; }
+.mb-0 { margin-bottom: 0; }

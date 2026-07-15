@@ -10,6 +10,7 @@ import Card from '../../components/UI/Card';
 import Modal from '../../components/UI/Modal';
 import PrintInvoice from '../../components/Print/PrintInvoice';
 import PrintQRLabels from '../../components/Print/PrintQRLabels';
+import LocationPickerModal from '../../components/Map/LocationPickerModal';
 import './NewOrder.css';
 
 const getTimeOptions = (t) => {
@@ -237,7 +238,9 @@ export default function NewOrder() {
   const [searchResults, setSearchResults] = useState([]);
   const [selectedCustomer, setSelectedCustomer] = useState(() => getDraftJSON('draft_order_customer', null));
   const [showAddCustomerModal, setShowAddCustomerModal] = useState(false);
-  const [newCustomer, setNewCustomer] = useState({ name: '', phone: '', address: '' });
+  const [showMapModal, setShowMapModal] = useState(false);
+  const [mapTarget, setMapTarget] = useState('selected'); // 'selected' أو 'new'
+  const [newCustomer, setNewCustomer] = useState({ name: '', phone: '', address: '', latitude: null, longitude: null });
   const [customerError, setCustomerError] = useState('');
 
   // عناصر الطلب
@@ -478,7 +481,7 @@ export default function NewOrder() {
       if (res.success) {
         setSelectedCustomer(res.data);
         setShowAddCustomerModal(false);
-        setNewCustomer({ name: '', phone: '', address: '' });
+        setNewCustomer({ name: '', phone: '', address: '', latitude: null, longitude: null });
         showToast('تمت إضافة العميل وتحديده بنجاح!', 'success');
       } else {
         setCustomerError(res.message || 'فشل في إنشاء العميل');
@@ -546,7 +549,10 @@ export default function NewOrder() {
         paid_amount: parseFloat(paidAmount) || 0,
         payment_method: paymentMethod,
         expected_delivery_at: expectedDate.toISOString(),
-        notes: orderNotes
+        notes: orderNotes,
+        delivery_address: selectedCustomer.address || '',
+        delivery_lat: selectedCustomer.latitude || null,
+        delivery_lng: selectedCustomer.longitude || null
       };
 
       const res = await ordersAPI.create(orderData);
@@ -716,6 +722,39 @@ export default function NewOrder() {
                     <p>{t('orders.phone') || 'رقم الهاتف'}: {selectedCustomer.phone}</p>
                     {selectedCustomer.address && <p>{t('orders.address') || 'العنوان'}: {selectedCustomer.address}</p>}
                   </div>
+
+                  {/* صندوق العنوان والموقع التفاعلي للطلب */}
+                  <div className="order-customer-map-box mt-sm p-sm rounded-lg" style={{ background: 'var(--bg-body, #f8fafc)', border: '1px solid var(--border-color, #e2e8f0)' }}>
+                    <div className="flex items-center justify-between mb-xs">
+                      <span className="text-xs font-bold text-primary flex items-center gap-xs">
+                        📍 عنوان وموقع التوصيل على الخريطة
+                      </span>
+                      {selectedCustomer.latitude && selectedCustomer.longitude ? (
+                        <span className="badge badge-success text-xs">تم تحديد الإحداثيات ✓</span>
+                      ) : (
+                        <span className="badge badge-warning text-xs">لم يتم التحديد بدقة</span>
+                      )}
+                    </div>
+                    {selectedCustomer.address ? (
+                      <p className="text-sm font-medium mb-xs">{selectedCustomer.address}</p>
+                    ) : (
+                      <p className="text-xs text-muted mb-xs">لم يتم إدخال عنوان لهذا العميل بعد</p>
+                    )}
+                    <Button 
+                      type="button" 
+                      variant="secondary" 
+                      size="sm" 
+                      className="w-full mt-xs flex items-center justify-center gap-xs"
+                      style={{ background: 'linear-gradient(135deg, #1e40af, #3b82f6)', color: '#fff', border: 'none' }}
+                      onClick={() => {
+                        setMapTarget('selected');
+                        setShowMapModal(true);
+                      }}
+                    >
+                      🗺️ {selectedCustomer.latitude ? 'تعديل موقع التوصيل على الخريطة التفاعلية' : 'تحديد الموقع على الخريطة التفاعلية للمندوب'}
+                    </Button>
+                  </div>
+
                   <Button variant="ghost" className="text-error mt-sm w-full" onClick={() => setSelectedCustomer(null)}>
                     {t('orders.changeCustomer') || 'تغيير العميل'}
                   </Button>
@@ -1308,14 +1347,34 @@ export default function NewOrder() {
             />
           </div>
           <div className="form-group">
-            <label className="form-label">{t('orders.addressOptional') || 'العنوان (اختياري)'}</label>
-            <input
-              type="text"
-              className="form-input"
-              value={newCustomer.address}
-              onChange={(e) => setNewCustomer({ ...newCustomer, address: e.target.value })}
-              placeholder={t('orders.addressPlaceholder') || 'مثال: حي الصحافة، الرياض'}
-            />
+            <div className="flex items-center justify-between mb-xs">
+              <label className="form-label mb-0">{t('orders.addressOptional') || 'العنوان (اختياري)'}</label>
+              {newCustomer.latitude && (
+                <span className="badge badge-success text-xs">📍 تم تحديد الإحداثيات بدقة</span>
+              )}
+            </div>
+            <div className="flex gap-sm">
+              <input
+                type="text"
+                className="form-input flex-1"
+                value={newCustomer.address}
+                onChange={(e) => setNewCustomer({ ...newCustomer, address: e.target.value })}
+                placeholder={t('orders.addressPlaceholder') || 'مثال: حي الصحافة، الرياض'}
+              />
+              <Button
+                type="button"
+                variant="secondary"
+                className="flex items-center gap-xs px-md shrink-0"
+                style={{ background: '#3b82f6', color: '#fff', border: 'none' }}
+                onClick={() => {
+                  setMapTarget('new');
+                  setShowMapModal(true);
+                }}
+                title="تحديد على الخريطة"
+              >
+                🗺️ الخريطة
+              </Button>
+            </div>
           </div>
           <div className="flex justify-between mt-md">
             <Button variant="secondary" type="button" onClick={() => setShowAddCustomerModal(false)}>
@@ -1371,6 +1430,58 @@ export default function NewOrder() {
           </div>
         </Modal>
       )}
+
+      {/* مودال اختيار الموقع التفاعلي على الخريطة */}
+      <LocationPickerModal
+        isOpen={showMapModal}
+        onClose={() => setShowMapModal(false)}
+        initialLocation={
+          mapTarget === 'selected' && selectedCustomer?.latitude
+            ? { lat: parseFloat(selectedCustomer.latitude), lng: parseFloat(selectedCustomer.longitude) }
+            : mapTarget === 'new' && newCustomer?.latitude
+            ? { lat: parseFloat(newCustomer.latitude), lng: parseFloat(newCustomer.longitude) }
+            : null
+        }
+        initialAddress={
+          mapTarget === 'selected' ? selectedCustomer?.address || '' : newCustomer?.address || ''
+        }
+        onSelectLocation={async (locationData) => {
+          if (mapTarget === 'selected' && selectedCustomer) {
+            const updated = {
+              ...selectedCustomer,
+              address: locationData.address,
+              latitude: locationData.latitude,
+              longitude: locationData.longitude
+            };
+            setSelectedCustomer(updated);
+            
+            // تحديث تلقائي لقاعدة البيانات للعميل إذا كان مسجلاً
+            if (selectedCustomer.id) {
+              try {
+                await customersAPI.update(selectedCustomer.id, {
+                  address: locationData.address,
+                  latitude: locationData.latitude,
+                  longitude: locationData.longitude
+                });
+                showToast('تم تحديث وحفظ عنوان وإحداثيات العميل بنجاح 📍', 'success');
+              } catch (err) {
+                console.warn('Could not auto-update customer record:', err);
+                showToast('تم تحديد الموقع على الخريطة للطلب الحالي 📍', 'success');
+              }
+            } else {
+              showToast('تم تحديد الموقع على الخريطة للطلب الحالي 📍', 'success');
+            }
+          } else if (mapTarget === 'new') {
+            setNewCustomer({
+              ...newCustomer,
+              address: locationData.address,
+              latitude: locationData.latitude,
+              longitude: locationData.longitude
+            });
+            showToast('تم تحديد عنوان العميل الجديد على الخريطة 📍', 'success');
+          }
+        }}
+      />
     </div>
   );
 }

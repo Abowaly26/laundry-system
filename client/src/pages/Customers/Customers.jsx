@@ -9,6 +9,8 @@ import Card from '../../components/UI/Card';
 import Modal from '../../components/UI/Modal';
 import LoadingSpinner from '../../components/UI/LoadingSpinner';
 import EmptyState from '../../components/UI/EmptyState';
+import LocationPickerModal from '../../components/Map/LocationPickerModal';
+import StaticOrderMap from '../../components/Map/StaticOrderMap';
 import './Customers.css';
 
 export default function Customers() {
@@ -46,8 +48,9 @@ export default function Customers() {
   // شاشات الإضافة والتعديل والعرض
   const [showModal, setShowModal] = useState(false);
   const [modalMode, setModalMode] = useState('add'); // 'add' or 'edit'
-  const [formData, setFormData] = useState({ name: '', phone: '', address: '' });
+  const [formData, setFormData] = useState({ name: '', phone: '', address: '', latitude: null, longitude: null });
   const [selectedId, setSelectedId] = useState(null);
+  const [showMapModal, setShowMapModal] = useState(false);
   
   // شاشة تفاصيل العميل والطلبات
   const [showDetailModal, setShowDetailModal] = useState(false);
@@ -74,7 +77,7 @@ export default function Customers() {
 
   const handleOpenAdd = () => {
     setModalMode('add');
-    setFormData({ name: '', phone: '', address: '' });
+    setFormData({ name: '', phone: '', address: '', latitude: null, longitude: null });
     setShowModal(true);
   };
 
@@ -85,7 +88,9 @@ export default function Customers() {
     setFormData({
       name: customer.name,
       phone: customer.phone,
-      address: customer.address || ''
+      address: customer.address || '',
+      latitude: customer.latitude || null,
+      longitude: customer.longitude || null,
     });
     setShowModal(true);
   };
@@ -348,14 +353,34 @@ export default function Customers() {
             />
           </div>
           <div className="form-group">
-            <label className="form-label">{t('customers.addressLabel') || 'العنوان (المدينة / الحي)'}</label>
-            <input
-              type="text"
-              className="form-input"
-              value={formData.address}
-              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-              placeholder={t('customers.addressPlaceholder') || 'مثال: الرياض، حي السليمانية'}
-            />
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
+              <label className="form-label" style={{ margin: 0 }}>{t('customers.addressLabel') || 'العنوان (المدينة / الحي)'}</label>
+              {formData.latitude && (
+                <span style={{
+                  fontSize: '0.75rem', fontWeight: 700,
+                  background: '#d1fae5', color: '#065f46',
+                  padding: '2px 8px', borderRadius: '6px'
+                }}>📍 تم تحديد الموقع</span>
+              )}
+            </div>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <input
+                type="text"
+                className="form-input"
+                style={{ flex: 1 }}
+                value={formData.address}
+                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                placeholder={t('customers.addressPlaceholder') || 'مثال: الرياض، حي السليمانية'}
+              />
+              <Button
+                type="button"
+                variant="secondary"
+                style={{ background: '#2563eb', color: '#fff', border: 'none', whiteSpace: 'nowrap' }}
+                onClick={() => setShowMapModal(true)}
+              >
+                🗺️ تحديد على الخريطة
+              </Button>
+            </div>
           </div>
           <div className="flex justify-between mt-md">
             <Button variant="secondary" type="button" onClick={() => setShowModal(false)}>
@@ -387,6 +412,15 @@ export default function Customers() {
                 <p><Phone size={14} style={{ marginLeft: '4px' }} /> {customerDetail.phone}</p>
                 {customerDetail.address && (
                   <p><MapPin size={14} style={{ marginLeft: '4px' }} /> {customerDetail.address}</p>
+                )}
+                {/* خريطة موقع العميل inline */}
+                {customerDetail.latitude && customerDetail.longitude && (
+                  <StaticOrderMap
+                    lat={customerDetail.latitude}
+                    lng={customerDetail.longitude}
+                    address={customerDetail.address || ''}
+                    height="200px"
+                  />
                 )}
                 <p><Calendar size={14} style={{ marginLeft: '4px' }} /> {t('customers.customerSince') || 'عميل منذ:'} {formatDate(customerDetail.created_at)}</p>
               </div>
@@ -440,6 +474,25 @@ export default function Customers() {
           </div>
         )}
       </Modal>
+      {/* مودال تحديد الموقع على الخريطة */}
+      <LocationPickerModal
+        isOpen={showMapModal}
+        onClose={() => setShowMapModal(false)}
+        initialLocation={
+          formData.latitude
+            ? { lat: parseFloat(formData.latitude), lng: parseFloat(formData.longitude) }
+            : null
+        }
+        initialAddress={formData.address || ''}
+        onSelectLocation={(locationData) => {
+          setFormData(prev => ({
+            ...prev,
+            address: locationData.address,
+            latitude: locationData.latitude,
+            longitude: locationData.longitude,
+          }));
+        }}
+      />
     </div>
   );
 }

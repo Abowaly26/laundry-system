@@ -36,10 +36,10 @@ router.get('/search', async (req, res) => {
     let sqlQuery, params;
 
     if (req.user.role === 'super_owner') {
-      sqlQuery = `SELECT id, name, phone, address FROM customers WHERE (name LIKE $1 OR phone LIKE $2) ORDER BY name ASC LIMIT 10`;
+      sqlQuery = `SELECT id, name, phone, address, latitude, longitude FROM customers WHERE (name LIKE $1 OR phone LIKE $2) ORDER BY name ASC LIMIT 10`;
       params = [searchTerm, searchTerm];
     } else {
-      sqlQuery = `SELECT id, name, phone, address FROM customers WHERE (name LIKE $1 OR phone LIKE $2) AND laundry_id = $3 ORDER BY name ASC LIMIT 10`;
+      sqlQuery = `SELECT id, name, phone, address, latitude, longitude FROM customers WHERE (name LIKE $1 OR phone LIKE $2) AND laundry_id = $3 ORDER BY name ASC LIMIT 10`;
       params = [searchTerm, searchTerm, req.user.laundry_id];
     }
 
@@ -131,7 +131,7 @@ router.get('/:id', async (req, res) => {
  */
 router.post('/', authorizeRoles('admin', 'cashier', 'super_owner'), async (req, res) => {
   try {
-    const { name, phone, address } = req.body;
+    const { name, phone, address, latitude, longitude } = req.body;
 
     if (!name || !phone) {
       return res.status(400).json({ success: false, message: 'الاسم ورقم الهاتف مطلوبان' });
@@ -145,8 +145,8 @@ router.post('/', authorizeRoles('admin', 'cashier', 'super_owner'), async (req, 
     const laundryId = req.user.laundry_id;
 
     const result = await query(
-      'INSERT INTO customers (name, phone, address, laundry_id) VALUES ($1, $2, $3, $4) RETURNING *',
-      [name, phone, address || '', laundryId]
+      'INSERT INTO customers (name, phone, address, laundry_id, latitude, longitude) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+      [name, phone, address || '', laundryId, latitude !== undefined && latitude !== '' ? parseFloat(latitude) : null, longitude !== undefined && longitude !== '' ? parseFloat(longitude) : null]
     );
 
     res.status(201).json({ success: true, message: 'تم إنشاء العميل بنجاح', data: result.rows[0] });
@@ -162,7 +162,7 @@ router.post('/', authorizeRoles('admin', 'cashier', 'super_owner'), async (req, 
 router.put('/:id', authorizeRoles('admin', 'cashier', 'super_owner'), async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, phone, address } = req.body;
+    const { name, phone, address, latitude, longitude } = req.body;
 
     let existingResult;
     if (req.user.role === 'super_owner') {
@@ -177,8 +177,15 @@ router.put('/:id', authorizeRoles('admin', 'cashier', 'super_owner'), async (req
 
     const existing = existingResult.rows[0];
     await query(
-      'UPDATE customers SET name = $1, phone = $2, address = $3 WHERE id = $4',
-      [name || existing.name, phone || existing.phone, address !== undefined ? address : existing.address, id]
+      'UPDATE customers SET name = $1, phone = $2, address = $3, latitude = $4, longitude = $5 WHERE id = $6',
+      [
+        name || existing.name,
+        phone || existing.phone,
+        address !== undefined ? address : existing.address,
+        latitude !== undefined ? (latitude !== '' && latitude !== null ? parseFloat(latitude) : null) : existing.latitude,
+        longitude !== undefined ? (longitude !== '' && longitude !== null ? parseFloat(longitude) : null) : existing.longitude,
+        id
+      ]
     );
 
     const customerResult = await query('SELECT * FROM customers WHERE id = $1', [id]);

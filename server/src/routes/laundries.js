@@ -153,7 +153,8 @@ router.put('/:id', authorizeRoles('super_owner'), async (req, res) => {
     const { 
       name, address, phone, currency, language, is_active, 
       admin_email, admin_password,
-      plan_type, subscription_start_date, subscription_end_date, payment_status
+      plan_type, subscription_start_date, subscription_end_date, payment_status,
+      latitude, longitude
     } = req.body;
 
     const existing = await query('SELECT * FROM laundries WHERE id = $1', [id]);
@@ -175,6 +176,8 @@ router.put('/:id', authorizeRoles('super_owner'), async (req, res) => {
     if (subscription_start_date !== undefined) { updateFields.push(`subscription_start_date = $${paramCount++}`); updateParams.push(subscription_start_date); }
     if (subscription_end_date !== undefined) { updateFields.push(`subscription_end_date = $${paramCount++}`); updateParams.push(subscription_end_date); }
     if (payment_status !== undefined) { updateFields.push(`payment_status = $${paramCount++}`); updateParams.push(payment_status); }
+    if (latitude !== undefined) { updateFields.push(`latitude = $${paramCount++}`); updateParams.push(latitude !== '' && latitude !== null ? parseFloat(latitude) : null); }
+    if (longitude !== undefined) { updateFields.push(`longitude = $${paramCount++}`); updateParams.push(longitude !== '' && longitude !== null ? parseFloat(longitude) : null); }
 
     let laundryResult;
     if (updateFields.length > 0) {
