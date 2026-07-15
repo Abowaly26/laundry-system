@@ -11,36 +11,37 @@ import Button from '../../components/UI/Button';
 import Modal from '../../components/UI/Modal';
 import Input from '../../components/UI/Input';
 import LoadingSpinner from '../../components/UI/LoadingSpinner';
+import LocationPickerModal from '../../components/Map/LocationPickerModal';
 import './Laundries.css';
 
 const COUNTRY_PRESETS = [
-  { name: 'اختر الدولة لتحديد الموقع الافتراضي للمغسلة تلقائياً...', lat: '', lng: '', currency: '' },
-  { name: 'المملكة العربية السعودية', lat: '24.7136', lng: '46.6753', currency: 'ر.س' },
-  { name: 'جمهورية مصر العربية', lat: '30.0444', lng: '31.2357', currency: 'ج.م' },
-  { name: 'الإمارات العربية المتحدة', lat: '25.2048', lng: '55.2708', currency: 'د.إ' },
-  { name: 'الكويت', lat: '29.3759', lng: '47.9774', currency: 'د.ك' },
-  { name: 'قطر', lat: '25.2854', lng: '51.5310', currency: 'ر.ق' },
-  { name: 'البحرين', lat: '26.2285', lng: '50.5860', currency: 'د.ب' },
-  { name: 'سلطنة عمان', lat: '23.5859', lng: '58.4059', currency: 'ر.ع.' },
-  { name: 'الأردن', lat: '31.9522', lng: '35.9106', currency: 'د.ا' },
-  { name: 'لبنان', lat: '33.8938', lng: '35.5018', currency: 'ل.ل' },
-  { name: 'سوريا', lat: '33.5138', lng: '36.2765', currency: 'ل.س' },
-  { name: 'العراق', lat: '33.3152', lng: '44.3661', currency: 'د.ع' },
-  { name: 'فلسطين', lat: '31.7683', lng: '35.2137', currency: 'ش.ج' },
-  { name: 'اليمن', lat: '15.3694', lng: '44.1910', currency: 'ر.ي' },
-  { name: 'ليبيا', lat: '32.8872', lng: '13.1913', currency: 'د.ل' },
-  { name: 'تونس', lat: '36.8065', lng: '10.1815', currency: 'د.ت' },
-  { name: 'الجزائر', lat: '36.7538', lng: '3.0588', currency: 'د.ج' },
-  { name: 'المغرب', lat: '34.0209', lng: '6.8416', currency: 'د.م.' },
-  { name: 'السودان', lat: '15.5007', lng: '32.5599', currency: 'ج.س' },
-  { name: 'الصومال', lat: '2.0469', lng: '45.3182', currency: 'ش.ص' },
-  { name: 'موريتانيا', lat: '18.0735', lng: '15.9582', currency: 'أ.م' },
-  { name: 'تركيا', lat: '39.9334', lng: '32.8597', currency: 'ل.ت' },
-  { name: 'المملكة المتحدة', lat: '51.5074', lng: '-0.1278', currency: '£' },
-  { name: 'الولايات المتحدة الأمريكية', lat: '38.9072', lng: '-77.0369', currency: '$' },
-  { name: 'كندا', lat: '45.4215', lng: '-75.6972', currency: 'C$' },
-  { name: 'فرنسا', lat: '48.8566', lng: '2.3522', currency: '€' },
-  { name: 'ألمانيا', lat: '52.5200', lng: '13.4050', currency: '€' }
+  { name: 'اختر الدولة لتحديد الموقع الافتراضي للمغسلة تلقائياً...', lat: '', lng: '', currency: '', lang: 'ar' },
+  { name: 'المملكة العربية السعودية', lat: '24.7136', lng: '46.6753', currency: 'ر.س', lang: 'ar' },
+  { name: 'جمهورية مصر العربية', lat: '30.0444', lng: '31.2357', currency: 'ج.م', lang: 'ar' },
+  { name: 'الإمارات العربية المتحدة', lat: '25.2048', lng: '55.2708', currency: 'د.إ', lang: 'ar' },
+  { name: 'الكويت', lat: '29.3759', lng: '47.9774', currency: 'د.ك', lang: 'ar' },
+  { name: 'قطر', lat: '25.2854', lng: '51.5310', currency: 'ر.ق', lang: 'ar' },
+  { name: 'البحرين', lat: '26.2285', lng: '50.5860', currency: 'د.ب', lang: 'ar' },
+  { name: 'سلطنة عمان', lat: '23.5859', lng: '58.4059', currency: 'ر.ع.', lang: 'ar' },
+  { name: 'الأردن', lat: '31.9522', lng: '35.9106', currency: 'د.ا', lang: 'ar' },
+  { name: 'لبنان', lat: '33.8938', lng: '35.5018', currency: 'ل.ل', lang: 'ar' },
+  { name: 'سوريا', lat: '33.5138', lng: '36.2765', currency: 'ل.س', lang: 'ar' },
+  { name: 'العراق', lat: '33.3152', lng: '44.3661', currency: 'د.ع', lang: 'ar' },
+  { name: 'فلسطين', lat: '31.7683', lng: '35.2137', currency: 'ش.ج', lang: 'ar' },
+  { name: 'اليمن', lat: '15.3694', lng: '44.1910', currency: 'ر.ي', lang: 'ar' },
+  { name: 'ليبيا', lat: '32.8872', lng: '13.1913', currency: 'د.ل', lang: 'ar' },
+  { name: 'تونس', lat: '36.8065', lng: '10.1815', currency: 'د.ت', lang: 'ar' },
+  { name: 'الجزائر', lat: '36.7538', lng: '3.0588', currency: 'د.ج', lang: 'ar' },
+  { name: 'المغرب', lat: '34.0209', lng: '6.8416', currency: 'د.م.', lang: 'ar' },
+  { name: 'السودان', lat: '15.5007', lng: '32.5599', currency: 'ج.س', lang: 'ar' },
+  { name: 'الصومال', lat: '2.0469', lng: '45.3182', currency: 'ش.ص', lang: 'ar' },
+  { name: 'موريتانيا', lat: '18.0735', lng: '15.9582', currency: 'أ.م', lang: 'ar' },
+  { name: 'تركيا', lat: '39.9334', lng: '32.8597', currency: 'ل.ت', lang: 'en' },
+  { name: 'المملكة المتحدة', lat: '51.5074', lng: '-0.1278', currency: '£', lang: 'en' },
+  { name: 'الولايات المتحدة الأمريكية', lat: '38.9072', lng: '-77.0369', currency: '$', lang: 'en' },
+  { name: 'كندا', lat: '45.4215', lng: '-75.6972', currency: 'C$', lang: 'en' },
+  { name: 'فرنسا', lat: '48.8566', lng: '2.3522', currency: '€', lang: 'en' },
+  { name: 'ألمانيا', lat: '52.5200', lng: '13.4050', currency: '€', lang: 'en' }
 ];
 
 export default function Laundries() {
@@ -54,6 +55,7 @@ export default function Laundries() {
 
   // Modal إنشاء/تعديل
   const [showModal, setShowModal] = useState(false);
+  const [showMapModal, setShowMapModal] = useState(false);
   const [modalMode, setModalMode] = useState('add');
   const [selectedLaundry, setSelectedLaundry] = useState(null);
   const [formData, setFormData] = useState({
@@ -596,14 +598,37 @@ export default function Laundries() {
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             placeholder={t('laundriesList.namePlaceholder') || 'مثال: مغسلة النظافة الذهبية'}
           />
-          <Input
-            id="laundry-address"
-            label={t('customers.colAddress') || 'العنوان'}
-            type="text"
-            value={formData.address}
-            onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-            placeholder={t('laundriesList.addressPlaceholder') || 'المدينة، الحي'}
-          />
+          <div style={{ position: 'relative' }}>
+            <Input
+              id="laundry-address"
+              label={t('customers.colAddress') || 'العنوان'}
+              type="text"
+              value={formData.address}
+              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+              placeholder={t('laundriesList.addressPlaceholder') || 'المدينة، الحي'}
+              style={{ paddingInlineEnd: '40px' }}
+            />
+            <button
+              type="button"
+              onClick={() => setShowMapModal(true)}
+              style={{
+                position: 'absolute',
+                insetInlineEnd: '10px',
+                bottom: '8px',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                color: 'var(--primary)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '4px'
+              }}
+              title="تحديد موقع المغسلة على الخريطة"
+            >
+              <MapPin size={20} />
+            </button>
+          </div>
            <Input
             id="laundry-phone"
             label={t('customers.colPhone') || 'رقم الهاتف'}
@@ -651,11 +676,14 @@ export default function Laundries() {
                 onChange={(e) => {
                   const selectedPreset = COUNTRY_PRESETS.find(p => p.name === e.target.value);
                   if (selectedPreset && selectedPreset.lat !== '') {
+                    const isDefaultAddress = !formData.address || COUNTRY_PRESETS.some(p => p.name === formData.address);
                     setFormData({ 
                       ...formData, 
                       latitude: selectedPreset.lat, 
                       longitude: selectedPreset.lng,
-                      currency: selectedPreset.currency || formData.currency
+                      currency: selectedPreset.currency || formData.currency,
+                      language: selectedPreset.lang || formData.language,
+                      address: isDefaultAddress ? selectedPreset.name : formData.address
                     });
                   }
                 }}
@@ -900,6 +928,26 @@ export default function Laundries() {
           </div>
         </form>
       </Modal>
+
+      {/* مودال تحديد موقع المغسلة الفعلي على الخريطة */}
+      <LocationPickerModal
+        isOpen={showMapModal}
+        onClose={() => setShowMapModal(false)}
+        initialLocation={
+          formData.latitude && formData.longitude
+            ? { lat: parseFloat(formData.latitude), lng: parseFloat(formData.longitude) }
+            : null
+        }
+        initialAddress={formData.address || ''}
+        onSelectLocation={(locationData) => {
+          setFormData(prev => ({
+            ...prev,
+            address: locationData.address,
+            latitude: locationData.latitude,
+            longitude: locationData.longitude
+          }));
+        }}
+      />
     </div>
   );
 }
