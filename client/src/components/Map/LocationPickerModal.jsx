@@ -105,9 +105,6 @@ const LocationPickerModal = ({
   const [cashierCoords,   setCashierCoords]   = useState(null);
   const [customerCoords,  setCustomerCoords]  = useState(null);
   const [addressText,     setAddressText]     = useState('');
-  const [buildingNo,      setBuildingNo]      = useState('');
-  const [aptNo,           setAptNo]           = useState('');
-  const [landmark,        setLandmark]        = useState('');
   const [isGeocoding,     setIsGeocoding]     = useState(false);
   const [searchQuery,     setSearchQuery]     = useState('');
   const [searchResults,   setSearchResults]   = useState([]);
@@ -175,9 +172,6 @@ const LocationPickerModal = ({
 
     // Reset derived UI state each time the modal opens
     setAddressText(initialAddress || '');
-    setBuildingNo('');
-    setAptNo('');
-    setLandmark('');
     setSearchQuery('');
     setSearchResults([]);
     setGpsStatus('loading');
@@ -385,15 +379,8 @@ const LocationPickerModal = ({
 
   const handleConfirm = useCallback(() => {
     if (!customerCoords) return;
-    const extraParts = [
-      buildingNo && `مبنى: ${buildingNo}`,
-      aptNo      && `شقة/دور: ${aptNo}`,
-      landmark   && `معلم: ${landmark}`,
-    ].filter(Boolean);
-
-    const fullAddress =
-      (addressText || 'موقع محدد على الخريطة') +
-      (extraParts.length ? ` (${extraParts.join(' - ')})` : '');
+    
+    const fullAddress = addressText || 'موقع محدد على الخريطة';
 
     const distKm =
       laundryLocation
@@ -405,12 +392,12 @@ const LocationPickerModal = ({
       latitude:   customerCoords.lat,
       longitude:  customerCoords.lng,
       distanceKm: distKm,
-      buildingNo,
-      aptNo,
-      landmark,
+      buildingNo: '',
+      aptNo:      '',
+      landmark:   '',
     });
     onClose();
-  }, [customerCoords, addressText, buildingNo, aptNo, landmark, laundryLocation, onSelectLocation, onClose]);
+  }, [customerCoords, addressText, laundryLocation, onSelectLocation, onClose]);
 
   // ─────────────────────────────────────────────────────────────────────────
   // Distance card data (computed, no memo needed — cheap calc)
@@ -609,45 +596,7 @@ const LocationPickerModal = ({
             </div>
           </div>
 
-          {/* Extra details */}
-          <div className="address-details-grid">
-            <div className="address-field-group">
-              <label>
-                <Building size={13} style={{ display: 'inline', marginInlineEnd: '4px' }} />
-                رقم المبنى / المنزل
-              </label>
-              <input
-                type="text"
-                placeholder="مثال: مبنى 14"
-                value={buildingNo}
-                onChange={(e) => setBuildingNo(e.target.value)}
-              />
-            </div>
-            <div className="address-field-group">
-              <label>
-                <Hash size={13} style={{ display: 'inline', marginInlineEnd: '4px' }} />
-                الدور / الشقة
-              </label>
-              <input
-                type="text"
-                placeholder="مثال: الدور 2 شقة 6"
-                value={aptNo}
-                onChange={(e) => setAptNo(e.target.value)}
-              />
-            </div>
-            <div className="address-field-group">
-              <label>
-                <AlertCircle size={13} style={{ display: 'inline', marginInlineEnd: '4px' }} />
-                معلم قريب (اختياري)
-              </label>
-              <input
-                type="text"
-                placeholder="مثال: بجوار صيدلية النهدي"
-                value={landmark}
-                onChange={(e) => setLandmark(e.target.value)}
-              />
-            </div>
-          </div>
+          {/* Extra details removed */}
 
           {/* Confirm / Cancel */}
           <div className="location-picker-actions">
