@@ -663,7 +663,11 @@ export default function Services() {
                     <div className="size-badges-container">
                       {sortedCardSizes.map(sz => {
                         const sName = typeof sz === 'object' && sz !== null ? (sz.size_name || '-') : String(sz);
-                        return <span key={typeof sz === 'object' && sz !== null ? (sz.id || sName) : sName} className="size-pill-badge">{sName}</span>;
+                        // Translate standard arabic sizes to english standard sizes if in english mode
+                        const translatedName = i18n.language === 'en' && sName === 'عادي' ? 'Normal' : 
+                                               i18n.language === 'en' && sName === 'مفرد' ? 'Single' :
+                                               i18n.language === 'en' && sName === 'مزدوج' ? 'Double' : sName;
+                        return <span key={typeof sz === 'object' && sz !== null ? (sz.id || sName) : sName} className="size-pill-badge">{translatedName}</span>;
                       })}
                     </div>
                   </div>
@@ -682,10 +686,13 @@ export default function Services() {
                       <tbody>
                         {sortedCardSizes.map(sz => {
                           const sName = typeof sz === 'object' && sz !== null ? (sz.size_name || '-') : String(sz);
+                          const translatedName = i18n.language === 'en' && sName === 'عادي' ? 'Normal' : 
+                                                 i18n.language === 'en' && sName === 'مفرد' ? 'Single' :
+                                                 i18n.language === 'en' && sName === 'مزدوج' ? 'Double' : sName;
                           const sPrices = typeof sz === 'object' && sz !== null ? (sz.prices || []) : [];
                           return (
                             <tr key={typeof sz === 'object' && sz !== null ? (sz.id || sName) : sName}>
-                              <td className="size-group-cell">{sName}</td>
+                              <td className="size-group-cell">{translatedName}</td>
                               {displayServices.map(svc => {
                                 const priceObj = sPrices.find(p => p.service_id === svc.id);
                                 const priceVal = parseFloat(priceObj ? priceObj.price : 0) || 0;
