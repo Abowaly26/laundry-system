@@ -176,7 +176,7 @@ const StaticOrderMap = ({ lat, lng, address, height = '220px', interactive = fal
         style={{
           position: 'absolute',
           top: '0.6rem',
-          insetInlineEnd: '0.6rem',
+          insetInlineStart: '0.6rem',
           zIndex: 900,
           background: 'rgba(255,255,255,0.92)',
           color: '#1e40af',
