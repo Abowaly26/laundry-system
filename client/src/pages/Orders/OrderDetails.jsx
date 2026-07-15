@@ -527,7 +527,7 @@ export default function OrderDetails() {
         {/* جدول تتبع القطع وسجل المدفوعات */}
         <div className="details-main no-print">
           <Card title={t('orders.includedItems', { count: order.items?.length || 0 }) || `القطع المشمولة في الطلب (${order.items?.length || 0} قطع)`}>
-            <div className="table-container">
+            <div className="table-container" style={openItemStatusDropdownId ? { paddingBottom: '180px', transition: 'padding-bottom 0.15s ease' } : { transition: 'padding-bottom 0.15s ease' }}>
               <table className="items-tracking-table">
                 <thead>
                   <tr>
@@ -586,69 +586,30 @@ export default function OrderDetails() {
                             style={{ height: '32px', fontSize: '0.8rem', padding: '4px 12px', minWidth: '120px', margin: '0 auto' }}
                             onClick={(e) => {
                               e.stopPropagation();
-                              if (openItemStatusDropdownId === item.id) {
-                                setOpenItemStatusDropdownId(null);
-                                setDropdownTriggerRect(null);
-                              } else {
-                                setOpenItemStatusDropdownId(item.id);
-                                const rect = e.currentTarget.getBoundingClientRect();
-                                setDropdownTriggerRect({
-                                  top: rect.bottom + window.scrollY,
-                                  left: rect.left + window.scrollX,
-                                  width: rect.width
-                                });
-                              }
+                              setOpenItemStatusDropdownId(openItemStatusDropdownId === item.id ? null : item.id);
                             }}
                           >
                             {ITEM_STATUS_OPTIONS.find(opt => opt.value === item.status)?.label || 'تحديث...'}
                           </button>
-                          {openItemStatusDropdownId === item.id && dropdownTriggerRect && createPortal(
-                            <>
-                              <div 
-                                style={{ position: 'fixed', inset: 0, zIndex: 9998, background: 'transparent' }} 
-                                onClick={(ev) => {
-                                  ev.stopPropagation();
-                                  setOpenItemStatusDropdownId(null);
-                                  setDropdownTriggerRect(null);
-                                }}
-                              />
-                              <div 
-                                className="table-select-dropdown" 
-                                style={{ 
-                                  position: 'absolute',
-                                  top: `${dropdownTriggerRect.top + 6}px`, 
-                                  left: `${dropdownTriggerRect.left}px`, 
-                                  minWidth: '130px',
-                                  width: `${dropdownTriggerRect.width}px`,
-                                  zIndex: 9999
-                                }}
-                                onClick={(ev) => ev.stopPropagation()}
-                              >
-                                {ITEM_STATUS_OPTIONS.map((opt) => {
-                                  const isDisabled = opt.value === 'delivered' && parseFloat(order.remaining_amount) > 0;
-                                  return (
-                                    <button
-                                      key={opt.value}
-                                      type="button"
-                                      className={`table-select-item ${item.status === opt.value ? 'selected' : ''} ${isDisabled ? 'disabled' : ''}`}
-                                      onClick={() => {
-                                        if (!isDisabled) {
-                                          handleUpdateItemStatus(item.id, opt.value);
-                                          setOpenItemStatusDropdownId(null);
-                                          setDropdownTriggerRect(null);
-                                        }
-                                      }}
-                                      disabled={isDisabled}
-                                      style={isDisabled ? { opacity: 0.5, cursor: 'not-allowed', color: 'var(--text-muted)' } : {}}
-                                      title={isDisabled ? 'لا يمكن تسليم القطعة قبل سداد المبلغ المتبقي' : ''}
-                                    >
-                                      {opt.label}
-                                    </button>
-                                  );
-                                })}
-                              </div>
-                            </>,
-                            document.body
+                          {openItemStatusDropdownId === item.id && (
+                            <div className="table-select-dropdown" style={{ right: 0, left: 'auto', minWidth: '130px' }}>
+                              {ITEM_STATUS_OPTIONS.map((opt) => {
+                                const isDisabled = opt.value === 'delivered' && parseFloat(order.remaining_amount) > 0;
+                                return (
+                                  <button
+                                    key={opt.value}
+                                    type="button"
+                                    className={`table-select-item ${item.status === opt.value ? 'selected' : ''} ${isDisabled ? 'disabled' : ''}`}
+                                    onClick={() => !isDisabled && handleUpdateItemStatus(item.id, opt.value)}
+                                    disabled={isDisabled}
+                                    style={isDisabled ? { opacity: 0.5, cursor: 'not-allowed', color: 'var(--text-muted)' } : {}}
+                                    title={isDisabled ? 'لا يمكن تسليم القطعة قبل سداد المبلغ المتبقي' : ''}
+                                  >
+                                    {opt.label}
+                                  </button>
+                                );
+                              })}
+                            </div>
                           )}
                         </div>
                       </td>
