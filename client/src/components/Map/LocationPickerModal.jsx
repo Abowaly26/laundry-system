@@ -46,7 +46,7 @@ const makeCashierIcon = () =>
   });
 
 // ─── Helper: build customer draggable divIcon HTML ────────────────────────────
-const makeCustomerIcon = () =>
+const makeCustomerIcon = (label = 'موقع العميل') =>
   L.divIcon({
     className: 'custom-pin-wrapper',
     html: `<div class="customer-pin-container">
@@ -57,7 +57,7 @@ const makeCustomerIcon = () =>
         </svg>
       </div>
       <div class="customer-pin-shadow"></div>
-      <span class="customer-pin-label">موقع العميل</span>
+      <span class="customer-pin-label">${label}</span>
     </div>`,
     iconSize: [42, 48],
     iconAnchor: [21, 48],
@@ -84,7 +84,10 @@ const LocationPickerModal = ({
   initialLocation = null,
   initialAddress  = '',
   laundryLocation = DEFAULT_CENTER,
+  mode = 'customer',
 }) => {
+  const targetLabel = mode === 'laundry' ? 'موقع المغسلة' : 'موقع العميل';
+
   // ── refs (survive re-renders, no re-render when changed) ──────────────────
   const mapContainerRef  = useRef(null);
   const mapRef           = useRef(null);
@@ -232,7 +235,7 @@ const LocationPickerModal = ({
 
     // Customer marker (draggable)
     customerMarkerRef.current = L.marker([center.lat, center.lng], {
-      icon:     makeCustomerIcon(),
+      icon:     makeCustomerIcon(targetLabel),
       draggable: true,
       zIndexOffset: 200,
     }).addTo(map);
@@ -556,7 +559,7 @@ const LocationPickerModal = ({
                 type="button"
                 className="map-control-btn customer-locate"
                 onClick={handleJumpToCustomer}
-                title="الانتقال إلى موقع العميل"
+                title={`الانتقال إلى ${targetLabel}`}
                 style={{ 
                   display: 'flex', 
                   alignItems: 'center', 
@@ -574,7 +577,7 @@ const LocationPickerModal = ({
                 }}
               >
                 <Compass size={15} style={{ flexShrink: 0 }} />
-                <span style={{ fontSize: '0.78rem', fontWeight: 'bold', whiteSpace: 'nowrap', color: '#334155' }}>موقع العميل</span>
+                <span style={{ fontSize: '0.78rem', fontWeight: 'bold', whiteSpace: 'nowrap', color: '#334155' }}>{targetLabel}</span>
               </button>
             )}
           </div>

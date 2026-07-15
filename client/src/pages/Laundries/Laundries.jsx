@@ -933,6 +933,7 @@ export default function Laundries() {
       <LocationPickerModal
         isOpen={showMapModal}
         onClose={() => setShowMapModal(false)}
+        mode="laundry"
         initialLocation={
           formData.latitude && formData.longitude
             ? { lat: parseFloat(formData.latitude), lng: parseFloat(formData.longitude) }
