@@ -153,7 +153,7 @@ router.get('/popular-services', async (req, res) => {
       LEFT JOIN order_items oi ON s.id = oi.service_id
       LEFT JOIN orders o ON oi.order_id = o.id AND o.status != 'cancelled'
       WHERE s.is_active = true ${laundryFilter}
-      GROUP BY s.id, s.name_ar
+      GROUP BY s.name_ar
       ORDER BY count DESC
       LIMIT 10
     `);
