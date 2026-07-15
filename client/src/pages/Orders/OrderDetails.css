@@ -242,17 +242,31 @@
 .details-main,
 .details-main .card,
 .details-main .card-body,
-.details-main .table-container,
-.items-tracking-table,
-.items-tracking-table tr,
-.items-tracking-table td {
+.details-main .table-container {
   overflow: visible !important;
+}
+
+.items-tracking-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: auto;
+}
+
+.items-tracking-table th,
+.items-tracking-table td {
+  padding: 8px 12px !important;
+  vertical-align: middle !important;
+  white-space: nowrap !important;
+}
+
+.items-tracking-table tr {
+  height: 48px !important;
 }
 
 @media (max-width: 768px) {
   .details-main .table-container {
     overflow-x: auto !important;
-    overflow-y: auto !important;
-    padding-bottom: 0;
+    overflow-y: visible !important;
+    padding-bottom: 10px;
   }
 }
