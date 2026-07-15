@@ -415,13 +415,19 @@ export default function OrderDetails() {
 
             {/* خريطة التوصيل inline - قابلة للضغط للتكبير */}
             {((order.delivery_lat && order.delivery_lng) || (order.customer_lat && order.customer_lng)) ? (
-              <StaticOrderMap
-                lat={order.delivery_lat || order.customer_lat}
-                lng={order.delivery_lng || order.customer_lng}
-                address={order.delivery_address || order.customer_address || ''}
-                height="230px"
-                onClick={() => setShowViewMapModal(true)}
-              />
+              !showViewMapModal ? (
+                <StaticOrderMap
+                  lat={order.delivery_lat || order.customer_lat}
+                  lng={order.delivery_lng || order.customer_lng}
+                  address={order.delivery_address || order.customer_address || ''}
+                  height="230px"
+                  onClick={() => setShowViewMapModal(true)}
+                />
+              ) : (
+                <div style={{ height: '230px', background: 'var(--bg-body, #f8fafc)', border: '2px solid var(--border-color, #e2e8f0)', borderRadius: '14px', display: 'flex', alignItems: 'center', justifycontent: 'center', color: 'var(--text-muted)' }}>
+                  📍 جاري عرض الخريطة المكبرة...
+                </div>
+              )
             ) : (
               <div 
                 className="mt-sm p-md text-center rounded-lg" 
