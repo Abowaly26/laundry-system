@@ -196,7 +196,7 @@
     "goToOrdersList": "Go to Orders List",
     "orderDetailsTitle": "Order Details #{{id}}",
     "orderDetailsSubtitle": "Track items, process payments, and manage delivery",
-    "deliveryLocationTitle": "Delivery Location on Interactive Map",
+    "deliveryLocationTitle": "Delivery Location on Map",
     "backToOrders": "Back to Orders",
     "shareWhatsApp": "Share WhatsApp",
     "customerInfo": "Customer Info",
