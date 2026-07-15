@@ -869,13 +869,13 @@ export default function NewOrder() {
                               <div className="date-select-dropdown">
                                 <div className="calendar-header">
                                   <button type="button" className="btn-month-nav" onClick={handlePrevMonth}>
-                                    <ChevronLeft size={16} />
+                                    <ChevronRight size={16} />
                                   </button>
                                   <span className="month-year-label">
                                     {viewDate.toLocaleString(i18n.language === 'en' ? 'en-US' : 'ar-EG', { month: 'long', year: 'numeric' })}
                                   </span>
                                   <button type="button" className="btn-month-nav" onClick={handleNextMonth}>
-                                    <ChevronRight size={16} />
+                                    <ChevronLeft size={16} />
                                   </button>
                                 </div>
                                 <div className="calendar-grid-weekdays">
