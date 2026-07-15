@@ -51,7 +51,8 @@ export default function OrderDetails() {
     { value: 'pending', label: t('status.pending') || 'قيد الانتظار' },
     { value: 'processing', label: t('status.processing') || 'قيد التنفيذ' },
     { value: 'ready', label: t('status.ready') || 'جاهز للاستلام' },
-    { value: 'delivered', label: t('status.delivered') || 'تم التسليم' }
+    { value: 'delivered', label: t('status.delivered') || 'تم التسليم' },
+    { value: 'cancelled', label: t('status.cancelled') || 'ملغي' }
   ];
 
   const loadOrderDetails = async () => {

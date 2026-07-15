@@ -739,6 +739,7 @@ router.delete('/:id', authMiddleware, authorizeRoles('admin', 'cashier', 'super_
     }
 
     await query("UPDATE orders SET status = 'cancelled' WHERE id = $1", [id]);
+    await query("UPDATE order_items SET status = 'cancelled' WHERE order_id = $1", [id]);
 
     res.json({
       success: true,

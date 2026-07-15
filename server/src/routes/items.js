@@ -6,17 +6,18 @@ const authMiddleware = require('../middleware/auth');
 const router = express.Router();
 
 // تسلسل حالات القطعة - Status workflow
-const STATUS_FLOW = ['pending', 'processing', 'ready', 'delivered'];
+const STATUS_FLOW = ['pending', 'processing', 'ready', 'delivered', 'cancelled'];
 
 /**
  * الحصول على الحالة التالية في التسلسل
  */
 function getNextStatus(currentStatus) {
-  const currentIndex = STATUS_FLOW.indexOf(currentStatus);
-  if (currentIndex === -1 || currentIndex >= STATUS_FLOW.length - 1) {
+  const sequentialFlow = ['pending', 'processing', 'ready', 'delivered'];
+  const currentIndex = sequentialFlow.indexOf(currentStatus);
+  if (currentIndex === -1 || currentIndex >= sequentialFlow.length - 1) {
     return null;
   }
-  return STATUS_FLOW[currentIndex + 1];
+  return sequentialFlow[currentIndex + 1];
 }
 
 /**
