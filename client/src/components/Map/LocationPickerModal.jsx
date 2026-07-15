@@ -425,14 +425,9 @@ const LocationPickerModal = ({
         <div className="location-picker-header">
           <div>
             <h3>
-              <MapPin size={22} />
-              تحديد العنوان على الخريطة التفاعلية
+              <MapPin size={20} />
+              تحديد العنوان على الخريطة
             </h3>
-            <p>
-              {gpsStatus === 'loading' && '⏳ جارٍ تحديد موقعك الحالي...'}
-              {gpsStatus === 'ok'      && '✅ تم تحديد موقعك — الخريطة متمركزة حولك'}
-              {gpsStatus === 'denied'  && '⚠️ لم يُسمح بالموقع — استخدم البحث أو انقر على الخريطة'}
-            </p>
           </div>
           <button className="close-modal-btn" onClick={onClose}>
             <X size={20} />
