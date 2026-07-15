@@ -311,7 +311,7 @@
 /* Desktop Headers Row */
 .order-items-header-row {
   display: grid;
-  grid-template-columns: 27% 16% 30% 17% 10%;
+  grid-template-columns: 2.7fr 1.6fr 3fr 1.7fr 1fr;
   gap: 12px;
   padding: 8px 16px;
   color: var(--text-secondary);
@@ -356,7 +356,7 @@
 
 .order-item-grid {
   display: grid;
-  grid-template-columns: 27% 16% 30% 17% 10%;
+  grid-template-columns: 2.7fr 1.6fr 3fr 1.7fr 1fr;
   gap: 12px;
   align-items: center;
   width: 100%;
