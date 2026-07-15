@@ -197,7 +197,7 @@ export default function Laundries() {
               className={`laundry-card ${!laundry.is_active ? 'laundry-card-inactive' : ''}`}
             >
               {/* رأس البطاقة */}
-              <div className="laundry-card-header" style={{ background: getLaundryGradient(index) }}>
+              <div className="laundry-card-header" style={{ background: laundry.is_active ? getLaundryGradient(index) : 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)' }}>
                 <div className="laundry-card-header-content">
                   <div className="laundry-card-icon">
                     <Store size={32} />
