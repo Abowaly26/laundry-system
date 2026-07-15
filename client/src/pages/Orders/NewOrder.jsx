@@ -896,22 +896,23 @@ export default function NewOrder() {
         <div className="new-order-bottom-row">
           <div className="bottom-items-wrapper">
             <Card title={t('orders.itemsAdded') || 'قطع الملابس / السجاد المضافة للطلب'}>
-              <div className="items-table-container">
-                <table className="new-order-items-table">
-                  <thead>
-                    <tr>
-                      <th style={{ width: '27%' }}>{t('orders.itemType') || 'نوع القطعة'}</th>
-                      <th style={{ width: '16%' }}>{t('orders.size') || 'الحجم'}</th>
-                      <th style={{ width: '30%' }}>{t('orders.requiredService') || 'الخدمة المطلوبة'}</th>
-                      <th style={{ width: '17%', minWidth: '110px' }}>{t('orders.price') || 'السعر'}</th>
-                      <th style={{ width: '10%' }}>{t('orders.action') || 'إجراء'}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {items.map((item, index) => (
-                      <Fragment key={index}>
-                      <tr className="item-main-row">
-                        <td>
+              <div className="order-items-list-container">
+                {/* Desktop Headers */}
+                <div className="order-items-header-row">
+                  <div className="header-col item-type-col">{t('orders.itemType') || 'نوع القطعة'}</div>
+                  <div className="header-col size-col">{t('orders.size') || 'الحجم'}</div>
+                  <div className="header-col service-col">{t('orders.requiredService') || 'الخدمة المطلوبة'}</div>
+                  <div className="header-col price-col">{t('orders.price') || 'السعر'}</div>
+                  <div className="header-col action-col">{t('orders.action') || 'إجراء'}</div>
+                </div>
+
+                {/* Items Cards List */}
+                <div className="order-items-cards-list">
+                  {items.map((item, index) => (
+                    <div className="order-item-card" key={index}>
+                      <div className="order-item-grid">
+                        {/* Item Type */}
+                        <div className="order-item-col item-type-col" data-label={t('orders.itemType') || 'نوع القطعة'}>
                           <div className="table-select-container" style={{ zIndex: openItemTypeIndex === index ? 100 : 1 }}>
                             <button
                               type="button"
@@ -943,8 +944,10 @@ export default function NewOrder() {
                               </div>
                             )}
                           </div>
-                        </td>
-                        <td>
+                        </div>
+
+                        {/* Size */}
+                        <div className="order-item-col size-col" data-label={t('orders.size') || 'الحجم'}>
                           <div className="table-select-container" style={{ zIndex: openSizeIndex === index ? 100 : 1 }}>
                             <button
                               type="button"
@@ -977,8 +980,10 @@ export default function NewOrder() {
                               </div>
                             )}
                           </div>
-                        </td>
-                        <td>
+                        </div>
+
+                        {/* Required Service */}
+                        <div className="order-item-col service-col" data-label={t('orders.requiredService') || 'الخدمة المطلوبة'}>
                           <div className="table-select-container" style={{ zIndex: openServiceIndex === index ? 100 : 1 }}>
                             <button
                               type="button"
@@ -1031,8 +1036,10 @@ export default function NewOrder() {
                               );
                             })()}
                           </div>
-                        </td>
-                        <td>
+                        </div>
+
+                        {/* Price */}
+                        <div className="order-item-col price-col" data-label={t('orders.price') || 'السعر'}>
                           <div className="price-input-wrapper">
                             <input
                               type="number"
@@ -1045,8 +1052,10 @@ export default function NewOrder() {
                             />
                             <span className="price-suffix">{t('dashboard.currency', 'ر.س')}</span>
                           </div>
-                        </td>
-                        <td>
+                        </div>
+
+                        {/* Remove Button */}
+                        <div className="order-item-col action-col" data-label={t('orders.action') || 'إجراء'}>
                           <button
                             type="button"
                             className="btn-remove-row text-error"
@@ -1055,31 +1064,30 @@ export default function NewOrder() {
                           >
                             <Trash2 size={18} />
                           </button>
-                        </td>
-                      </tr>
-                      <tr className="item-notes-row">
-                        <td colSpan={5}>
-                          <div className="item-notes-field">
-                            <span className="item-notes-label">{t('orders.itemNotes') || 'ملاحظات على القطعة'}</span>
-                            <textarea
-                              className="form-input form-input-compact item-notes-input"
-                              value={item.notes}
-                              onChange={(e) => {
-                                handleNotesChange(index, e.target.value);
-                                fitItemNotesField(e.target);
-                              }}
-                              onInput={(e) => fitItemNotesField(e.target)}
-                              ref={fitItemNotesField}
-                              placeholder={t('orders.itemNotesPlaceholder') || 'مثال: بقعة زيت، تلف بالكم...'}
-                              rows={1}
-                            />
-                          </div>
-                        </td>
-                      </tr>
-                      </Fragment>
-                    ))}
-                  </tbody>
-                </table>
+                        </div>
+                      </div>
+
+                      {/* Notes row inside the same card */}
+                      <div className="order-item-notes-wrapper">
+                        <div className="item-notes-field">
+                          <span className="item-notes-label">{t('orders.itemNotes') || 'ملاحظات على القطعة'}</span>
+                          <textarea
+                            className="form-input form-input-compact item-notes-input"
+                            value={item.notes}
+                            onChange={(e) => {
+                              handleNotesChange(index, e.target.value);
+                              fitItemNotesField(e.target);
+                            }}
+                            onInput={(e) => fitItemNotesField(e.target)}
+                            ref={fitItemNotesField}
+                            placeholder={t('orders.itemNotesPlaceholder') || 'مثال: بقعة زيت، تلف بالكم...'}
+                            rows={1}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
 
               <button type="button" className="btn-add-item-dashed mt-md" onClick={addItemRow}>

@@ -301,111 +301,89 @@
   font-size: 0.85rem;
 }
 
-/* Modern Items Billing Rows */
-.items-table-container {
+/* Modern Items Billing Cards Layout */
+.order-items-list-container {
   margin-top: 6px;
   width: 100%;
   max-width: 100%;
-  overflow: visible !important;
-  border-radius: 8px;
 }
 
-.new-order-items-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-}
-
-.new-order-items-table th {
-  text-align: right;
-  padding: 8px 12px;
+/* Desktop Headers Row */
+.order-items-header-row {
+  display: grid;
+  grid-template-columns: 27% 16% 30% 17% 10%;
+  gap: 12px;
+  padding: 8px 16px;
   color: var(--text-secondary);
   font-weight: 700;
   font-size: 0.82rem;
   border-bottom: 2px solid var(--border);
+  margin-bottom: 12px;
 }
 
-.new-order-items-table td {
+.order-items-header-row .header-col {
+  text-align: right;
+}
+
+.order-items-header-row .action-col {
+  text-align: center;
+}
+
+/* Individual Item Cards */
+.order-items-cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.order-item-card {
   background: var(--bg-card);
-  border-top: 1.5px solid var(--border);
-  border-bottom: 1.5px solid var(--border);
-  padding: 12px 8px;
-  vertical-align: middle;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 4px 15px -3px rgba(0, 0, 0, 0.02);
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: visible;
 }
 
-.new-order-items-table tr td:first-child {
-  border-radius: 0 10px 10px 0;
-  border-right: 1.5px solid var(--border);
-  padding-right: 16px;
+/* Beautiful unified hover state for the whole card */
+.order-item-card:hover {
+  border-color: rgba(99, 102, 241, 0.25);
+  box-shadow: 0 8px 25px -5px rgba(99, 102, 241, 0.08), 0 4px 10px -2px rgba(0, 0, 0, 0.02);
+  background: linear-gradient(180deg, var(--bg-card) 0%, rgba(99, 102, 241, 0.003) 100%);
 }
 
-.new-order-items-table tr td:last-child {
-  border-radius: 10px 0 0 10px;
-  border-left: 1.5px solid var(--border);
-  padding-left: 16px;
+.order-item-grid {
+  display: grid;
+  grid-template-columns: 27% 16% 30% 17% 10%;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
 }
 
-.new-order-items-table tr:hover td {
-  background: rgba(99, 102, 241, 0.01);
-  border-color: rgba(99, 102, 241, 0.15);
+.order-item-col {
+  display: flex;
+  align-items: center;
+  width: 100%;
 }
 
-.new-order-items-table tbody::before {
-  content: '';
-  display: table-row;
-  height: 12px;
+.order-item-col.action-col {
+  justify-content: center;
 }
 
-.new-order-items-table .item-main-row td {
-  border-bottom: 0;
-}
-
-.new-order-items-table .item-main-row td:first-child {
-  border-radius: 0 10px 0 0;
-}
-
-.new-order-items-table .item-main-row td:last-child {
-  border-radius: 10px 0 0 0;
-}
-
-.new-order-items-table .item-notes-row td {
-  border-top: 0;
-  border-right: 1.5px solid var(--border);
-  border-left: 1.5px solid var(--border);
-  border-radius: 0 0 10px 10px;
-  padding: 0 16px 14px;
-}
-
-.new-order-items-table .item-notes-row:not(:last-child)::after {
-  content: '';
-  display: table-row;
-  height: 12px;
-}
-
-.new-order-items-table .form-input-compact,
-.new-order-items-table .table-select-trigger {
-  height: 38px !important;
-  box-sizing: border-box;
-}
-
-.new-order-items-table .item-notes-input {
-  min-height: 44px;
-  height: auto !important;
-  max-height: 132px;
-  line-height: 1.45;
-  padding: 10px 12px !important;
-  resize: none;
-  overflow: hidden;
-  white-space: pre-wrap;
-  word-break: break-word;
+.order-item-notes-wrapper {
+  margin-top: 14px;
+  border-top: 1px dashed var(--border);
+  padding-top: 14px;
+  width: 100%;
 }
 
 .item-notes-field {
   display: grid;
   grid-template-columns: auto 1fr;
   align-items: start;
-  gap: 10px;
+  gap: 12px;
   width: 100%;
 }
 
@@ -413,8 +391,30 @@
   color: var(--text-secondary);
   font-size: 0.8rem;
   font-weight: 800;
-  line-height: 44px;
+  line-height: 38px;
   white-space: nowrap;
+}
+
+.item-notes-input {
+  min-height: 38px;
+  height: auto !important;
+  max-height: 120px;
+  line-height: 1.45;
+  padding: 8px 12px !important;
+  resize: none;
+  overflow: hidden;
+  white-space: pre-wrap;
+  word-break: break-word;
+  border-radius: 8px;
+  border: 1.5px solid var(--border);
+  background: var(--bg-card);
+  transition: all 0.2s ease;
+}
+
+.item-notes-input:focus {
+  border-color: var(--primary) !important;
+  box-shadow: none !important;
+  outline: none !important;
 }
 
 /* Price Input with Suffix */
@@ -436,34 +436,13 @@
   border: 1.5px solid var(--border);
   background: var(--bg-card);
   transition: all 0.2s ease;
+  height: 38px;
 }
 
-.price-input-wrapper .price-input:focus,
-.new-order-items-table input:focus,
-.new-order-items-table textarea:focus,
-.new-order-items-table select:focus,
-.new-order-items-table .table-select-trigger:focus {
+.price-input-wrapper .price-input:focus {
   border-color: var(--primary) !important;
   box-shadow: none !important;
-  transform: none !important;
   outline: none !important;
-}
-
-/* Ensure price column has enough width */
-.new-order-items-table th:nth-child(4),
-.new-order-items-table td:nth-child(4) {
-  min-width: 110px !important;
-}
-
-/* Hide default browser number spin buttons */
-.new-order-page input[type="number"]::-webkit-inner-spin-button,
-.new-order-page input[type="number"]::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-.new-order-page input[type="number"] {
-  -moz-appearance: textfield; /* Firefox */
 }
 
 .price-suffix {
@@ -837,6 +816,62 @@
   .new-order-bottom-row {
     display: flex;
     flex-direction: column;
+  }
+
+  /* Mobile responsiveness for the items card layout */
+  .order-items-header-row {
+    display: none !important;
+  }
+  
+  .order-item-card {
+    padding: 12px;
+  }
+  
+  .order-item-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+  
+  .order-item-col {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+  }
+  
+  .order-item-col::before {
+    content: attr(data-label);
+    font-size: 0.78rem;
+    font-weight: 800;
+    color: var(--text-secondary);
+    text-align: right;
+    display: block;
+  }
+  
+  .order-item-col.action-col {
+    align-items: flex-end;
+    margin-top: 6px;
+    border-top: 1px dashed var(--border);
+    padding-top: 8px;
+  }
+  
+  .order-item-col.action-col::before {
+    display: none;
+  }
+
+  .order-item-notes-wrapper {
+    margin-top: 10px;
+    padding-top: 10px;
+  }
+
+  .item-notes-field {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .item-notes-label {
+    line-height: 1;
+    margin-bottom: 2px;
   }
 }
 
