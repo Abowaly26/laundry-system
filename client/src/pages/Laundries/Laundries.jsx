@@ -231,21 +231,15 @@ export default function Laundries() {
               )}
             </div>
             
-            <div className="laundries-filter-wrapper">
+            <div className="laundries-filter-wrapper" style={{ minWidth: '150px' }}>
               <select
-                className="laundries-filter-select"
+                className="form-select"
                 value={statusFilter}
                 onChange={e => setStatusFilter(e.target.value)}
                 style={{
-                  padding: '11px 16px',
-                  borderRadius: '12px',
-                  border: '1px solid var(--border)',
-                  background: 'var(--surface)',
-                  color: 'var(--text-primary)',
-                  fontSize: '0.9rem',
-                  outline: 'none',
-                  cursor: 'pointer',
-                  minWidth: '150px'
+                  height: '46px',
+                  padding: '0 16px',
+                  fontSize: '0.9rem'
                 }}
               >
                 <option value="all">{t('laundriesList.filterAll') || 'كل المغاسل'}</option>
