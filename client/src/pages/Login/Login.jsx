@@ -56,13 +56,27 @@ export default function Login() {
     try {
       const loggedUser = await login({ email, password });
       
-      // If the origin path was root, route specifically based on user role
+      // Validate and route specifically based on user role to prevent cross-role page bleeding
       let targetPath = from;
-      if (from === '/') {
-        if (loggedUser?.role === 'super_owner') {
+      if (loggedUser?.role === 'super_owner') {
+        const allowedSuperOwnerPaths = ['/laundries', '/users'];
+        if (!allowedSuperOwnerPaths.includes(targetPath)) {
           targetPath = '/laundries';
-        } else if (loggedUser?.role === 'worker') {
+        }
+      } else if (loggedUser?.role === 'worker') {
+        const allowedWorkerPaths = ['/tracking', '/orders'];
+        if (!allowedWorkerPaths.includes(targetPath) && !targetPath.startsWith('/orders/')) {
           targetPath = '/tracking';
+        }
+      } else if (loggedUser?.role === 'cashier') {
+        const disallowedCashierPaths = ['/services', '/finance', '/users', '/settings', '/laundries'];
+        if (disallowedCashierPaths.includes(targetPath) || targetPath === '/') {
+          targetPath = '/';
+        }
+      } else {
+        // admin or other role
+        if (targetPath === '/laundries' || targetPath === '/tracking') {
+          targetPath = '/';
         }
       }
       navigate(targetPath, { replace: true });
