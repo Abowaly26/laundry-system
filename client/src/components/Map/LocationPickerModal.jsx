@@ -531,29 +531,7 @@ const LocationPickerModal = ({
             ))}
           </div>
 
-          {/* Distance stats card */}
-          {distanceCard && (
-            <div className="distance-stats-card">
-              <div className="stat-row">
-                <span className="stat-label">📏 المسافة عن المغسلة:</span>
-                <span className={`stat-val ${distanceCard.isOutOfBounds ? 'warning' : ''}`}>
-                  {distanceCard.isOutOfBounds ? 'خارج النطاق المعتاد' : `${distanceCard.km} كم`}
-                </span>
-              </div>
-              {!distanceCard.isOutOfBounds ? (
-                <div className="stat-row">
-                  <span className="stat-label">⏱️ وقت التوصيل التقريبي:</span>
-                  <span className="stat-val">~{distanceCard.mins} دقيقة</span>
-                </div>
-              ) : (
-                <div className="stat-row" style={{ border: 'none', paddingBottom: 0 }}>
-                  <span className="badge badge-warning text-xs w-full text-center" style={{ display: 'block', padding: '6px', borderRadius: '8px' }}>
-                    ⚠️ مسافة التوصيل تتجاوز الحدود المسموحة
-                  </span>
-                </div>
-              )}
-            </div>
-          )}
+
         </div>
 
         {/* ── Footer ──────────────────────────────────────────────── */}
