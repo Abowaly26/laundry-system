@@ -20,6 +20,7 @@ export default function Laundries() {
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all'); // all, active, inactive
 
   // Modal إنشاء/تعديل
   const [showModal, setShowModal] = useState(false);
@@ -214,14 +215,14 @@ export default function Laundries() {
         </div>
       ) : (
         <>
-          {/* Search Bar */}
-          <div className="laundries-search-bar">
-            <div className="laundries-search-wrapper">
+          {/* Search & Filter Bar */}
+          <div className="laundries-search-bar" style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
+            <div className="laundries-search-wrapper" style={{ flex: 1, minWidth: '280px' }}>
               <svg className="laundries-search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
               <input
                 className="laundries-search-input"
                 type="text"
-                placeholder="ابحث باسم المغسلة..."
+                placeholder={t('laundriesList.searchPlaceholder') || "ابحث باسم المغسلة..."}
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
               />
@@ -229,15 +230,42 @@ export default function Laundries() {
                 <button className="laundries-search-clear" onClick={() => setSearchTerm('')}>✕</button>
               )}
             </div>
+            
+            <div className="laundries-filter-wrapper">
+              <select
+                className="laundries-filter-select"
+                value={statusFilter}
+                onChange={e => setStatusFilter(e.target.value)}
+                style={{
+                  padding: '11px 16px',
+                  borderRadius: '12px',
+                  border: '1px solid var(--border)',
+                  background: 'var(--surface)',
+                  color: 'var(--text-primary)',
+                  fontSize: '0.9rem',
+                  outline: 'none',
+                  cursor: 'pointer',
+                  minWidth: '150px'
+                }}
+              >
+                <option value="all">{t('laundriesList.filterAll') || 'كل المغاسل'}</option>
+                <option value="active">{t('laundriesList.filterActive') || 'نشطة فقط'}</option>
+                <option value="inactive">{t('laundriesList.filterInactive') || 'معطلة فقط'}</option>
+              </select>
+            </div>
           </div>
 
           {(() => {
-            const filtered = laundries.filter(l =>
-              l.name.toLowerCase().includes(searchTerm.toLowerCase())
-            );
+            const filtered = laundries.filter(l => {
+              const matchesSearch = l.name.toLowerCase().includes(searchTerm.toLowerCase());
+              const matchesStatus = statusFilter === 'all' || 
+                (statusFilter === 'active' && l.is_active) || 
+                (statusFilter === 'inactive' && !l.is_active);
+              return matchesSearch && matchesStatus;
+            });
             return filtered.length === 0 ? (
               <div className="laundries-search-empty">
-                <p>لم يتم العثور على مغسلة باسم "<strong>{searchTerm}</strong>"</p>
+                <p>{t('laundriesList.noResults') || 'لم يتم العثور على مغاسل تطابق البحث والتصفية الحالية.'}</p>
               </div>
             ) : (
               <div className="laundries-grid">

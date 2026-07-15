@@ -571,7 +571,12 @@
     "adminAccountEdit": "تعديل حساب مدير المغسلة",
     "adminEditNote": "تعديل البريد الإلكتروني أو تعيين كلمة مرور جديدة للمدير",
     "adminPasswordEditLabel": "كلمة مرور جديدة (اتركها فارغة لعدم التغيير)",
-    "teamTitlePopup": "فريق عمل مغسلة"
+    "teamTitlePopup": "فريق عمل مغسلة",
+    "searchPlaceholder": "ابحث باسم المغسلة...",
+    "filterAll": "كل المغاسل",
+    "filterActive": "نشطة فقط",
+    "filterInactive": "معطلة فقط",
+    "noResults": "لم يتم العثور على مغاسل تطابق البحث والتصفية الحالية."
   },
   "login": {
     "emailRequired": "يرجى إدخال البريد الإلكتروني",

@@ -569,7 +569,12 @@
     "adminAccountEdit": "Edit Laundry Admin Account",
     "adminEditNote": "Change the admin's email address or set a new password",
     "adminPasswordEditLabel": "New Password (leave empty to keep unchanged)",
-    "teamTitlePopup": "Staff of Laundry"
+    "teamTitlePopup": "Staff of Laundry",
+    "searchPlaceholder": "Search by laundry name...",
+    "filterAll": "All Laundries",
+    "filterActive": "Active Only",
+    "filterInactive": "Inactive Only",
+    "noResults": "No laundries found matching current search and filter."
   },
   "login": {
     "emailRequired": "Please enter your email",
