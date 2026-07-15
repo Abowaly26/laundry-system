@@ -26,7 +26,7 @@ router.post('/login', async (req, res) => {
 
     // البحث عن المستخدم مع بيانات المغسلة
     const result = await query(
-      `SELECT u.*, l.name as laundry_name, l.currency as laundry_currency, l.language as laundry_language, l.is_active as laundry_active, l.latitude as laundry_lat, l.longitude as laundry_lng
+      `SELECT u.*, l.name as laundry_name, l.phone as laundry_phone, l.address as laundry_address, l.currency as laundry_currency, l.language as laundry_language, l.is_active as laundry_active, l.latitude as laundry_lat, l.longitude as laundry_lng, l.tax_number as laundry_tax_number, l.vat_percent as laundry_vat_percent, l.country_code as laundry_country_code
        FROM users u 
        LEFT JOIN laundries l ON u.laundry_id = l.id 
        WHERE u.email = $1`,
@@ -86,10 +86,15 @@ router.post('/login', async (req, res) => {
           role: user.role,
           laundry_id: user.laundry_id,
           laundry_name: user.laundry_name,
+          laundry_phone: user.laundry_phone,
+          laundry_address: user.laundry_address,
           laundry_currency: user.laundry_currency,
           laundry_language: user.laundry_language || 'ar',
           laundry_lat: user.laundry_lat,
-          laundry_lng: user.laundry_lng
+          laundry_lng: user.laundry_lng,
+          laundry_tax_number: user.laundry_tax_number,
+          laundry_vat_percent: user.laundry_vat_percent,
+          laundry_country_code: user.laundry_country_code
         }
       }
     });
@@ -118,10 +123,15 @@ router.get('/me', authMiddleware, (req, res) => {
         role: req.user.role,
         laundry_id: req.user.laundry_id,
         laundry_name: req.user.laundry_name,
+        laundry_phone: req.user.laundry_phone,
+        laundry_address: req.user.laundry_address,
         laundry_currency: req.user.laundry_currency,
         laundry_language: req.user.laundry_language || 'ar',
         laundry_lat: req.user.laundry_lat,
-        laundry_lng: req.user.laundry_lng
+        laundry_lng: req.user.laundry_lng,
+        laundry_tax_number: req.user.laundry_tax_number,
+        laundry_vat_percent: req.user.laundry_vat_percent,
+        laundry_country_code: req.user.laundry_country_code
       }
     });
   } catch (error) {

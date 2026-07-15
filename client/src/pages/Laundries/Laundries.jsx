@@ -15,33 +15,33 @@ import LocationPickerModal from '../../components/Map/LocationPickerModal';
 import './Laundries.css';
 
 const COUNTRY_PRESETS = [
-  { name: 'اختر الدولة لتحديد الموقع الافتراضي للمغسلة تلقائياً...', lat: '', lng: '', currency: '', lang: 'ar' },
-  { name: 'المملكة العربية السعودية', lat: '24.7136', lng: '46.6753', currency: 'ر.س', lang: 'ar' },
-  { name: 'جمهورية مصر العربية', lat: '30.0444', lng: '31.2357', currency: 'ج.م', lang: 'ar' },
-  { name: 'الإمارات العربية المتحدة', lat: '25.2048', lng: '55.2708', currency: 'د.إ', lang: 'ar' },
-  { name: 'الكويت', lat: '29.3759', lng: '47.9774', currency: 'د.ك', lang: 'ar' },
-  { name: 'قطر', lat: '25.2854', lng: '51.5310', currency: 'ر.ق', lang: 'ar' },
-  { name: 'البحرين', lat: '26.2285', lng: '50.5860', currency: 'د.ب', lang: 'ar' },
-  { name: 'سلطنة عمان', lat: '23.5859', lng: '58.4059', currency: 'ر.ع.', lang: 'ar' },
-  { name: 'الأردن', lat: '31.9522', lng: '35.9106', currency: 'د.ا', lang: 'ar' },
-  { name: 'لبنان', lat: '33.8938', lng: '35.5018', currency: 'ل.ل', lang: 'ar' },
-  { name: 'سوريا', lat: '33.5138', lng: '36.2765', currency: 'ل.س', lang: 'ar' },
-  { name: 'العراق', lat: '33.3152', lng: '44.3661', currency: 'د.ع', lang: 'ar' },
-  { name: 'فلسطين', lat: '31.7683', lng: '35.2137', currency: 'ش.ج', lang: 'ar' },
-  { name: 'اليمن', lat: '15.3694', lng: '44.1910', currency: 'ر.ي', lang: 'ar' },
-  { name: 'ليبيا', lat: '32.8872', lng: '13.1913', currency: 'د.ل', lang: 'ar' },
-  { name: 'تونس', lat: '36.8065', lng: '10.1815', currency: 'د.ت', lang: 'ar' },
-  { name: 'الجزائر', lat: '36.7538', lng: '3.0588', currency: 'د.ج', lang: 'ar' },
-  { name: 'المغرب', lat: '34.0209', lng: '6.8416', currency: 'د.م.', lang: 'ar' },
-  { name: 'السودان', lat: '15.5007', lng: '32.5599', currency: 'ج.س', lang: 'ar' },
-  { name: 'الصومال', lat: '2.0469', lng: '45.3182', currency: 'ش.ص', lang: 'ar' },
-  { name: 'موريتانيا', lat: '18.0735', lng: '15.9582', currency: 'أ.م', lang: 'ar' },
-  { name: 'تركيا', lat: '39.9334', lng: '32.8597', currency: 'ل.ت', lang: 'en' },
-  { name: 'المملكة المتحدة', lat: '51.5074', lng: '-0.1278', currency: '£', lang: 'en' },
-  { name: 'الولايات المتحدة الأمريكية', lat: '38.9072', lng: '-77.0369', currency: '$', lang: 'en' },
-  { name: 'كندا', lat: '45.4215', lng: '-75.6972', currency: 'C$', lang: 'en' },
-  { name: 'فرنسا', lat: '48.8566', lng: '2.3522', currency: '€', lang: 'en' },
-  { name: 'ألمانيا', lat: '52.5200', lng: '13.4050', currency: '€', lang: 'en' }
+  { name: 'اختر الدولة لتحديد الموقع الافتراضي للمغسلة تلقائياً...', lat: '', lng: '', currency: '', lang: 'ar', code: '966', vat: '15' },
+  { name: 'المملكة العربية السعودية', lat: '24.7136', lng: '46.6753', currency: 'ر.س', lang: 'ar', code: '966', vat: '15' },
+  { name: 'جمهورية مصر العربية', lat: '30.0444', lng: '31.2357', currency: 'ج.م', lang: 'ar', code: '20', vat: '14' },
+  { name: 'الإمارات العربية المتحدة', lat: '25.2048', lng: '55.2708', currency: 'د.إ', lang: 'ar', code: '971', vat: '5' },
+  { name: 'الكويت', lat: '29.3759', lng: '47.9774', currency: 'د.ك', lang: 'ar', code: '965', vat: '0' },
+  { name: 'قطر', lat: '25.2854', lng: '51.5310', currency: 'ر.ق', lang: 'ar', code: '974', vat: '0' },
+  { name: 'البحرين', lat: '26.2285', lng: '50.5860', currency: 'د.ب', lang: 'ar', code: '973', vat: '10' },
+  { name: 'سلطنة عمان', lat: '23.5859', lng: '58.4059', currency: 'ر.ع.', lang: 'ar', code: '968', vat: '5' },
+  { name: 'الأردن', lat: '31.9522', lng: '35.9106', currency: 'د.ا', lang: 'ar', code: '962', vat: '16' },
+  { name: 'لبنان', lat: '33.8938', lng: '35.5018', currency: 'ل.ل', lang: 'ar', code: '961', vat: '11' },
+  { name: 'سوريا', lat: '33.5138', lng: '36.2765', currency: 'ل.س', lang: 'ar', code: '963', vat: '10' },
+  { name: 'العراق', lat: '33.3152', lng: '44.3661', currency: 'د.ع', lang: 'ar', code: '964', vat: '0' },
+  { name: 'فلسطين', lat: '31.7683', lng: '35.2137', currency: 'ش.ج', lang: 'ar', code: '970', vat: '16' },
+  { name: 'اليمن', lat: '15.3694', lng: '44.1910', currency: 'ر.ي', lang: 'ar', code: '967', vat: '5' },
+  { name: 'ليبيا', lat: '32.8872', lng: '13.1913', currency: 'د.ل', lang: 'ar', code: '218', vat: '0' },
+  { name: 'تونس', lat: '36.8065', lng: '10.1815', currency: 'د.ت', lang: 'ar', code: '216', vat: '19' },
+  { name: 'الجزائر', lat: '36.7538', lng: '3.0588', currency: 'د.ج', lang: 'ar', code: '213', vat: '19' },
+  { name: 'المغرب', lat: '34.0209', lng: '6.8416', currency: 'د.م.', lang: 'ar', code: '212', vat: '20' },
+  { name: 'السودان', lat: '15.5007', lng: '32.5599', currency: 'ج.س', lang: 'ar', code: '249', vat: '17' },
+  { name: 'الصومال', lat: '2.0469', lng: '45.3182', currency: 'ش.ص', lang: 'ar', code: '252', vat: '0' },
+  { name: 'موريتانيا', lat: '18.0735', lng: '15.9582', currency: 'أ.م', lang: 'ar', code: '222', vat: '14' },
+  { name: 'تركيا', lat: '39.9334', lng: '32.8597', currency: 'ل.ت', lang: 'en', code: '90', vat: '20' },
+  { name: 'المملكة المتحدة', lat: '51.5074', lng: '-0.1278', currency: '£', lang: 'en', code: '44', vat: '20' },
+  { name: 'الولايات المتحدة الأمريكية', lat: '38.9072', lng: '-77.0369', currency: '$', lang: 'en', code: '1', vat: '0' },
+  { name: 'كندا', lat: '45.4215', lng: '-75.6972', currency: 'C$', lang: 'en', code: '1', vat: '5' },
+  { name: 'فرنسا', lat: '48.8566', lng: '2.3522', currency: '€', lang: 'en', code: '33', vat: '20' },
+  { name: 'ألمانيا', lat: '52.5200', lng: '13.4050', currency: '€', lang: 'en', code: '49', vat: '19' }
 ];
 
 export default function Laundries() {
@@ -62,7 +62,7 @@ export default function Laundries() {
     name: '', address: '', phone: '', currency: 'ر.س', language: 'ar',
     admin_name: '', admin_email: '', admin_password: '',
     plan_type: 'lifetime', subscription_start_date: '', subscription_end_date: '', payment_status: 'paid',
-    latitude: '', longitude: ''
+    latitude: '', longitude: '', tax_number: '', vat_percent: '15', country_code: '966'
   });
   const [saving, setSaving] = useState(false);
 
@@ -105,7 +105,7 @@ export default function Laundries() {
       name: '', address: '', phone: '', currency: 'ر.س', language: 'ar', 
       admin_name: '', admin_email: '', admin_password: '',
       plan_type: 'lifetime', subscription_start_date: new Date().toISOString().split('T')[0], subscription_end_date: '', payment_status: 'paid',
-      latitude: '', longitude: ''
+      latitude: '', longitude: '', tax_number: '', vat_percent: '15', country_code: '966'
     });
     setShowModal(true);
   };
@@ -127,7 +127,10 @@ export default function Laundries() {
       subscription_end_date: laundry.subscription_end_date ? new Date(laundry.subscription_end_date).toISOString().split('T')[0] : '',
       payment_status: laundry.payment_status || 'paid',
       latitude: laundry.latitude !== null && laundry.latitude !== undefined ? laundry.latitude : '',
-      longitude: laundry.longitude !== null && laundry.longitude !== undefined ? laundry.longitude : ''
+      longitude: laundry.longitude !== null && laundry.longitude !== undefined ? laundry.longitude : '',
+      tax_number: laundry.tax_number !== null && laundry.tax_number !== undefined ? laundry.tax_number : '',
+      vat_percent: laundry.vat_percent !== null && laundry.vat_percent !== undefined ? laundry.vat_percent : '15',
+      country_code: laundry.country_code !== null && laundry.country_code !== undefined ? laundry.country_code : '966'
     });
     setShowModal(true);
   };
@@ -157,6 +160,9 @@ export default function Laundries() {
           payment_status: formData.payment_status,
           latitude: formData.latitude !== '' ? parseFloat(formData.latitude) : null,
           longitude: formData.longitude !== '' ? parseFloat(formData.longitude) : null,
+          tax_number: formData.tax_number,
+          vat_percent: formData.vat_percent !== '' ? parseFloat(formData.vat_percent) : 0,
+          country_code: formData.country_code,
           ...(formData.admin_email ? { admin_email: formData.admin_email } : {}),
           ...(formData.admin_password ? { admin_password: formData.admin_password } : {})
         });
@@ -647,6 +653,34 @@ export default function Laundries() {
             placeholder={t('settings.currencyPlaceholder') || 'مثال: ر.س، د.إ، $'}
           />
 
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+            <Input
+              id="laundry-tax-number"
+              label="الرقم الضريبي للمنشأة"
+              type="text"
+              value={formData.tax_number}
+              onChange={(e) => setFormData({ ...formData, tax_number: e.target.value })}
+              placeholder="مثال: 300012345600003"
+            />
+            <Input
+              id="laundry-vat-percent"
+              label="نسبة الضريبة %"
+              type="number"
+              step="any"
+              value={formData.vat_percent}
+              onChange={(e) => setFormData({ ...formData, vat_percent: e.target.value })}
+              placeholder="15"
+            />
+          </div>
+          <Input
+            id="laundry-country-code"
+            label="كود الدولة للواتساب (مقدمة الرقم)"
+            type="text"
+            value={formData.country_code}
+            onChange={(e) => setFormData({ ...formData, country_code: e.target.value })}
+            placeholder="مثال: 966 أو 20"
+          />
+
           {/* نطاق العمل الجغرافي والإحداثيات */}
           <div className="laundry-geo-section" style={{ border: '1px solid var(--border)', padding: '15px', borderRadius: '10px', background: 'var(--bg-hover)', margin: '15px 0' }}>
             <h4 style={{ margin: '0 0 8px 0', fontSize: '0.88rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 'bold' }}>
@@ -683,7 +717,9 @@ export default function Laundries() {
                       longitude: selectedPreset.lng,
                       currency: selectedPreset.currency || formData.currency,
                       language: selectedPreset.lang || formData.language,
-                      address: isDefaultAddress ? selectedPreset.name : formData.address
+                      address: isDefaultAddress ? selectedPreset.name : formData.address,
+                      country_code: selectedPreset.code || formData.country_code,
+                      vat_percent: selectedPreset.vat || formData.vat_percent
                     });
                   }
                 }}

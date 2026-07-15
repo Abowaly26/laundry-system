@@ -80,7 +80,7 @@ router.post('/', authorizeRoles('super_owner'), async (req, res) => {
       name, address, phone, currency, language,
       admin_name, admin_email, admin_password,
       plan_type, subscription_start_date, subscription_end_date, payment_status,
-      latitude, longitude
+      latitude, longitude, tax_number, vat_percent, country_code
     } = req.body;
 
     // التحقق من البيانات المطلوبة
@@ -105,8 +105,8 @@ router.post('/', authorizeRoles('super_owner'), async (req, res) => {
 
     // إنشاء المغسلة
     const laundryResult = await query(
-      `INSERT INTO laundries (name, address, phone, currency, language, plan_type, subscription_start_date, subscription_end_date, payment_status, latitude, longitude) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`,
+      `INSERT INTO laundries (name, address, phone, currency, language, plan_type, subscription_start_date, subscription_end_date, payment_status, latitude, longitude, tax_number, vat_percent, country_code) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING *`,
       [
         name, 
         address || '', 
@@ -118,7 +118,10 @@ router.post('/', authorizeRoles('super_owner'), async (req, res) => {
         subscription_end_date || null,
         payment_status || 'paid',
         latitude !== '' && latitude !== null && latitude !== undefined ? parseFloat(latitude) : null,
-        longitude !== '' && longitude !== null && longitude !== undefined ? parseFloat(longitude) : null
+        longitude !== '' && longitude !== null && longitude !== undefined ? parseFloat(longitude) : null,
+        tax_number || '',
+        vat_percent !== '' && vat_percent !== null && vat_percent !== undefined ? parseFloat(vat_percent) : 15,
+        country_code || '966'
       ]
     );
     const laundry = laundryResult.rows[0];
@@ -157,7 +160,7 @@ router.put('/:id', authorizeRoles('super_owner'), async (req, res) => {
       name, address, phone, currency, language, is_active, 
       admin_email, admin_password,
       plan_type, subscription_start_date, subscription_end_date, payment_status,
-      latitude, longitude
+      latitude, longitude, tax_number, vat_percent, country_code
     } = req.body;
 
     const existing = await query('SELECT * FROM laundries WHERE id = $1', [id]);
@@ -181,6 +184,9 @@ router.put('/:id', authorizeRoles('super_owner'), async (req, res) => {
     if (payment_status !== undefined) { updateFields.push(`payment_status = $${paramCount++}`); updateParams.push(payment_status); }
     if (latitude !== undefined) { updateFields.push(`latitude = $${paramCount++}`); updateParams.push(latitude !== '' && latitude !== null ? parseFloat(latitude) : null); }
     if (longitude !== undefined) { updateFields.push(`longitude = $${paramCount++}`); updateParams.push(longitude !== '' && longitude !== null ? parseFloat(longitude) : null); }
+    if (tax_number !== undefined) { updateFields.push(`tax_number = $${paramCount++}`); updateParams.push(tax_number); }
+    if (vat_percent !== undefined) { updateFields.push(`vat_percent = $${paramCount++}`); updateParams.push(vat_percent !== '' && vat_percent !== null ? parseFloat(vat_percent) : 0); }
+    if (country_code !== undefined) { updateFields.push(`country_code = $${paramCount++}`); updateParams.push(country_code); }
 
     let laundryResult;
     if (updateFields.length > 0) {

@@ -98,12 +98,30 @@ Thank you for choosing us! ✨`;
       const userStr = localStorage.getItem('user');
       if (userStr) {
         const user = JSON.parse(userStr);
+        if (user.laundry_name) {
+          resolvedSettings.laundryName = user.laundry_name;
+        }
+        if (user.laundry_phone) {
+          resolvedSettings.laundryPhone = user.laundry_phone;
+        }
+        if (user.laundry_address) {
+          resolvedSettings.laundryAddress = user.laundry_address;
+        }
         if (user.laundry_currency) {
           resolvedSettings.currency = user.laundry_currency;
         }
+        if (user.laundry_tax_number !== undefined && user.laundry_tax_number !== null) {
+          resolvedSettings.taxNumber = user.laundry_tax_number;
+        }
+        if (user.laundry_vat_percent !== undefined && user.laundry_vat_percent !== null) {
+          resolvedSettings.vatPercent = parseFloat(user.laundry_vat_percent);
+        }
+        if (user.laundry_country_code) {
+          resolvedSettings.defaultCountryCode = user.laundry_country_code;
+        }
       }
     } catch (e) {
-      console.error('Failed to resolve dynamic currency', e);
+      console.error('Failed to resolve dynamic laundry settings', e);
     }
     return resolvedSettings;
   };
