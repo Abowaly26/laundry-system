@@ -16,12 +16,12 @@ import LoadingSpinner from '../../components/UI/LoadingSpinner';
 import EmptyState from '../../components/UI/EmptyState';
 import './Users.css';
 
-const ROLE_CONFIG = {
-  admin:   { label: 'مدير المغسلة',    color: '#ef4444', bg: '#fef2f2', icon: Shield },
-  cashier: { label: 'موظف استقبال',   color: '#3b82f6', bg: '#eff6ff', icon: UserCheck },
-  worker:  { label: 'عامل تشغيل',     color: '#10b981', bg: '#ecfdf5', icon: Wrench },
-  super_owner: { label: 'صاحب النظام', color: '#7c3aed', bg: '#f5f3ff', icon: Shield },
-};
+const ROLE_CONFIG = (t) => ({
+  admin:   { label: t('roles.admin') || 'مدير المغسلة',    color: '#ef4444', bg: '#fef2f2', icon: Shield },
+  cashier: { label: t('roles.cashier') || 'موظف استقبال',   color: '#3b82f6', bg: '#eff6ff', icon: UserCheck },
+  worker:  { label: t('roles.worker') || 'عامل تشغيل',     color: '#10b981', bg: '#ecfdf5', icon: Wrench },
+  super_owner: { label: t('roles.super_owner') || 'صاحب النظام', color: '#7c3aed', bg: '#f5f3ff', icon: Shield },
+});
 
 const LAUNDRY_GRADIENTS = [
   'linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%)',
@@ -175,7 +175,8 @@ export default function Users() {
   });
 
   const RoleTag = ({ role }) => {
-    const cfg = ROLE_CONFIG[role] || { label: role, color: '#64748b', bg: '#f1f5f9', icon: Users };
+    const rolesMap = ROLE_CONFIG(t);
+    const cfg = rolesMap[role] || { label: role, color: '#64748b', bg: '#f1f5f9', icon: UsersIcon };
     const Icon = cfg.icon;
     return (
       <span className="ul-role-tag" style={{ color: cfg.color, background: cfg.bg, borderColor: `${cfg.color}30` }}>
@@ -198,7 +199,7 @@ export default function Users() {
           <div className="ul-user-card__badges">
             <RoleTag role={user.role} />
             <span className={`ul-status-dot ${user.is_active ? 'active' : 'inactive'}`}>
-              {user.is_active ? 'نشط' : 'معطل'}
+              {user.is_active ? (t('usersList.statusActive') || 'نشط') : (t('usersList.statusInactive') || 'معطل')}
             </span>
           </div>
         </div>
@@ -222,8 +223,8 @@ export default function Users() {
     const isExpanded = expandedLaundries[laundry.id];
     const gradient = LAUNDRY_GRADIENTS[index % LAUNDRY_GRADIENTS.length];
     const activeInactive = laundry.is_active
-      ? { label: 'نشطة', cls: 'ul-laundry-badge--active' }
-      : { label: 'معطلة', cls: 'ul-laundry-badge--inactive' };
+      ? { label: t('usersList.statusActive') || 'نشطة', cls: 'ul-laundry-badge--active' }
+      : { label: t('usersList.statusInactive') || 'معطلة', cls: 'ul-laundry-badge--inactive' };
 
     return (
       <div className="ul-laundry-section">
@@ -240,8 +241,8 @@ export default function Users() {
             <div className="ul-laundry-header__meta">
               <h3 className="ul-laundry-header__name">{laundry.name}</h3>
               <div className="ul-laundry-header__stats">
-                <span><UsersIcon size={12} /> {laundryUsers.length} موظف</span>
-                <span><Shield size={12} /> {adminUsers.length} مدير</span>
+                <span><UsersIcon size={12} /> {laundryUsers.length} {t('usersList.worker') || 'موظف'}</span>
+                <span><Shield size={12} /> {adminUsers.length} {t('usersList.admin') || 'مدير'}</span>
               </div>
             </div>
           </div>
@@ -250,9 +251,9 @@ export default function Users() {
             <button
               className="ul-add-staff-btn"
               onClick={(e) => { e.stopPropagation(); handleOpenAdd(laundry.id); }}
-              title="إضافة موظف لهذه المغسلة"
+              title={t('usersList.addBtnTooltip') || "إضافة موظف لهذه المغسلة"}
             >
-              <Plus size={14} /> إضافة
+              <Plus size={14} /> {t('services.addBtn') || 'إضافة'}
             </button>
             <span className="ul-expand-icon">
               {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
@@ -266,9 +267,9 @@ export default function Users() {
             {laundryUsers.length === 0 ? (
               <div className="ul-laundry-empty">
                 <UsersIcon size={28} />
-                <p>لا يوجد موظفون في هذه المغسلة</p>
+                <p>{t('usersList.emptyStaff') || 'لا يوجد موظفون في هذه المغسلة'}</p>
                 <button className="ul-add-first-btn" onClick={() => handleOpenAdd(laundry.id)}>
-                  <Plus size={14} /> إضافة أول موظف
+                  <Plus size={14} /> {t('usersList.addFirstBtn') || 'إضافة أول موظف'}
                 </button>
               </div>
             ) : (
@@ -276,7 +277,7 @@ export default function Users() {
                 {adminUsers.length > 0 && (
                   <div className="ul-staff-group">
                     <div className="ul-staff-group__title">
-                      <Shield size={13} /> المدراء
+                      <Shield size={13} /> {t('usersList.managers') || 'المدراء'}
                     </div>
                     <div className="ul-staff-grid">
                       {adminUsers.map(u => <UserCard key={u.id} user={u} />)}
@@ -286,7 +287,7 @@ export default function Users() {
                 {staffUsers.length > 0 && (
                   <div className="ul-staff-group">
                     <div className="ul-staff-group__title">
-                      <UsersIcon size={13} /> الموظفون
+                      <UsersIcon size={13} /> {t('usersList.employees') || 'الموظفون'}
                     </div>
                     <div className="ul-staff-grid">
                       {staffUsers.map(u => <UserCard key={u.id} user={u} />)}
@@ -306,11 +307,11 @@ export default function Users() {
       <div className="page-header">
         <div>
           <h1 className="page-title">{t('usersList.title') || 'إدارة المستخدمين'}</h1>
-          <p className="page-subtitle">عرض وإدارة موظفي كل مغسلة بشكل منظم</p>
+          <p className="page-subtitle">{t('usersList.subtitle') || 'عرض وإدارة موظفي كل مغسلة بشكل منظم'}</p>
         </div>
         <Button variant="primary" onClick={() => handleOpenAdd()}>
           <Plus size={18} style={{ marginLeft: '8px' }} />
-          إضافة موظف جديد
+          {t('usersList.addNewBtn') || 'إضافة موظف جديد'}
         </Button>
       </div>
 
@@ -328,7 +329,7 @@ export default function Users() {
               <input
                 className="ul-search-input"
                 type="text"
-                placeholder="ابحث باسم المغسلة..."
+                placeholder={t('usersList.searchPlaceholder') || "ابحث باسم المغسلة..."}
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
               />
@@ -340,14 +341,14 @@ export default function Users() {
 
           <div className="ul-laundries-list">
             {laundries.length === 0 ? (
-              <EmptyState title="لا توجد مغاسل" message="لم يتم إنشاء أي مغسلة بعد" />
+              <EmptyState title={t('usersList.noLaundries') || "لا توجد مغاسل"} message={t('usersList.noLaundriesMsg') || "لم يتم إنشاء أي مغسلة بعد"} />
             ) : (() => {
               const filtered = laundries.filter(l =>
                 l.name.toLowerCase().includes(searchTerm.toLowerCase())
               );
               return filtered.length === 0 ? (
                 <div className="ul-search-empty">
-                  <p>لم يتم العثور على مغسلة باسم "<strong>{searchTerm}</strong>"</p>
+                  <p>{t('usersList.noSearchMatch') || 'لم يتم العثور على مغسلة باسم'} "<strong>{searchTerm}</strong>"</p>
                 </div>
               ) : (
                 filtered.map((laundry, idx) => (
@@ -360,7 +361,7 @@ export default function Users() {
       ) : (
         /* Admin: flat table */
         users.length === 0 ? (
-          <EmptyState title="لا يوجد مستخدمون" message="لم نجد أي مستخدمين مسجلين." />
+          <EmptyState title={t('usersList.noUsers') || "لا يوجد مستخدمون"} message={t('usersList.noUsersMsg') || "لم نجد أي مستخدمين مسجلين."} />
         ) : (
           <div className="ul-staff-grid ul-staff-grid--flat">
             {users.map(u => <UserCard key={u.id} user={u} />)}
@@ -372,37 +373,37 @@ export default function Users() {
       <Modal
         isOpen={showModal}
         onClose={() => setShowModal(false)}
-        title={modalMode === 'add' ? 'إضافة موظف جديد' : 'تعديل بيانات الموظف'}
+        title={modalMode === 'add' ? (t('usersList.addModalTitle') || 'إضافة موظف جديد') : (t('usersList.editModalTitle') || 'تعديل بيانات الموظف')}
       >
         <form onSubmit={handleSave} noValidate>
-          <Input id="u-name" label="الاسم بالكامل *" type="text" required
+          <Input id="u-name" label={t('usersList.nameLabel') || "الاسم بالكامل *"} type="text" required
             value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })}
-            placeholder="مثال: أحمد عبد الله" />
+            placeholder={t('usersList.namePlaceholder') || "مثال: أحمد عبد الله"} />
 
-          <Input id="u-email" label="البريد الإلكتروني *" type="email" required
+          <Input id="u-email" label={t('usersList.emailLabel') || "البريد الإلكتروني *"} type="email" required
             value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })}
             placeholder="example@domain.com" />
 
           <Input
             id="u-password"
-            label={`كلمة المرور ${modalMode === 'edit' ? '(اتركها فارغة للإبقاء على الحالية)' : '*'}`}
+            label={`${t('usersList.passwordLabel') || 'كلمة المرور'} ${modalMode === 'edit' ? (t('usersList.passwordEmptyEdit') || '(اتركها فارغة للإبقاء على الحالية)') : '*'}`}
             type="password" value={formData.password}
             onChange={e => setFormData({ ...formData, password: e.target.value })}
             placeholder="••••••••" required={modalMode === 'add'} />
 
           <div className="form-group">
-            <label className="form-label">الصلاحية (الدور)</label>
+            <label className="form-label">{t('usersList.roleLabel') || 'الصلاحية (الدور)'}</label>
             <select className="form-select" value={formData.role}
               onChange={e => setFormData({ ...formData, role: e.target.value })}>
-              <option value="worker">عامل تشغيل - تحديث حالة القطع فقط</option>
-              <option value="cashier">موظف استقبال - تسجيل طلبات وفواتير</option>
-              <option value="admin">مدير المغسلة - صلاحيات كاملة</option>
+              <option value="worker">{t('rolesDescriptions.workerDesc') || 'عامل تشغيل - تحديث حالة القطع فقط'}</option>
+              <option value="cashier">{t('rolesDescriptions.cashierDesc') || 'موظف استقبال - تسجيل طلبات وفواتير'}</option>
+              <option value="admin">{t('rolesDescriptions.adminDesc') || 'مدير المغسلة - صلاحيات كاملة'}</option>
             </select>
           </div>
 
           {isSuperOwner && laundries.length > 0 && (
             <div className="form-group">
-              <label className="form-label">المغسلة</label>
+              <label className="form-label">{t('usersList.laundryLabel') || 'المغسلة'}</label>
               <select className="form-select" value={formData.laundry_id}
                 onChange={e => setFormData({ ...formData, laundry_id: parseInt(e.target.value) })}>
                 {laundries.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
@@ -411,17 +412,17 @@ export default function Users() {
           )}
 
           <div className="form-group">
-            <label className="form-label">الحالة</label>
+            <label className="form-label">{t('usersList.statusLabel') || 'الحالة'}</label>
             <select className="form-select" value={formData.is_active}
               onChange={e => setFormData({ ...formData, is_active: parseInt(e.target.value) })}>
-              <option value="1">نشط</option>
-              <option value="0">معطل</option>
+              <option value="1">{t('usersList.statusActive') || 'نشط'}</option>
+              <option value="0">{t('usersList.statusInactive') || 'معطل'}</option>
             </select>
           </div>
 
           <div className="flex justify-between mt-md">
-            <Button variant="secondary" type="button" onClick={() => setShowModal(false)}>إلغاء</Button>
-            <Button variant="primary" type="submit">حفظ البيانات</Button>
+            <Button variant="secondary" type="button" onClick={() => setShowModal(false)}>{t('services.cancelBtn') || 'إلغاء'}</Button>
+            <Button variant="primary" type="submit">{t('usersList.saveBtn') || 'حفظ البيانات'}</Button>
           </div>
         </form>
       </Modal>
