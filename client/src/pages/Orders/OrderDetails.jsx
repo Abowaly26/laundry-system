@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Printer, Wallet, ArrowRight, CheckCircle2, User, Calendar, CreditCard, Clock, FileText, MessageSquare, Copy, QrCode } from 'lucide-react';
@@ -30,6 +30,11 @@ export default function OrderDetails() {
   const [paymentMethod, setPaymentMethod] = useState('cash');
   const [paymentType, setPaymentType] = useState('balance');
   const [savingPayment, setSavingPayment] = useState(false);
+
+  const [showMethodDropdown, setShowMethodDropdown] = useState(false);
+  const [showTypeDropdown, setShowTypeDropdown] = useState(false);
+  const methodDropdownRef = useRef(null);
+  const typeDropdownRef = useRef(null);
 
   // حالة لتسليم الطلب
   const [delivering, setDelivering] = useState(false);
@@ -135,10 +140,15 @@ export default function OrderDetails() {
   // Click outside to close dropdowns
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (event.target.closest('.table-select-container')) {
-        return;
+      if (!event.target.closest('.table-select-container')) {
+        setOpenItemStatusDropdownId(null);
       }
-      setOpenItemStatusDropdownId(null);
+      if (methodDropdownRef.current && !methodDropdownRef.current.contains(event.target)) {
+        setShowMethodDropdown(false);
+      }
+      if (typeDropdownRef.current && !typeDropdownRef.current.contains(event.target)) {
+        setShowTypeDropdown(false);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -630,26 +640,92 @@ export default function OrderDetails() {
 
           <div className="form-group">
             <label className="form-label">{t('orders.paymentMethod') || 'طريقة الدفع'}</label>
-            <select
-              className="form-select"
-              value={paymentMethod}
-              onChange={(e) => setPaymentMethod(e.target.value)}
-            >
-              <option value="cash">{t('orders.cash') || 'نقدي (كاش)'}</option>
-              <option value="electronic">{t('orders.electronic') || 'إلكتروني (مدى/شبكة)'}</option>
-            </select>
+            <div className="table-select-container" ref={methodDropdownRef} style={{ width: '100%' }}>
+              <button
+                type="button"
+                className="table-select-trigger"
+                style={{ 
+                  padding: '12px 16px', 
+                  fontSize: '0.95rem',
+                  width: '100%',
+                  height: '46px',
+                  borderRadius: '10px',
+                  background: 'var(--bg-white)',
+                  fontWeight: '500',
+                  color: 'var(--text)'
+                }}
+                onClick={() => setShowMethodDropdown(!showMethodDropdown)}
+              >
+                <span>
+                  {paymentMethod === 'cash' ? (t('orders.cash') || 'نقدي (كاش)') : (t('orders.electronic') || 'إلكتروني (مدى/شبكة)')}
+                </span>
+              </button>
+              {showMethodDropdown && (
+                <div className="table-select-dropdown" style={{ zIndex: 10000 }}>
+                  {[
+                    { value: 'cash', label: t('orders.cash') || 'نقدي (كاش)' },
+                    { value: 'electronic', label: t('orders.electronic') || 'إلكتروني (مدى/شبكة)' }
+                  ].map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      className={`table-select-item ${paymentMethod === opt.value ? 'selected' : ''}`}
+                      onClick={() => {
+                        setPaymentMethod(opt.value);
+                        setShowMethodDropdown(false);
+                      }}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="form-group">
             <label className="form-label">{t('orders.paymentType') || 'نوع الدفعة'}</label>
-            <select
-              className="form-select"
-              value={paymentType}
-              onChange={(e) => setPaymentType(e.target.value)}
-            >
-              <option value="balance">{t('orders.balance') || 'دفع المتبقي'}</option>
-              <option value="deposit">{t('orders.deposit') || 'دفعة مقدمة إضافية'}</option>
-            </select>
+            <div className="table-select-container" ref={typeDropdownRef} style={{ width: '100%' }}>
+              <button
+                type="button"
+                className="table-select-trigger"
+                style={{ 
+                  padding: '12px 16px', 
+                  fontSize: '0.95rem',
+                  width: '100%',
+                  height: '46px',
+                  borderRadius: '10px',
+                  background: 'var(--bg-white)',
+                  fontWeight: '500',
+                  color: 'var(--text)'
+                }}
+                onClick={() => setShowTypeDropdown(!showTypeDropdown)}
+              >
+                <span>
+                  {paymentType === 'balance' ? (t('orders.balance') || 'دفع المتبقي') : (t('orders.deposit') || 'دفعة مقدمة إضافية')}
+                </span>
+              </button>
+              {showTypeDropdown && (
+                <div className="table-select-dropdown" style={{ zIndex: 10000 }}>
+                  {[
+                    { value: 'balance', label: t('orders.balance') || 'دفع المتبقي' },
+                    { value: 'deposit', label: t('orders.deposit') || 'دفعة مقدمة إضافية' }
+                  ].map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      className={`table-select-item ${paymentType === opt.value ? 'selected' : ''}`}
+                      onClick={() => {
+                        setPaymentType(opt.value);
+                        setShowTypeDropdown(false);
+                      }}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="flex justify-between mt-md">

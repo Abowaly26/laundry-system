@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Wallet, CreditCard, TrendingUp, Download, Search } from 'lucide-react';
 import { paymentsAPI, dashboardAPI } from '../../services/api';
@@ -33,6 +33,20 @@ export default function Finance() {
     startDate: '',
     endDate: ''
   });
+
+  const [showMethodDropdown, setShowMethodDropdown] = useState(false);
+  const methodDropdownRef = useRef(null);
+
+  // Click outside to close method dropdown
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (methodDropdownRef.current && !methodDropdownRef.current.contains(event.target)) {
+        setShowMethodDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, []);
 
   const loadFinanceData = async () => {
     setLoading(true);
@@ -266,15 +280,40 @@ export default function Finance() {
 
           <div className="form-group">
             <label className="form-label">{t('finance.paymentMethod') || 'طريقة الدفع'}</label>
-            <select
-              className="form-select"
-              value={filters.method}
-              onChange={(e) => setFilters({ ...filters, method: e.target.value })}
-            >
-              <option value="">{t('finance.allMethods') || 'كل الطرق'}</option>
-              <option value="cash">{t('finance.methodCash') || 'نقدي (كاش)'}</option>
-              <option value="electronic">{t('finance.methodCard') || 'إلكتروني (شبكة)'}</option>
-            </select>
+            <div className="table-select-container" ref={methodDropdownRef}>
+              <button
+                type="button"
+                className="table-select-trigger"
+                onClick={() => setShowMethodDropdown(!showMethodDropdown)}
+              >
+                <span>
+                  {filters.method === 'cash' ? (t('finance.methodCash') || 'نقدي (كاش)') :
+                   filters.method === 'electronic' ? (t('finance.methodCard') || 'إلكتروني (شبكة)') :
+                   (t('finance.allMethods') || 'كل الطرق')}
+                </span>
+              </button>
+              {showMethodDropdown && (
+                <div className="table-select-dropdown">
+                  {[
+                    { value: '', label: t('finance.allMethods') || 'كل الطرق' },
+                    { value: 'cash', label: t('finance.methodCash') || 'نقدي (كاش)' },
+                    { value: 'electronic', label: t('finance.methodCard') || 'إلكتروني (شبكة)' }
+                  ].map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      className={`table-select-item ${filters.method === opt.value ? 'selected' : ''}`}
+                      onClick={() => {
+                        setFilters({ ...filters, method: opt.value });
+                        setShowMethodDropdown(false);
+                      }}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="form-group">
