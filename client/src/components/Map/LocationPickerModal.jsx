@@ -468,15 +468,24 @@ const LocationPickerModal = ({
           {/* The actual Leaflet map container */}
           <div ref={mapContainerRef} className="map-container-inner" />
 
-          {/* Floating custom toolbar */}
-          <div className="map-floating-controls">
+          {/* Floating custom zoom toolbar (Top Left) */}
+          <div 
+            className="map-floating-controls"
+            style={{
+              position: 'absolute',
+              top: '1rem',
+              insetInlineStart: '1rem',
+              insetInlineEnd: 'auto',
+              padding: '4px',
+              borderRadius: '10px'
+            }}
+          >
             {/* Zoom In */}
             <button
               type="button"
               className="map-control-btn zoom-btn"
               onClick={handleZoomIn}
               title="تكبير الخريطة"
-              style={{ alignSelf: 'center' }}
             >
               <Plus size={18} />
             </button>
@@ -487,24 +496,47 @@ const LocationPickerModal = ({
               className="map-control-btn zoom-btn"
               onClick={handleZoomOut}
               title="تصغير الخريطة"
-              style={{ alignSelf: 'center' }}
             >
               <Minus size={18} />
             </button>
+          </div>
 
-            {/* Divider */}
-            <div className="toolbar-divider"></div>
-
+          {/* Floating Location Action Buttons (Top Right, Horizontal Layout) */}
+          <div 
+            style={{
+              position: 'absolute',
+              top: '1rem',
+              insetInlineEnd: '1rem',
+              zIndex: 800,
+              display: 'flex',
+              gap: '0.5rem',
+              direction: 'rtl'
+            }}
+          >
             {/* Locate Me / Cashier */}
             <button
               type="button"
               className="map-control-btn cashier-locate"
               onClick={handleJumpToCashier}
               title="الانتقال إلى موقعي الحالي"
-              style={{ display: 'flex', alignItems: 'center', gap: '8px', width: 'auto', padding: '0 10px', height: '40px', justifyContent: 'flex-start' }}
+              style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '8px', 
+                width: 'auto', 
+                padding: '0 12px', 
+                height: '40px', 
+                background: 'rgba(255, 255, 255, 0.96)',
+                backdropFilter: 'blur(12px)',
+                border: '1px solid rgba(226, 232, 240, 0.95)',
+                borderRadius: '10px',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)',
+                color: '#059669',
+                cursor: 'pointer'
+              }}
             >
               <Navigation size={15} style={{ flexShrink: 0 }} />
-              <span style={{ fontSize: '0.78rem', fontWeight: 'bold', whiteSpace: 'nowrap' }}>موقعي الحالي</span>
+              <span style={{ fontSize: '0.78rem', fontWeight: 'bold', whiteSpace: 'nowrap', color: '#334155' }}>موقعي الحالي</span>
             </button>
 
             {/* Focus on Customer Pin */}
@@ -514,10 +546,24 @@ const LocationPickerModal = ({
                 className="map-control-btn customer-locate"
                 onClick={handleJumpToCustomer}
                 title="الانتقال إلى موقع العميل"
-                style={{ display: 'flex', alignItems: 'center', gap: '8px', width: 'auto', padding: '0 10px', height: '40px', justifyContent: 'flex-start' }}
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '8px', 
+                  width: 'auto', 
+                  padding: '0 12px', 
+                  height: '40px', 
+                  background: 'rgba(255, 255, 255, 0.96)',
+                  backdropFilter: 'blur(12px)',
+                  border: '1px solid rgba(226, 232, 240, 0.95)',
+                  borderRadius: '10px',
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)',
+                  color: '#e11d48',
+                  cursor: 'pointer'
+                }}
               >
                 <Compass size={15} style={{ flexShrink: 0 }} />
-                <span style={{ fontSize: '0.78rem', fontWeight: 'bold', whiteSpace: 'nowrap' }}>موقع العميل</span>
+                <span style={{ fontSize: '0.78rem', fontWeight: 'bold', whiteSpace: 'nowrap', color: '#334155' }}>موقع العميل</span>
               </button>
             )}
           </div>
