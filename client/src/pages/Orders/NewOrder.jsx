@@ -139,6 +139,7 @@ export default function NewOrder() {
     const month = date.getMonth();
     const firstDay = new Date(year, month, 1);
     // JS standard getDay() returns 0 for Sunday, 1 for Monday, etc.
+    // Sunday is index 0 in WEEKDAYS ['أح', 'إث', 'ثلا', 'أر', 'خم', 'جم', 'سب']
     const startDayOfWeek = firstDay.getDay(); 
     const totalDays = new Date(year, month + 1, 0).getDate();
     const prevTotalDays = new Date(year, month, 0).getDate();
@@ -146,10 +147,11 @@ export default function NewOrder() {
     
     // First, fill in days from previous month
     for (let i = startDayOfWeek - 1; i >= 0; i--) {
+      const dayVal = prevTotalDays - i;
       daysGrid.push({
-        dayNum: prevTotalDays - i,
+        dayNum: dayVal,
         isCurrentMonth: false,
-        date: new Date(year, month - 1, prevTotalDays - i)
+        date: new Date(year, month - 1, dayVal)
       });
     }
     
@@ -867,13 +869,13 @@ export default function NewOrder() {
                               <div className="date-select-dropdown">
                                 <div className="calendar-header">
                                   <button type="button" className="btn-month-nav" onClick={handlePrevMonth}>
-                                    <ChevronRight size={16} />
+                                    <ChevronLeft size={16} />
                                   </button>
                                   <span className="month-year-label">
                                     {viewDate.toLocaleString(i18n.language === 'en' ? 'en-US' : 'ar-EG', { month: 'long', year: 'numeric' })}
                                   </span>
                                   <button type="button" className="btn-month-nav" onClick={handleNextMonth}>
-                                    <ChevronLeft size={16} />
+                                    <ChevronRight size={16} />
                                   </button>
                                 </div>
                                 <div className="calendar-grid-weekdays">
