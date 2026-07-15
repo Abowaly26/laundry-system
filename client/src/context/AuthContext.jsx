@@ -31,6 +31,7 @@ export function AuthProvider({ children }) {
       const response = await authAPI.getMe();
       const userData = response.data;
       setUser(userData);
+      localStorage.setItem('user', JSON.stringify(userData));
       setToken(storedToken);
       applyLaundryLanguage(userData);
     } catch (error) {
