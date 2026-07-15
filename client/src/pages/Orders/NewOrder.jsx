@@ -885,9 +885,20 @@ export default function NewOrder() {
                                 </div>
                                 <div className="calendar-grid-days">
                                   {getDaysInMonthGrid(viewDate).map((cell, idx) => {
-                                    const cellDateStr = cell.date.toISOString().split('T')[0];
+                                    const yyyy = cell.date.getFullYear();
+                                    const mm = String(cell.date.getMonth() + 1).padStart(2, '0');
+                                    const dd = String(cell.date.getDate()).padStart(2, '0');
+                                    const cellDateStr = `${yyyy}-${mm}-${dd}`;
+                                    
                                     const isSelected = deliveryDate === cellDateStr;
-                                    const isToday = new Date().toISOString().split('T')[0] === cellDateStr;
+                                    
+                                    const todayObj = new Date();
+                                    const tY = todayObj.getFullYear();
+                                    const tM = String(todayObj.getMonth() + 1).padStart(2, '0');
+                                    const tD = String(todayObj.getDate()).padStart(2, '0');
+                                    const todayStr = `${tY}-${tM}-${tD}`;
+                                    const isToday = todayStr === cellDateStr;
+                                    
                                     const isPast = cell.date < new Date(new Date().setHours(0,0,0,0));
                                     
                                     return (
