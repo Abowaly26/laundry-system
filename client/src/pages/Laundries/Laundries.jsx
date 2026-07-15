@@ -19,6 +19,7 @@ export default function Laundries() {
   const [laundries, setLaundries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Modal إنشاء/تعديل
   const [showModal, setShowModal] = useState(false);
@@ -190,8 +191,35 @@ export default function Laundries() {
           </Button>
         </div>
       ) : (
-        <div className="laundries-grid">
-          {laundries.map((laundry, index) => (
+        <>
+          {/* Search Bar */}
+          <div className="laundries-search-bar">
+            <div className="laundries-search-wrapper">
+              <svg className="laundries-search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input
+                className="laundries-search-input"
+                type="text"
+                placeholder="ابحث باسم المغسلة..."
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+              />
+              {searchTerm && (
+                <button className="laundries-search-clear" onClick={() => setSearchTerm('')}>✕</button>
+              )}
+            </div>
+          </div>
+
+          {(() => {
+            const filtered = laundries.filter(l =>
+              l.name.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+            return filtered.length === 0 ? (
+              <div className="laundries-search-empty">
+                <p>لم يتم العثور على مغسلة باسم "<strong>{searchTerm}</strong>"</p>
+              </div>
+            ) : (
+              <div className="laundries-grid">
+                {filtered.map((laundry, index) => (
             <div
               key={laundry.id}
               className={`laundry-card ${!laundry.is_active ? 'laundry-card-inactive' : ''}`}
@@ -289,8 +317,11 @@ export default function Laundries() {
                 <LaundryStaffPanel laundryId={laundry.id} />
               )}
             </div>
-          ))}
-        </div>
+              ))}
+            </div>
+            );
+          })()}
+        </>
       )}
 
       {/* Modal إنشاء/تعديل */}
