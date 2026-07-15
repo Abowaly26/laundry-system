@@ -230,10 +230,7 @@ const LocationPickerModal = ({
       zoom:             15,
       zoomControl:      false,
       attributionControl: false,
-      preferCanvas:     true,        // better perf
     });
-
-    L.control.zoom({ position: 'topright' }).addTo(map);
 
     // Tile layer
     tileLayerRef.current = L.tileLayer(TILE_LAYERS[activeLayer].url, {
