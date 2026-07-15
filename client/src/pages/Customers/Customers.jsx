@@ -51,6 +51,23 @@ export default function Customers() {
   const [formData, setFormData] = useState({ name: '', phone: '', address: '', latitude: null, longitude: null });
   const [selectedId, setSelectedId] = useState(null);
   const [showMapModal, setShowMapModal] = useState(false);
+
+  // الحصول على إحداثيات المغسلة الحالية من بيانات تسجيل الدخول لتحديد نطاق الخريطة
+  const getLaundryLocation = () => {
+    try {
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        if (user.laundry_lat && user.laundry_lng) {
+          return { lat: parseFloat(user.laundry_lat), lng: parseFloat(user.laundry_lng) };
+        }
+      }
+    } catch (e) {
+      console.error('Failed to get laundry coordinates', e);
+    }
+    return undefined;
+  };
+  const laundryLocation = getLaundryLocation();
   
   // شاشة تفاصيل العميل والطلبات
   const [showDetailModal, setShowDetailModal] = useState(false);
@@ -478,6 +495,7 @@ export default function Customers() {
       <LocationPickerModal
         isOpen={showMapModal}
         onClose={() => setShowMapModal(false)}
+        laundryLocation={laundryLocation}
         initialLocation={
           formData.latitude
             ? { lat: parseFloat(formData.latitude), lng: parseFloat(formData.longitude) }

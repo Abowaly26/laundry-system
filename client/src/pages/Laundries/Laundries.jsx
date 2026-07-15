@@ -29,7 +29,8 @@ export default function Laundries() {
   const [formData, setFormData] = useState({
     name: '', address: '', phone: '', currency: 'ر.س', language: 'ar',
     admin_name: '', admin_email: '', admin_password: '',
-    plan_type: 'lifetime', subscription_start_date: '', subscription_end_date: '', payment_status: 'paid'
+    plan_type: 'lifetime', subscription_start_date: '', subscription_end_date: '', payment_status: 'paid',
+    latitude: '', longitude: ''
   });
   const [saving, setSaving] = useState(false);
 
@@ -71,7 +72,8 @@ export default function Laundries() {
     setFormData({ 
       name: '', address: '', phone: '', currency: 'ر.س', language: 'ar', 
       admin_name: '', admin_email: '', admin_password: '',
-      plan_type: 'lifetime', subscription_start_date: new Date().toISOString().split('T')[0], subscription_end_date: '', payment_status: 'paid'
+      plan_type: 'lifetime', subscription_start_date: new Date().toISOString().split('T')[0], subscription_end_date: '', payment_status: 'paid',
+      latitude: '', longitude: ''
     });
     setShowModal(true);
   };
@@ -91,7 +93,9 @@ export default function Laundries() {
       plan_type: laundry.plan_type || 'lifetime',
       subscription_start_date: laundry.subscription_start_date ? new Date(laundry.subscription_start_date).toISOString().split('T')[0] : '',
       subscription_end_date: laundry.subscription_end_date ? new Date(laundry.subscription_end_date).toISOString().split('T')[0] : '',
-      payment_status: laundry.payment_status || 'paid'
+      payment_status: laundry.payment_status || 'paid',
+      latitude: laundry.latitude !== null && laundry.latitude !== undefined ? laundry.latitude : '',
+      longitude: laundry.longitude !== null && laundry.longitude !== undefined ? laundry.longitude : ''
     });
     setShowModal(true);
   };
@@ -119,6 +123,8 @@ export default function Laundries() {
           subscription_start_date: formData.subscription_start_date || null,
           subscription_end_date: formData.subscription_end_date || null,
           payment_status: formData.payment_status,
+          latitude: formData.latitude !== '' ? parseFloat(formData.latitude) : null,
+          longitude: formData.longitude !== '' ? parseFloat(formData.longitude) : null,
           ...(formData.admin_email ? { admin_email: formData.admin_email } : {}),
           ...(formData.admin_password ? { admin_password: formData.admin_password } : {})
         });
@@ -585,6 +591,66 @@ export default function Laundries() {
             onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
             placeholder={t('settings.currencyPlaceholder') || 'مثال: ر.س، د.إ، $'}
           />
+
+          {/* نطاق العمل الجغرافي والإحداثيات */}
+          <div className="laundry-geo-section" style={{ border: '1px solid var(--border)', padding: '15px', borderRadius: '10px', background: 'var(--bg-hover)', margin: '15px 0' }}>
+            <h4 style={{ margin: '0 0 8px 0', fontSize: '0.88rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 'bold' }}>
+              📍 النطاق الجغرافي للمغسلة
+            </h4>
+            <p style={{ margin: '0 0 12px 0', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+              اختر الدولة لتحديد الموقع الافتراضي للمغسلة على الخريطة عند تسجيل الطلبات أو أدخل الإحداثيات يدوياً.
+            </p>
+            
+            {/* أزرار التحديد السريع للدول */}
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '12px' }}>
+              {[
+                { name: 'السعودية (الرياض)', lat: '24.7136', lng: '46.6753' },
+                { name: 'مصر (القاهرة)', lat: '30.0444', lng: '31.2357' },
+                { name: 'الإمارات (دبي)', lat: '25.2048', lng: '55.2708' },
+                { name: 'الكويت (الكويت)', lat: '29.3759', lng: '47.9774' }
+              ].map((preset) => (
+                <button
+                  key={preset.name}
+                  type="button"
+                  onClick={() => setFormData({ ...formData, latitude: preset.lat, longitude: preset.lng })}
+                  style={{
+                    padding: '5px 10px',
+                    fontSize: '0.72rem',
+                    borderRadius: '6px',
+                    border: '1px solid var(--border)',
+                    background: String(formData.latitude) === preset.lat && String(formData.longitude) === preset.lng ? 'var(--primary)' : 'var(--bg-card)',
+                    color: String(formData.latitude) === preset.lat && String(formData.longitude) === preset.lng ? '#fff' : 'var(--text-secondary)',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  {preset.name}
+                </button>
+              ))}
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+              <Input
+                id="laundry-latitude"
+                label="خط العرض (Latitude)"
+                type="number"
+                step="any"
+                value={formData.latitude}
+                onChange={(e) => setFormData({ ...formData, latitude: e.target.value })}
+                placeholder="مثال: 24.7136"
+              />
+              <Input
+                id="laundry-longitude"
+                label="خط الطول (Longitude)"
+                type="number"
+                step="any"
+                value={formData.longitude}
+                onChange={(e) => setFormData({ ...formData, longitude: e.target.value })}
+                placeholder="مثال: 46.6753"
+              />
+            </div>
+          </div>
 
           {/* لغة المغسلة */}
           <div className="form-group">

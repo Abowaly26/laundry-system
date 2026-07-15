@@ -79,7 +79,8 @@ router.post('/', authorizeRoles('super_owner'), async (req, res) => {
     const {
       name, address, phone, currency, language,
       admin_name, admin_email, admin_password,
-      plan_type, subscription_start_date, subscription_end_date, payment_status
+      plan_type, subscription_start_date, subscription_end_date, payment_status,
+      latitude, longitude
     } = req.body;
 
     // التحقق من البيانات المطلوبة
@@ -104,8 +105,8 @@ router.post('/', authorizeRoles('super_owner'), async (req, res) => {
 
     // إنشاء المغسلة
     const laundryResult = await query(
-      `INSERT INTO laundries (name, address, phone, currency, language, plan_type, subscription_start_date, subscription_end_date, payment_status) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
+      `INSERT INTO laundries (name, address, phone, currency, language, plan_type, subscription_start_date, subscription_end_date, payment_status, latitude, longitude) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`,
       [
         name, 
         address || '', 
@@ -115,7 +116,9 @@ router.post('/', authorizeRoles('super_owner'), async (req, res) => {
         plan_type || 'lifetime',
         subscription_start_date || null,
         subscription_end_date || null,
-        payment_status || 'paid'
+        payment_status || 'paid',
+        latitude !== '' && latitude !== null && latitude !== undefined ? parseFloat(latitude) : null,
+        longitude !== '' && longitude !== null && longitude !== undefined ? parseFloat(longitude) : null
       ]
     );
     const laundry = laundryResult.rows[0];

@@ -47,6 +47,23 @@ export default function OrderDetails() {
   const [showViewMapModal, setShowViewMapModal] = useState(false);
   const [dropdownTriggerRect, setDropdownTriggerRect] = useState(null);
 
+  // الحصول على إحداثيات المغسلة الحالية من بيانات تسجيل الدخول لتحديد نطاق الخريطة
+  const getLaundryLocation = () => {
+    try {
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        if (user.laundry_lat && user.laundry_lng) {
+          return { lat: parseFloat(user.laundry_lat), lng: parseFloat(user.laundry_lng) };
+        }
+      }
+    } catch (e) {
+      console.error('Failed to get laundry coordinates', e);
+    }
+    return undefined;
+  };
+  const laundryLocation = getLaundryLocation();
+
   const ITEM_STATUS_OPTIONS = [
     { value: 'pending', label: t('status.pending') || 'قيد الانتظار' },
     { value: 'processing', label: t('status.processing') || 'قيد التنفيذ' },
@@ -849,6 +866,7 @@ export default function OrderDetails() {
         <LocationPickerModal
           isOpen={showMapModal}
           onClose={() => setShowMapModal(false)}
+          laundryLocation={laundryLocation}
           initialLocation={
             order.delivery_lat && order.delivery_lng
               ? { lat: parseFloat(order.delivery_lat), lng: parseFloat(order.delivery_lng) }
