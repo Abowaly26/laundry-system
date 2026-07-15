@@ -26,7 +26,7 @@ router.post('/login', async (req, res) => {
 
     // البحث عن المستخدم مع بيانات المغسلة
     const result = await query(
-      `SELECT u.*, l.name as laundry_name, l.currency as laundry_currency 
+      `SELECT u.*, l.name as laundry_name, l.currency as laundry_currency, l.is_active as laundry_active
        FROM users u 
        LEFT JOIN laundries l ON u.laundry_id = l.id 
        WHERE u.email = $1`,
@@ -47,6 +47,14 @@ router.post('/login', async (req, res) => {
       return res.status(403).json({
         success: false,
         message: 'الحساب معطل - تواصل مع المدير'
+      });
+    }
+
+    // التحقق من أن المغسلة نشطة (إذا لم يكن صاحب النظام)
+    if (user.role !== 'super_owner' && user.laundry_id && !user.laundry_active) {
+      return res.status(403).json({
+        success: false,
+        message: 'المغسلة التابع لها هذا الحساب معطلة حالياً. يرجى التواصل مع الإدارة'
       });
     }
 

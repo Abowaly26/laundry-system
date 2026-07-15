@@ -26,7 +26,7 @@ async function authMiddleware(req, res, next) {
 
     // التحقق من وجود المستخدم وأنه نشط - مع laundry_id
     const result = await query(
-      'SELECT u.id, u.name, u.email, u.role, u.is_active, u.laundry_id, l.name as laundry_name, l.currency as laundry_currency FROM users u LEFT JOIN laundries l ON u.laundry_id = l.id WHERE u.id = $1',
+      'SELECT u.id, u.name, u.email, u.role, u.is_active, u.laundry_id, l.name as laundry_name, l.currency as laundry_currency, l.is_active as laundry_active FROM users u LEFT JOIN laundries l ON u.laundry_id = l.id WHERE u.id = $1',
       [decoded.userId]
     );
 
@@ -43,6 +43,14 @@ async function authMiddleware(req, res, next) {
       return res.status(403).json({
         success: false,
         message: 'الحساب معطل - تواصل مع المدير'
+      });
+    }
+
+    // التحقق من أن المغسلة نشطة (إذا لم يكن صاحب النظام)
+    if (user.role !== 'super_owner' && user.laundry_id && !user.laundry_active) {
+      return res.status(403).json({
+        success: false,
+        message: 'المغسلة التابع لها هذا الحساب معطلة حالياً'
       });
     }
 
