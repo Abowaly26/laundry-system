@@ -514,7 +514,29 @@ export default function Finance() {
           </div>
 
           <div className="flex items-end" style={{ paddingBottom: '16px' }}>
-            <Button variant="ghost" className="text-secondary" onClick={handleResetFilters}>
+            <Button 
+              variant="secondary" 
+              onClick={handleResetFilters} 
+              style={{ 
+                height: '46px', 
+                width: '100%', 
+                color: 'var(--error)', 
+                borderColor: 'rgba(239, 68, 68, 0.2)',
+                background: 'rgba(239, 68, 68, 0.05)',
+                transition: 'all 0.2s ease',
+                fontWeight: '700'
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.background = 'var(--error)';
+                e.currentTarget.style.color = '#fff';
+                e.currentTarget.style.borderColor = 'var(--error)';
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.background = 'rgba(239, 68, 68, 0.05)';
+                e.currentTarget.style.color = 'var(--error)';
+                e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.2)';
+              }}
+            >
               {t('finance.resetFilters') || 'إعادة تعيين'}
             </Button>
           </div>
