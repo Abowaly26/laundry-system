@@ -203,18 +203,39 @@ export default function NewOrder() {
 
   const WEEKDAYS = ['أح', 'اث', 'ثلا', 'أر', 'خم', 'جم', 'سب'];
 
+  // دالة مساعدة للحصول على مسودة من localStorage
+  const getDraftValue = (key, defaultValue) => {
+    try {
+      const saved = localStorage.getItem(key);
+      if (saved === null || saved === undefined) return defaultValue;
+      return saved;
+    } catch {
+      return defaultValue;
+    }
+  };
+
+  const getDraftJSON = (key, defaultValue) => {
+    try {
+      const saved = localStorage.getItem(key);
+      if (!saved) return defaultValue;
+      return JSON.parse(saved);
+    } catch {
+      return defaultValue;
+    }
+  };
+
   // بيانات العميل
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
-  const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [selectedCustomer, setSelectedCustomer] = useState(() => getDraftJSON('draft_order_customer', null));
   const [showAddCustomerModal, setShowAddCustomerModal] = useState(false);
   const [newCustomer, setNewCustomer] = useState({ name: '', phone: '', address: '' });
   const [customerError, setCustomerError] = useState('');
 
   // عناصر الطلب
-  const [items, setItems] = useState([
+  const [items, setItems] = useState(() => getDraftJSON('draft_order_items', [
     { item_type: '', size_name: '', service_id: '', price: 0, notes: '' }
-  ]);
+  ]));
   const [itemTypes, setItemTypes] = useState([]);
   const [openSizeIndex, setOpenSizeIndex] = useState(null);
 
@@ -225,13 +246,16 @@ export default function NewOrder() {
     return target.toISOString().split('T')[0];
   };
 
-  const [deliveryDate, setDeliveryDate] = useState(getTomorrowDate());
-  const [deliveryTime, setDeliveryTime] = useState('16:00'); // الساعة 4:00 عصراً افتراضي
-  const [activeTimePreset, setActiveTimePreset] = useState('afternoon');
-  const [isCustomDelivery, setIsCustomDelivery] = useState(false);
-  const [orderNotes, setOrderNotes] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState('cash');
-  const [paidAmount, setPaidAmount] = useState(0);
+  const [deliveryDate, setDeliveryDate] = useState(() => getDraftValue('draft_order_deliveryDate', getTomorrowDate()));
+  const [deliveryTime, setDeliveryTime] = useState(() => getDraftValue('draft_order_deliveryTime', '16:00')); // الساعة 4:00 عصراً افتراضي
+  const [activeTimePreset, setActiveTimePreset] = useState(() => getDraftValue('draft_order_activeTimePreset', 'afternoon'));
+  const [isCustomDelivery, setIsCustomDelivery] = useState(() => getDraftJSON('draft_order_isCustomDelivery', false));
+  const [orderNotes, setOrderNotes] = useState(() => getDraftValue('draft_order_orderNotes', ''));
+  const [paymentMethod, setPaymentMethod] = useState(() => getDraftValue('draft_order_paymentMethod', 'cash'));
+  const [paidAmount, setPaidAmount] = useState(() => {
+    const val = getDraftValue('draft_order_paidAmount', '0');
+    return parseFloat(val) || 0;
+  });
 
   // معالجة الطباعة والنجاح
   const [createdOrder, setCreatedOrder] = useState(null);
@@ -239,6 +263,50 @@ export default function NewOrder() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [workloadStatus, setWorkloadStatus] = useState(null);
   const [weeklyWorkload, setWeeklyWorkload] = useState([]);
+
+  // حفظ مسودة الطلب تلقائياً في localStorage عند تغيير أي من حقول المدخلات
+  useEffect(() => {
+    try {
+      localStorage.setItem('draft_order_customer', selectedCustomer ? JSON.stringify(selectedCustomer) : '');
+      localStorage.setItem('draft_order_items', JSON.stringify(items));
+      localStorage.setItem('draft_order_deliveryDate', deliveryDate || '');
+      localStorage.setItem('draft_order_deliveryTime', deliveryTime || '');
+      localStorage.setItem('draft_order_activeTimePreset', activeTimePreset || '');
+      localStorage.setItem('draft_order_isCustomDelivery', JSON.stringify(isCustomDelivery));
+      localStorage.setItem('draft_order_orderNotes', orderNotes || '');
+      localStorage.setItem('draft_order_paymentMethod', paymentMethod || '');
+      localStorage.setItem('draft_order_paidAmount', String(paidAmount || 0));
+    } catch (e) {
+      console.error('Failed to save order draft', e);
+    }
+  }, [
+    selectedCustomer,
+    items,
+    deliveryDate,
+    deliveryTime,
+    activeTimePreset,
+    isCustomDelivery,
+    orderNotes,
+    paymentMethod,
+    paidAmount
+  ]);
+
+  // دالة لمسح مسودة الطلب من localStorage
+  const clearOrderDraft = () => {
+    try {
+      localStorage.removeItem('draft_order_customer');
+      localStorage.removeItem('draft_order_items');
+      localStorage.removeItem('draft_order_deliveryDate');
+      localStorage.removeItem('draft_order_deliveryTime');
+      localStorage.removeItem('draft_order_activeTimePreset');
+      localStorage.removeItem('draft_order_isCustomDelivery');
+      localStorage.removeItem('draft_order_orderNotes');
+      localStorage.removeItem('draft_order_paymentMethod');
+      localStorage.removeItem('draft_order_paidAmount');
+    } catch (e) {
+      console.error('Failed to clear order draft', e);
+    }
+  };
 
   // تحميل الخدمات وضغط العمل عند التحميل
   useEffect(() => {
@@ -252,8 +320,9 @@ export default function NewOrder() {
       .then(res => {
         if (res.success) {
           setItemTypes(res.data);
-          // تهيئة السطر الأول بالقيمة الافتراضية لأول نوع قطعة متوفر
-          if (res.data && res.data.length > 0) {
+          // تهيئة السطر الأول بالقيمة الافتراضية لأول نوع قطعة متوفر فقط إذا لم تكن هناك مسودة محفوظة
+          const savedItems = localStorage.getItem('draft_order_items');
+          if (!savedItems && res.data && res.data.length > 0) {
             const firstType = res.data[0];
             const defaultSize = firstType.sizes && firstType.sizes.length > 0 ? firstType.sizes[0].size_name : 'عادي';
             setItems([
@@ -478,6 +547,7 @@ export default function NewOrder() {
         setCreatedOrder(newOrderData);
         showToast('تم حفظ وإنشاء الطلب بنجاح! 🎉', 'success');
         setShowPrintModal(true);
+        clearOrderDraft();
 
         // مشاركة تلقائية عبر واتساب
         const customerName = selectedCustomer.name || 'عميل';
