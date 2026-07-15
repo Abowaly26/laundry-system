@@ -271,7 +271,6 @@ export default function Laundries() {
                    statusFilter === 'active' ? (t('laundriesList.filterActive') || 'نشطة فقط') : 
                    (t('laundriesList.filterInactive') || 'معطلة فقط')}
                 </span>
-                <ChevronDown size={16} style={{ transition: 'transform 0.2s', transform: showFilterDropdown ? 'rotate(180deg)' : 'rotate(0)' }} />
               </button>
               {showFilterDropdown && (
                 <div className="table-select-dropdown" style={{
