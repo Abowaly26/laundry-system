@@ -309,8 +309,19 @@ const LocationPickerModal = ({
     const t = setTimeout(async () => {
       setIsSearching(true);
       try {
+        let viewboxParams = '';
+        if (laundryLocation && laundryLocation.lat && laundryLocation.lng) {
+          const lat = parseFloat(laundryLocation.lat);
+          const lng = parseFloat(laundryLocation.lng);
+          const minLat = lat - 1.0;
+          const maxLat = lat + 1.0;
+          const minLng = lng - 1.0;
+          const maxLng = lng + 1.0;
+          viewboxParams = `&viewbox=${minLng},${maxLat},${maxLng},${minLat}&bounded=1`;
+        }
+
         const res  = await fetch(
-          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&accept-language=ar&limit=6&addressdetails=1`
+          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&accept-language=ar&limit=6&addressdetails=1${viewboxParams}`
         );
         const data = await res.json();
         setSearchResults(data || []);
@@ -321,7 +332,7 @@ const LocationPickerModal = ({
       }
     }, 500);
     return () => clearTimeout(t);
-  }, [searchQuery]);
+  }, [searchQuery, laundryLocation]);
 
   // ─────────────────────────────────────────────────────────────────────────
   // Handlers
