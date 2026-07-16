@@ -25,7 +25,7 @@ export default function CustomerPortal() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const id = params.get('id');
+    const id = params.get('id') || params.get('order');
     const phone = params.get('phone');
     const autoQuery = id || phone;
     if (autoQuery) {
