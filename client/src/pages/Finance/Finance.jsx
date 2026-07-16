@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import { Wallet, CreditCard, TrendingUp, Download, Search, ChevronRight, ChevronLeft } from 'lucide-react';
 import { paymentsAPI, dashboardAPI } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
@@ -577,7 +578,7 @@ export default function Finance() {
               {filteredPayments.map((p) => (
                 <tr key={p?.id}>
                   <td><strong>#{p?.id}</strong></td>
-                  <td><a href={`/orders/${p?.order_id}`} className="text-primary font-semibold">#{p?.order_id}</a></td>
+                  <td><Link to={`/orders/${p?.order_id}`} className="text-primary font-semibold">#{p?.order_id}</Link></td>
                   <td>{p?.customer_name || t('orders.generalCustomer') || 'عميل عام'}</td>
                   <td className="font-bold text-success">+{parseFloat(p?.amount || 0).toFixed(2)} {settings?.currency || 'ر.س'}</td>
                   <td>{p?.method === 'cash' ? t('finance.methodCash') || 'نقدي (كاش)' : t('finance.methodCard') || 'إلكتروني (شبكة)'}</td>

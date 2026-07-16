@@ -34,9 +34,11 @@ async function syncOrderStatus(orderId, client = null) {
   if (itemsResult.rows.length === 0) return;
 
   const items = itemsResult.rows;
-  const allDelivered = items.every(i => i.status === 'delivered');
-  const allReady = items.every(i => i.status === 'ready' || i.status === 'delivered');
-  const allPending = items.every(i => i.status === 'pending');
+  const activeItems = items.filter(i => i.status !== 'cancelled');
+  if (activeItems.length === 0) return; // all items cancelled — leave order status as-is
+  const allDelivered = activeItems.every(i => i.status === 'delivered');
+  const allReady = activeItems.every(i => i.status === 'ready' || i.status === 'delivered');
+  const allPending = activeItems.every(i => i.status === 'pending');
 
   let targetStatus = 'processing';
   if (allDelivered) {
@@ -228,7 +230,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
       SELECT oi.*, 
         s.name_ar as service_name, s.name as service_name_en,
         sz.size_name,
-        o.id as order_id, o.status as order_status,
+        o.id as order_id, o.status as order_status, o.laundry_id,
         c.name as customer_name, c.phone as customer_phone
       FROM order_items oi
       JOIN services s ON oi.service_id = s.id
@@ -245,6 +247,11 @@ router.get('/:id', authMiddleware, async (req, res) => {
       });
     }
     const item = itemResult.rows[0];
+
+    // التحقق من ملكية المغسلة
+    if (req.user.role !== 'super_owner' && item.laundry_id && item.laundry_id !== req.user.laundry_id) {
+      return res.status(403).json({ success: false, message: 'غير مصرح بالوصول' });
+    }
 
     // جلب سجل الحالات
     const statusLogResult = await query(`
@@ -281,7 +288,7 @@ router.put('/:id/status', authMiddleware, async (req, res) => {
     const { status } = req.body;
 
     const itemResult = await query(`
-      SELECT oi.*, o.remaining_amount 
+      SELECT oi.*, o.remaining_amount, o.laundry_id as laundry_id
       FROM order_items oi
       JOIN orders o ON oi.order_id = o.id
       WHERE oi.id = $1
@@ -293,6 +300,13 @@ router.put('/:id/status', authMiddleware, async (req, res) => {
       });
     }
     const item = itemResult.rows[0];
+
+    if (req.user.role !== 'super_owner' && item.laundry_id !== req.user.laundry_id) {
+      return res.status(403).json({
+        success: false,
+        message: 'غير مصرح بتعديل حالة هذه القطعة'
+      });
+    }
 
     // التحقق من أن الحالة الجديدة صحيحة
     let newStatus = status;
@@ -370,7 +384,7 @@ router.put('/:id/advance', authMiddleware, async (req, res) => {
     const { id } = req.params;
 
     const itemResult = await query(`
-      SELECT oi.*, o.remaining_amount 
+      SELECT oi.*, o.remaining_amount, o.laundry_id as laundry_id
       FROM order_items oi
       JOIN orders o ON oi.order_id = o.id
       WHERE oi.id = $1
@@ -383,6 +397,13 @@ router.put('/:id/advance', authMiddleware, async (req, res) => {
       });
     }
     const item = itemResult.rows[0];
+
+    if (req.user.role !== 'super_owner' && item.laundry_id !== req.user.laundry_id) {
+      return res.status(403).json({
+        success: false,
+        message: 'غير مصرح بتعديل حالة هذه القطعة'
+      });
+    }
 
     const nextStatus = getNextStatus(item.status);
     if (!nextStatus) {

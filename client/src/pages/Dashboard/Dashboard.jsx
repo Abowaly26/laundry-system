@@ -51,14 +51,6 @@ export default function Dashboard() {
   const { settings } = useSettings();
   const navigate = useNavigate();
 
-  if (isSuperOwner) {
-    return <Navigate to="/laundries" replace />;
-  }
-
-  if (isWorker) {
-    return <Navigate to="/tracking" replace />;
-  }
-
   const revenueList = Array.isArray(revenue) ? revenue : [];
   const popularServicesList = Array.isArray(popularServices) ? popularServices : [];
   const overdueList = Array.isArray(overdue) ? overdue : [];
@@ -70,12 +62,16 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    loadDashboard();
-  }, []);
+    if (!isSuperOwner && !isWorker) {
+      loadDashboard();
+    }
+  }, [isSuperOwner, isWorker]);
 
   useEffect(() => {
-    loadRevenue();
-  }, [revenuePeriod]);
+    if (!isSuperOwner && !isWorker) {
+      loadRevenue();
+    }
+  }, [revenuePeriod, isSuperOwner, isWorker]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -86,6 +82,14 @@ export default function Dashboard() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  if (isSuperOwner) {
+    return <Navigate to="/laundries" replace />;
+  }
+
+  if (isWorker) {
+    return <Navigate to="/tracking" replace />;
+  }
 
   const loadRevenue = async () => {
     try {

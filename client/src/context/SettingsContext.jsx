@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useMemo } from 'react';
 
 const SettingsContext = createContext(null);
 
@@ -54,12 +54,8 @@ export function SettingsProvider({ children }) {
     };
 
     window.addEventListener('storage', handleStorageChange);
-    // Also periodically check or use custom event / interval because storage event only fires for other windows
-    const interval = setInterval(handleStorageChange, 1000);
-
     return () => {
       window.removeEventListener('storage', handleStorageChange);
-      clearInterval(interval);
     };
   }, []);
 
@@ -132,8 +128,10 @@ Thank you for choosing us! ✨`;
     localStorage.setItem('laundry_settings', JSON.stringify(updated));
   };
 
+  const resolvedSettings = useMemo(() => getSettingsWithUserCurrency(), [settings]);
+
   return (
-    <SettingsContext.Provider value={{ settings: getSettingsWithUserCurrency(), updateSettings, defaults: DEFAULT_SETTINGS }}>
+    <SettingsContext.Provider value={{ settings: resolvedSettings, updateSettings, defaults: DEFAULT_SETTINGS }}>
       {children}
     </SettingsContext.Provider>
   );

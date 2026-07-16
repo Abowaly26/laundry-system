@@ -242,9 +242,9 @@ router.delete('/:id', async (req, res) => {
       });
     }
 
-    await query('DELETE FROM users WHERE id = $1', [id]);
+    await query('UPDATE users SET is_active = false WHERE id = $1', [id]);
 
-    res.json({ success: true, message: 'تم حذف المستخدم نهائياً بنجاح' });
+    res.json({ success: true, message: 'تم تعطيل المستخدم بنجاح' });
   } catch (error) {
     console.error('Delete user error:', error);
     res.status(500).json({ success: false, message: 'خطأ في حذف المستخدم' });

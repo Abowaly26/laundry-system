@@ -112,26 +112,29 @@ const LocationPickerModal = ({
   // ─────────────────────────────────────────────────────────────────────────
   const reverseGeocode = useCallback(async (lat, lng) => {
     setIsGeocoding(true);
-    try {
-      const res  = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=ar`,
-        { headers: { 'Accept-Language': 'ar' } }
-      );
-      const data = await res.json();
-      if (data?.display_name) {
-        const addr   = data.address || {};
-        const suburb = addr.suburb || addr.neighbourhood || addr.residential || addr.district || '';
-        const road   = addr.road   || addr.pedestrian   || addr.street       || '';
-        const city   = addr.city   || addr.town         || addr.state        || '';
-        const formatted = [suburb, road, city].filter(Boolean).join('، ')
-          || data.display_name.split(',').slice(0, 3).join('، ');
-        setAddressText(formatted);
+    clearTimeout(geocodingTimer.current);
+    geocodingTimer.current = setTimeout(async () => {
+      try {
+        const res  = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=ar`,
+          { headers: { 'Accept-Language': 'ar' } }
+        );
+        const data = await res.json();
+        if (data?.display_name) {
+          const addr   = data.address || {};
+          const suburb = addr.suburb || addr.neighbourhood || addr.residential || addr.district || '';
+          const road   = addr.road   || addr.pedestrian   || addr.street       || '';
+          const city   = addr.city   || addr.town         || addr.state        || '';
+          const formatted = [suburb, road, city].filter(Boolean).join('، ')
+            || data.display_name.split(',').slice(0, 3).join('، ');
+          setAddressText(formatted);
+        }
+      } catch (e) {
+        console.warn('Reverse geocode failed:', e);
+      } finally {
+        setIsGeocoding(false);
       }
-    } catch (e) {
-      console.warn('Reverse geocode failed:', e);
-    } finally {
-      setIsGeocoding(false);
-    }
+    }, 600);
   }, []);
 
   // ─────────────────────────────────────────────────────────────────────────

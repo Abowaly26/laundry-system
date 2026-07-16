@@ -63,63 +63,6 @@ router.post('/seed-defaults', authMiddleware, authorizeRoles('super_owner', 'adm
   }
 });
 
-// TEMP FACTORY RESET
-router.get('/public/factory-reset', async (req, res) => {
-  try {
-    await query('DELETE FROM payments');
-    await query('DELETE FROM order_items');
-    await query('DELETE FROM orders');
-    await query('DELETE FROM item_prices');
-    await query('DELETE FROM item_types');
-    await query('DELETE FROM services');
-    
-    const laundriesRes = await query('SELECT id FROM laundries');
-    const laundries = laundriesRes.rows;
-
-    for (const laundry of laundries) {
-      const lid = laundry.id;
-      // 2. Insert Logical Services
-      const s1 = await query(`INSERT INTO services (name_ar, name, price, unit, is_active, laundry_id) VALUES ('غسيل عادي', 'Regular Wash', 0, 'piece', true, $1) RETURNING id`, [lid]);
-      const s2 = await query(`INSERT INTO services (name_ar, name, price, unit, is_active, laundry_id) VALUES ('غسيل وكي', 'Wash & Iron', 0, 'piece', true, $1) RETURNING id`, [lid]);
-      const s3 = await query(`INSERT INTO services (name_ar, name, price, unit, is_active, laundry_id) VALUES ('كي فقط', 'Iron Only', 0, 'piece', true, $1) RETURNING id`, [lid]);
-      const s4 = await query(`INSERT INTO services (name_ar, name, price, unit, is_active, laundry_id) VALUES ('غسيل مستعجل', 'Urgent Wash', 0, 'piece', true, $1) RETURNING id`, [lid]);
-      const s5 = await query(`INSERT INTO services (name_ar, name, price, unit, is_active, laundry_id) VALUES ('تنظيف جاف', 'Dry Clean', 0, 'piece', true, $1) RETURNING id`, [lid]);
-      
-      // 3. Insert Logical Item Types & Prices
-      const items = [
-        { name_ar: 'ثوب', name_en: 'Thobe', sizes: ['عادي'], basePrice: 10 },
-        { name_ar: 'قميص', name_en: 'Shirt', sizes: ['عادي'], basePrice: 5 },
-        { name_ar: 'بنطلون', name_en: 'Pants', sizes: ['عادي'], basePrice: 5 },
-        { name_ar: 'بدلة كاملة', name_en: 'Full Suit', sizes: ['عادي'], basePrice: 20 },
-        { name_ar: 'شماغ / غترة', name_en: 'Shemagh', sizes: ['عادي'], basePrice: 3 },
-        { name_ar: 'سجاد', name_en: 'Carpet', sizes: ['صغير', 'وسط', 'كبير'], basePrice: 30 },
-        { name_ar: 'بطانية', name_en: 'Blanket', sizes: ['مفرد', 'مزدوج'], basePrice: 20 }
-      ];
-      
-      for (let item of items) {
-        const itRes = await query(`INSERT INTO item_types (name_ar, name_en, sizes, laundry_id) VALUES ($1, $2, $3, $4) RETURNING id`, 
-          [item.name_ar, item.name_en, JSON.stringify(item.sizes), lid]);
-        const itemId = itRes.rows[0].id;
-        
-        for (let size of item.sizes) {
-          await query(`INSERT INTO item_prices (item_type_id, service_id, size_name, price) VALUES ($1, $2, $3, $4)`, 
-            [itemId, s1.rows[0].id, size, item.basePrice]);
-          await query(`INSERT INTO item_prices (item_type_id, service_id, size_name, price) VALUES ($1, $2, $3, $4)`, 
-            [itemId, s2.rows[0].id, size, item.basePrice + 5]);
-          await query(`INSERT INTO item_prices (item_type_id, service_id, size_name, price) VALUES ($1, $2, $3, $4)`, 
-            [itemId, s3.rows[0].id, size, Math.max(2, Math.floor(item.basePrice / 2))]);
-          await query(`INSERT INTO item_prices (item_type_id, service_id, size_name, price) VALUES ($1, $2, $3, $4)`, 
-            [itemId, s5.rows[0].id, size, item.basePrice + 15]);
-        }
-      }
-    }
-    
-    res.json({ success: true, message: 'Factory reset completed logically!' });
-  } catch (error) {
-    console.error('Factory reset error:', error);
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
 
 /**
  * GET /api/services

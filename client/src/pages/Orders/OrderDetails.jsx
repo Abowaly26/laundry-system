@@ -247,7 +247,6 @@ export default function OrderDetails() {
       
       // تحصيل تلقائي متبقي الطلب ككاش
       try {
-        setDelivering(true);
         await paymentsAPI.create({
           order_id: parseInt(id),
           amount: order.remaining_amount,
@@ -256,7 +255,6 @@ export default function OrderDetails() {
         });
       } catch (err) {
         showToast((t('orderDetails.errorRemainingPayment') || 'حدث خطأ أثناء تسجيل الدفعة المتبقية: ') + err.message, 'error');
-        setDelivering(false);
         return;
       }
     }

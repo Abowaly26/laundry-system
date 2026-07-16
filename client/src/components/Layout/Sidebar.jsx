@@ -55,7 +55,6 @@ export default function Sidebar({ isOpen, onClose }) {
   const filteredItems = isSuperOwner
     ? superOwnerItems
     : navItems.filter(item => {
-        if (item.hideForSuperOwner && isSuperOwner) return false;
         if (item.adminOnly && !isAdmin) return false;
         if (item.noWorker && isWorker) return false;
         return true;
@@ -95,7 +94,7 @@ export default function Sidebar({ isOpen, onClose }) {
               </>
             ) : (
               <>
-                <span className="brand-name">{laundryName || settings?.laundry_name || t('sidebar.laundryName') || 'المغسلة'}</span>
+                <span className="brand-name">{laundryName || settings?.laundryName || t('sidebar.laundryName') || 'المغسلة'}</span>
                 <span className="brand-subtitle">{t('sidebar.laundrySystem') || 'نظام إدارة المغسلة'}</span>
               </>
             )}

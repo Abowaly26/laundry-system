@@ -92,13 +92,20 @@ router.get('/order/:orderId', async (req, res) => {
     const { orderId } = req.params;
 
     const orderResult = await query(
-      'SELECT id, total_amount, paid_amount, remaining_amount FROM orders WHERE id = $1',
+      'SELECT id, total_amount, paid_amount, remaining_amount, laundry_id FROM orders WHERE id = $1',
       [orderId]
     );
 
     if (orderResult.rows.length === 0) {
       return res.status(404).json({ success: false, message: 'الطلب غير موجود' });
     }
+
+    // التحقق من ملكية المغسلة
+    const isSuperOwner = req.user.role === 'super_owner';
+    if (!isSuperOwner && orderResult.rows[0].laundry_id !== req.user.laundry_id) {
+      return res.status(403).json({ success: false, message: 'غير مصرح بالوصول' });
+    }
+
     const order = orderResult.rows[0];
 
     const paymentsResult = await query(`
@@ -141,6 +148,13 @@ router.post('/', authorizeRoles('admin', 'cashier', 'super_owner'), async (req, 
     if (orderResult.rows.length === 0) {
       return res.status(404).json({ success: false, message: 'الطلب غير موجود' });
     }
+
+    // التحقق من ملكية المغسلة
+    const isSuperOwner = req.user.role === 'super_owner';
+    if (!isSuperOwner && orderResult.rows[0].laundry_id !== req.user.laundry_id) {
+      return res.status(403).json({ success: false, message: 'غير مصرح بالوصول' });
+    }
+
     const order = orderResult.rows[0];
 
     if (order.status === 'cancelled') {

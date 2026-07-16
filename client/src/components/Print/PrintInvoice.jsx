@@ -12,16 +12,29 @@ export default function PrintInvoice({ order }) {
     if (!dateStr) return '';
     const d = new Date(dateStr);
     if (isNaN(d.getTime())) return dateStr;
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    const hours = d.getHours();
-    const minutes = String(d.getMinutes()).padStart(2, '0');
-    const ampm = hours >= 12 ? (t('orders.pm') || 'م') : (t('orders.am') || 'ص');
-    const displayHours = hours % 12 || 12;
-    
-    const strTime = `${displayHours}:${minutes} ${ampm}`;
-    return `${year}-${month}-${day} ${strTime}`;
+    try {
+      // تنسيق التاريخ والوقت بتوقيت الرياض
+      return d.toLocaleString('en-US', {
+        timeZone: 'Asia/Riyadh',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      }).replace(',', '');
+    } catch (e) {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const hours = d.getHours();
+      const minutes = String(d.getMinutes()).padStart(2, '0');
+      const ampm = hours >= 12 ? (t('orders.pm') || 'م') : (t('orders.am') || 'ص');
+      const displayHours = hours % 12 || 12;
+      
+      const strTime = `${displayHours}:${minutes} ${ampm}`;
+      return `${year}-${month}-${day} ${strTime}`;
+    }
   };
 
   const getItemTypeAr = (type) => {
@@ -110,7 +123,7 @@ export default function PrintInvoice({ order }) {
         
         {order.items && order.items.map((item, index) => (
           <div key={index} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', fontSize: '12px', borderBottom: '1px dotted #eee' }}>
-            <div style={{ paddingLeft: '8px' }}>
+            <div style={{ paddingInlineStart: '8px' }}>
               <span style={{ fontWeight: 'bold' }}>{getItemTypeAr(item.item_type)}{item.size_name ? ` (${item.size_name})` : ''}</span>
               <div style={{ fontSize: '11px', color: '#555', marginTop: '2px' }}>
                 {getServiceName(item)}
@@ -177,7 +190,7 @@ export default function PrintInvoice({ order }) {
       <div style={{ textAlign: 'center', marginTop: '15px' }}>
         <div style={{ display: 'inline-block', padding: '6px', background: '#fff', border: '1px solid #eee', borderRadius: '4px' }}>
           <QRCodeCanvas 
-            value={`ORDER-${order.id}`} 
+            value={`${window.location.origin}/portal?order=${order.id}`} 
             size={90}
             level="M"
           />

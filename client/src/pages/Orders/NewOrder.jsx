@@ -549,10 +549,19 @@ export default function NewOrder() {
       return;
     }
 
+    if (!deliveryDate || !deliveryTime) {
+      showToast('يرجى تحديد تاريخ ووقت التسليم', 'error');
+      return;
+    }
+
+    const expectedDate = new Date(`${deliveryDate}T${deliveryTime}`);
+    if (isNaN(expectedDate.getTime())) {
+      showToast('تاريخ ووقت التسليم غير صالحين', 'error');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      // وقت التسليم المتوقع المحدد يدوياً
-      const expectedDate = new Date(`${deliveryDate}T${deliveryTime}`);
 
       const orderData = {
         customer_id: selectedCustomer.id,
@@ -1073,17 +1082,17 @@ export default function NewOrder() {
                             </button>
                             {openItemTypeIndex === index && (
                               <div className="table-select-dropdown">
-                                {itemTypes.map((t) => (
+                                {itemTypes.map((it) => (
                                   <button
-                                    key={t.id}
+                                    key={it.id}
                                     type="button"
-                                    className={`table-select-item ${item.item_type === t.name_ar ? 'selected' : ''}`}
+                                    className={`table-select-item ${item.item_type === it.name_ar ? 'selected' : ''}`}
                                     onClick={() => {
-                                      handleItemTypeChange(index, t.name_ar);
+                                      handleItemTypeChange(index, it.name_ar);
                                       setOpenItemTypeIndex(null);
                                     }}
                                   >
-                                    {t.name_ar}
+                                    {it.name_ar}
                                   </button>
                                 ))}
                               </div>
@@ -1109,7 +1118,7 @@ export default function NewOrder() {
                             </button>
                             {openSizeIndex === index && item.item_type && (
                               <div className="table-select-dropdown">
-                                {(itemTypes.find(t => t.name_ar === item.item_type)?.sizes || []).map((sz) => (
+                                {(itemTypes.find(it => it.name_ar === item.item_type)?.sizes || []).map((sz) => (
                                   <button
                                     key={sz.id}
                                     type="button"

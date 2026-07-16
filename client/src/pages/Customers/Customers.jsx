@@ -89,7 +89,10 @@ export default function Customers() {
   };
 
   useEffect(() => {
-    loadCustomers();
+    const handler = setTimeout(() => {
+      loadCustomers();
+    }, 400);
+    return () => clearTimeout(handler);
   }, [search]);
 
   const handleOpenAdd = () => {

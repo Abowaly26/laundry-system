@@ -29,7 +29,11 @@ app.use(cors({
         origin.includes('localhost')) {
       callback(null, true);
     } else {
-      callback(null, true); // Allow all for production
+      if (process.env.NODE_ENV === 'production') {
+        callback(new Error('Not allowed by CORS'));
+      } else {
+        callback(null, true);
+      }
     }
   },
   credentials: true,
@@ -94,69 +98,24 @@ app.get('/api/health', async (req, res) => {
 
 
 
-// Endpoint لإعادة seed يدوياً (للطوارئ)
-app.post('/api/seed', async (req, res) => {
+// ============================================================
+// Admin-only maintenance endpoints (protected — super_owner only)
+// ============================================================
+const authMiddleware = require('./src/middleware/auth');
+const { authorizeRoles } = require('./src/middleware/roles');
+
+app.post('/api/seed', authMiddleware, authorizeRoles('super_owner'), async (req, res) => {
   try {
-    console.log('🔄 Manual seed requested');
-    
     await seedDatabase();
-    
-    const usersCount = await query('SELECT COUNT(*) as count FROM users');
     const users = await query('SELECT id, name, email, role FROM users');
-    
-    res.json({ 
-      success: true, 
-      message: 'تم تهيئة قاعدة البيانات بنجاح',
-      usersCount: parseInt(usersCount.rows[0].count),
-      users: users.rows
-    });
+    res.json({ success: true, message: 'تم تهيئة قاعدة البيانات بنجاح', users: users.rows });
   } catch (error) {
     console.error('Seed error:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'فشل في تهيئة قاعدة البيانات',
-      error: error.message 
-    });
+    res.status(500).json({ success: false, message: 'فشل في تهيئة قاعدة البيانات', error: error.message });
   }
 });
 
-// Endpoint للتحقق من المستخدمين الموجودين
-app.get('/api/debug/users', async (req, res) => {
-  try {
-    const users = await query('SELECT id, name, email, role, is_active, created_at FROM users');
-    res.json({ 
-      success: true, 
-      count: users.rows.length,
-      users: users.rows
-    });
-  } catch (error) {
-    res.status(500).json({ 
-      success: false, 
-      error: error.message 
-    });
-  }
-});
-
-// Endpoint للتحقق من جداول قاعدة البيانات
-app.get('/api/debug/tables', async (req, res) => {
-  try {
-    const tables = await query(`
-      SELECT table_name 
-      FROM information_schema.tables 
-      WHERE table_schema = 'public'
-      ORDER BY table_name
-    `);
-    res.json({ 
-      success: true, 
-      tables: tables.rows.map(r => r.table_name)
-    });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-// Endpoint لتشغيل الـ migrations يدوياً (طوارئ فقط)
-app.post('/api/debug/run-migrations', async (req, res) => {
+app.post('/api/debug/run-migrations', authMiddleware, authorizeRoles('super_owner'), async (req, res) => {
   try {
     await runPendingMigrations();
     res.json({ success: true, message: 'Migrations executed successfully' });

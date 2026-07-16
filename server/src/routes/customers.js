@@ -137,12 +137,14 @@ router.post('/', authorizeRoles('admin', 'cashier', 'super_owner'), async (req, 
       return res.status(400).json({ success: false, message: 'الاسم ورقم الهاتف مطلوبان' });
     }
 
-    // super_owner لا يضيف عملاء مباشرة بدون مغسلة
-    if (!req.user.laundry_id && req.user.role !== 'super_owner') {
-      return res.status(400).json({ success: false, message: 'لم يتم تحديد المغسلة' });
+    let laundryId = req.user.laundry_id;
+    if (!laundryId) {
+      if (req.user.role === 'super_owner' && req.body.laundry_id) {
+        laundryId = req.body.laundry_id;
+      } else {
+        return res.status(400).json({ success: false, message: 'لم يتم تحديد المغسلة' });
+      }
     }
-
-    const laundryId = req.user.laundry_id;
 
     const result = await query(
       'INSERT INTO customers (name, phone, address, laundry_id, latitude, longitude) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',

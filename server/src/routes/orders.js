@@ -612,10 +612,15 @@ router.post('/', authMiddleware, authorizeRoles('admin', 'cashier', 'super_owner
  * PUT /api/orders/:id
  * تحديث الطلب
  */
-router.put('/:id', authMiddleware, async (req, res) => {
+router.put('/:id', authMiddleware, authorizeRoles('admin', 'cashier', 'super_owner'), async (req, res) => {
   try {
     const { id } = req.params;
     const { status, notes, expected_delivery_at, delivery_address, delivery_lat, delivery_lng } = req.body;
+
+    const VALID_STATUSES = ['pending', 'processing', 'ready', 'delivered', 'cancelled'];
+    if (status !== undefined && !VALID_STATUSES.includes(status)) {
+      return res.status(400).json({ success: false, message: 'حالة الطلب غير صحيحة. القيم المسموح: pending, processing, ready, delivered, cancelled' });
+    }
 
     let laundryCheck = '';
     let queryParams = [id];

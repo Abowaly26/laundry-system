@@ -44,6 +44,26 @@ const COUNTRY_PRESETS = [
   { name: 'ألمانيا', lat: '52.5200', lng: '13.4050', currency: '€', lang: 'en', code: '49', vat: '19' }
 ];
 
+const addMonths = (date, months) => {
+  const d = new Date(date);
+  const originalDay = d.getDate();
+  d.setDate(1);
+  d.setMonth(d.getMonth() + months);
+  const daysInMonth = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+  d.setDate(Math.min(originalDay, daysInMonth));
+  return d;
+};
+
+const addYears = (date, years) => {
+  const d = new Date(date);
+  const originalDay = d.getDate();
+  d.setDate(1);
+  d.setFullYear(d.getFullYear() + years);
+  const daysInMonth = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+  d.setDate(Math.min(originalDay, daysInMonth));
+  return d;
+};
+
 export default function Laundries() {
   const { t } = useTranslation();
   const { showToast } = useToast();
@@ -804,15 +824,13 @@ export default function Laundries() {
                 let endDateStr = '';
                 
                 if (plan !== 'lifetime') {
-                  const sDate = new Date(startDateStr);
                   if (plan === 'monthly') {
-                    sDate.setMonth(sDate.getMonth() + 1);
+                    endDateStr = addMonths(startDateStr, 1).toISOString().split('T')[0];
                   } else if (plan === 'semi_annual') {
-                    sDate.setMonth(sDate.getMonth() + 6);
+                    endDateStr = addMonths(startDateStr, 6).toISOString().split('T')[0];
                   } else if (plan === 'yearly') {
-                    sDate.setFullYear(sDate.getFullYear() + 1);
+                    endDateStr = addYears(startDateStr, 1).toISOString().split('T')[0];
                   }
-                  endDateStr = sDate.toISOString().split('T')[0];
                 }
                 
                 setFormData({ 
@@ -842,15 +860,13 @@ export default function Laundries() {
                 let endDateStr = '';
                 
                 if (plan !== 'lifetime' && startDateStr) {
-                  const sDate = new Date(startDateStr);
                   if (plan === 'monthly') {
-                    sDate.setMonth(sDate.getMonth() + 1);
+                    endDateStr = addMonths(startDateStr, 1).toISOString().split('T')[0];
                   } else if (plan === 'semi_annual') {
-                    sDate.setMonth(sDate.getMonth() + 6);
+                    endDateStr = addMonths(startDateStr, 6).toISOString().split('T')[0];
                   } else if (plan === 'yearly') {
-                    sDate.setFullYear(sDate.getFullYear() + 1);
+                    endDateStr = addYears(startDateStr, 1).toISOString().split('T')[0];
                   }
-                  endDateStr = sDate.toISOString().split('T')[0];
                 }
                 
                 setFormData({ 
