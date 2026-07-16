@@ -8,10 +8,6 @@ import {
   Package,
   Banknote,
   AlertTriangle,
-  PlusCircle,
-  UserPlus,
-  Scan,
-  Wallet,
 } from 'lucide-react';
 import {
   Chart as ChartJS,
@@ -306,38 +302,6 @@ export default function Dashboard() {
         </div>
         <div className="header-actions">
         </div>
-      </div>
-
-      {/* Quick Actions Bar */}
-      <div className="quick-actions-bar">
-        <button className="quick-action-btn primary" onClick={() => navigate('/orders/new')}>
-          <div className="quick-action-icon"><PlusCircle size={20} /></div>
-          <div className="quick-action-info">
-            <span className="quick-action-title">{t('dashboard.newOrder')}</span>
-            <span className="quick-action-subtitle">{t('dashboard.newOrderSub') || 'إنشاء فاتورة واستلام الملابس'}</span>
-          </div>
-        </button>
-        <button className="quick-action-btn success" onClick={() => navigate('/customers')}>
-          <div className="quick-action-icon"><UserPlus size={20} /></div>
-          <div className="quick-action-info">
-            <span className="quick-action-title">{t('dashboard.addCustomer')}</span>
-            <span className="quick-action-subtitle">{t('dashboard.addCustomerSub') || 'إضافة وتعديل بيانات العملاء'}</span>
-          </div>
-        </button>
-        <button className="quick-action-btn info" onClick={() => navigate('/tracking')}>
-          <div className="quick-action-icon"><Scan size={20} /></div>
-          <div className="quick-action-info">
-            <span className="quick-action-title">{t('dashboard.scanQR')}</span>
-            <span className="quick-action-subtitle">{t('dashboard.scanQRSub') || 'تتبع الملابس وتحديث الحالة'}</span>
-          </div>
-        </button>
-        <button className="quick-action-btn warning" onClick={() => navigate('/finance')}>
-          <div className="quick-action-icon"><Wallet size={20} /></div>
-          <div className="quick-action-info">
-            <span className="quick-action-title">{t('dashboard.viewRevenue')}</span>
-            <span className="quick-action-subtitle">{t('dashboard.viewRevenueSub') || 'عرض التحصيلات والديون المعلقة'}</span>
-          </div>
-        </button>
       </div>
 
       {/* Stats Cards */}
