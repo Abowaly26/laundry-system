@@ -73,9 +73,10 @@ router.get('/track/:orderIdOrPhone', async (req, res) => {
     // محاولة البحث كرقم طلب أولاً
     if (/^\d+$/.test(orderIdOrPhone)) {
       const orderResult = await query(`
-        SELECT o.*, c.name as customer_name, c.phone as customer_phone
+        SELECT o.*, c.name as customer_name, c.phone as customer_phone, l.name as laundry_name, l.language as laundry_language
         FROM orders o
         JOIN customers c ON o.customer_id = c.id
+        JOIN laundries l ON o.laundry_id = l.id
         WHERE o.id = $1
       `, [orderIdOrPhone]);
 
@@ -103,9 +104,10 @@ router.get('/track/:orderIdOrPhone', async (req, res) => {
         const customerIds = customerResult.rows.map(row => row.id);
         const placeholders = customerIds.map((_, i) => `$${i + 1}`).join(',');
         const customerOrdersResult = await query(`
-          SELECT o.*, c.name as customer_name, c.phone as customer_phone
+          SELECT o.*, c.name as customer_name, c.phone as customer_phone, l.name as laundry_name, l.language as laundry_language
           FROM orders o
           JOIN customers c ON o.customer_id = c.id
+          JOIN laundries l ON o.laundry_id = l.id
           WHERE o.customer_id IN (${placeholders}) AND o.status NOT IN ('cancelled')
           ORDER BY o.created_at DESC
           LIMIT 10

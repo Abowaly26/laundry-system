@@ -9,7 +9,7 @@ import LoadingSpinner from '../../components/UI/LoadingSpinner';
 import './CustomerPortal.css';
 
 export default function CustomerPortal() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const ITEM_STATUS_STEPS = [
     { key: 'pending', label: t('customerPortal.stepPending') || 'قيد الانتظار' },
@@ -43,6 +43,9 @@ export default function CustomerPortal() {
       const res = await ordersAPI.track(searchVal);
       if (res.success && res.data && res.data.length > 0) {
         setOrders(res.data);
+        if (res.data[0].laundry_language) {
+          i18n.changeLanguage(res.data[0].laundry_language);
+        }
       } else {
         setErrorMsg(t('customerPortal.notFoundQuery') || 'لم نجد أي طلب تطابق القيمة المدخلة.');
       }
@@ -67,6 +70,9 @@ export default function CustomerPortal() {
       const res = await ordersAPI.track(query.trim());
       if (res.success && res.data && res.data.length > 0) {
         setOrders(res.data);
+        if (res.data[0].laundry_language) {
+          i18n.changeLanguage(res.data[0].laundry_language);
+        }
       } else {
         setErrorMsg(t('customerPortal.notFoundDetail') || 'لم نجد أي طلب تطابق القيمة المدخلة. يرجى التأكد من رقم الطلب أو رقم الجوال.');
       }
@@ -109,7 +115,11 @@ export default function CustomerPortal() {
         <div className="portal-logo-wrapper">
           <Shirt size={32} />
         </div>
-        <h1>{t('customerPortal.title') || 'بوابة العملاء للمغسلة الذكية'}</h1>
+        <h1>
+          {orders.length > 0 && orders[0].laundry_name
+            ? `${t('customerPortal.titlePrefix') || 'بوابة عملاء'} ${orders[0].laundry_name}`
+            : (t('customerPortal.title') || 'بوابة العملاء للمغسلة الذكية')}
+        </h1>
         <p className="text-secondary">{t('customerPortal.subtitle') || 'تتبع حالة غسيل ملابسك وسجادك لحظة بلحظة'}</p>
       </div>
 
@@ -128,7 +138,7 @@ export default function CustomerPortal() {
                 required
               />
               <Button variant="primary" type="submit" disabled={loading}>
-                {loading ? <RefreshCw size={18} className="spin" /> : <Search size={18} />}
+                {loading ? <RefreshCw size={18} className="spin" style={{ marginInlineEnd: '8px' }} /> : <Search size={18} style={{ marginInlineEnd: '8px' }} />}
                 <span>{t('customerPortal.searchBtn') || 'استعلم الآن'}</span>
               </Button>
             </div>
