@@ -102,7 +102,7 @@ app.get('/api/health', async (req, res) => {
 // Admin-only maintenance endpoints (protected — super_owner only)
 // ============================================================
 const authMiddleware = require('./src/middleware/auth');
-const { authorizeRoles } = require('./src/middleware/roles');
+const authorizeRoles = require('./src/middleware/roles');
 
 app.post('/api/seed', authMiddleware, authorizeRoles('super_owner'), async (req, res) => {
   try {
