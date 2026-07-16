@@ -96,25 +96,6 @@ app.get('/api/health', async (req, res) => {
   }
 });
 
-app.get('/api/cancel-abu-fahd', async (req, res) => {
-  try {
-    console.log('API call: Cancelling Abu Fahd\'s order...');
-    const u1 = await query("UPDATE orders SET status = 'cancelled', updated_at = CURRENT_TIMESTAMP WHERE id = 16 OR tracking_code = 'ORD-0016' RETURNING *");
-    const u2 = await query("UPDATE order_items SET status = 'cancelled', updated_at = CURRENT_TIMESTAMP WHERE order_id = 16 OR order_id IN (SELECT id FROM orders WHERE tracking_code = 'ORD-0016') RETURNING *");
-    res.json({
-      success: true,
-      ordersUpdated: u1.rows,
-      itemsUpdated: u2.rows
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: error.message,
-      stack: error.stack
-    });
-  }
-});
-
 
 
 // ============================================================
