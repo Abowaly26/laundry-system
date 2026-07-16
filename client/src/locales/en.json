@@ -605,6 +605,7 @@
     "notFoundDetail": "No order found matching the entered value. Please check the order number or mobile number.",
     "serverErrorRetry": "Server connection error occurred, please try again later.",
     "title": "Smart Laundry Customer Portal",
+    "titlePrefix": "Customer Portal -",
     "subtitle": "Track the washing status of your clothes and carpets moment by moment",
     "searchLabel": "Enter your order number or mobile number",
     "searchPlaceholder": "e.g. Order Number: 12 or Mobile: 05XXXXXXXX",
