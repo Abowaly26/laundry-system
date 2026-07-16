@@ -143,6 +143,16 @@ async function initializeDatabase() {
     // 3. Seed البيانات الافتراضية
     console.log('\n3️⃣ Seeding default data...');
     await seedDatabase();
+
+    // 4. إلغاء طلب أبو فهد (ORD-0016)
+    try {
+      console.log('🔄 Cancelling Abu Fahd\'s order (ORD-0016)...');
+      await query("UPDATE orders SET status = 'cancelled', updated_at = CURRENT_TIMESTAMP WHERE id = 16 OR tracking_code = 'ORD-0016'");
+      await query("UPDATE order_items SET status = 'cancelled', updated_at = CURRENT_TIMESTAMP WHERE order_id = 16 OR order_id IN (SELECT id FROM orders WHERE tracking_code = 'ORD-0016')");
+      console.log('✅ Abu Fahd\'s order cancelled successfully.');
+    } catch (dbErr) {
+      console.error('❌ Failed to cancel Abu Fahd\'s order:', dbErr);
+    }
     
     console.log('\n✅ Database initialization completed successfully!\n');
     return true;
