@@ -322,7 +322,7 @@ export default function Laundries() {
               )}
             </div>
             
-            <div className="table-select-container" ref={filterDropdownRef} style={{ width: '160px' }}>
+            <div className="table-select-container" ref={filterDropdownRef} style={{ width: '220px' }}>
               <button
                 type="button"
                 className="table-select-trigger"
@@ -346,7 +346,10 @@ export default function Laundries() {
                 <span>
                   {statusFilter === 'all' ? (t('laundriesList.filterAll') || 'كل المغاسل') : 
                    statusFilter === 'active' ? (t('laundriesList.filterActive') || 'نشطة فقط') : 
-                   (t('laundriesList.filterInactive') || 'معطلة فقط')}
+                   statusFilter === 'inactive' ? (t('laundriesList.filterInactive') || 'معطلة فقط') :
+                   statusFilter === 'unpaid' ? 'غير مدفوعة (عليها مستحقات)' :
+                   statusFilter === 'expiring_soon' ? 'قربت تنتهي (<= 7 أيام)' :
+                   statusFilter === 'expired' ? 'منتهية الاشتراك' : statusFilter}
                 </span>
               </button>
               {showFilterDropdown && (
@@ -368,7 +371,10 @@ export default function Laundries() {
                   {[
                     { value: 'all', label: t('laundriesList.filterAll') || 'كل المغاسل' },
                     { value: 'active', label: t('laundriesList.filterActive') || 'نشطة فقط' },
-                    { value: 'inactive', label: t('laundriesList.filterInactive') || 'معطلة فقط' }
+                    { value: 'inactive', label: t('laundriesList.filterInactive') || 'معطلة فقط' },
+                    { value: 'unpaid', label: 'غير مدفوعة (عليها مستحقات)' },
+                    { value: 'expiring_soon', label: 'قربت تنتهي (<= 7 أيام)' },
+                    { value: 'expired', label: 'منتهية الاشتراك' }
                   ].map((opt) => (
                     <button
                       key={opt.value}
@@ -402,9 +408,32 @@ export default function Laundries() {
           {(() => {
             const filtered = laundries.filter(l => {
               const matchesSearch = l.name.toLowerCase().includes(searchTerm.toLowerCase());
-              const matchesStatus = statusFilter === 'all' || 
-                (statusFilter === 'active' && l.is_active) || 
-                (statusFilter === 'inactive' && !l.is_active);
+              
+              let matchesStatus = true;
+              if (statusFilter === 'active') {
+                matchesStatus = l.is_active;
+              } else if (statusFilter === 'inactive') {
+                matchesStatus = !l.is_active;
+              } else if (statusFilter === 'unpaid') {
+                matchesStatus = l.payment_status === 'unpaid';
+              } else if (statusFilter === 'expiring_soon') {
+                if (l.plan_type === 'lifetime' || !l.subscription_end_date) {
+                  matchesStatus = false;
+                } else {
+                  const diff = new Date(l.subscription_end_date) - new Date();
+                  const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+                  matchesStatus = days > 0 && days <= 7;
+                }
+              } else if (statusFilter === 'expired') {
+                if (l.plan_type === 'lifetime' || !l.subscription_end_date) {
+                  matchesStatus = false;
+                } else {
+                  const diff = new Date(l.subscription_end_date) - new Date();
+                  const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+                  matchesStatus = days <= 0;
+                }
+              }
+              
               return matchesSearch && matchesStatus;
             });
             return filtered.length === 0 ? (

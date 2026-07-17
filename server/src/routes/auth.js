@@ -29,7 +29,7 @@ router.post('/login', async (req, res) => {
 
     // البحث عن المستخدم مع بيانات المغسلة
     const result = await query(
-      `SELECT u.*, l.name as laundry_name, l.phone as laundry_phone, l.address as laundry_address, l.currency as laundry_currency, l.language as laundry_language, l.is_active as laundry_active, l.latitude as laundry_lat, l.longitude as laundry_lng, l.tax_number as laundry_tax_number, l.vat_percent as laundry_vat_percent, l.country_code as laundry_country_code
+      `SELECT u.*, l.name as laundry_name, l.phone as laundry_phone, l.address as laundry_address, l.currency as laundry_currency, l.language as laundry_language, l.is_active as laundry_active, l.latitude as laundry_lat, l.longitude as laundry_lng, l.tax_number as laundry_tax_number, l.vat_percent as laundry_vat_percent, l.country_code as laundry_country_code, l.plan_type as laundry_plan_type, l.subscription_start_date as laundry_subscription_start_date, l.subscription_end_date as laundry_subscription_end_date
        FROM users u 
        LEFT JOIN laundries l ON u.laundry_id = l.id 
        WHERE u.email = $1`,
@@ -97,7 +97,10 @@ router.post('/login', async (req, res) => {
           laundry_lng: user.laundry_lng,
           laundry_tax_number: user.laundry_tax_number,
           laundry_vat_percent: user.laundry_vat_percent,
-          laundry_country_code: user.laundry_country_code
+          laundry_country_code: user.laundry_country_code,
+          laundry_plan_type: user.laundry_plan_type,
+          laundry_subscription_start_date: user.laundry_subscription_start_date,
+          laundry_subscription_end_date: user.laundry_subscription_end_date
         }
       }
     });
@@ -134,7 +137,10 @@ router.get('/me', authMiddleware, (req, res) => {
         laundry_lng: req.user.laundry_lng,
         laundry_tax_number: req.user.laundry_tax_number,
         laundry_vat_percent: req.user.laundry_vat_percent,
-        laundry_country_code: req.user.laundry_country_code
+        laundry_country_code: req.user.laundry_country_code,
+        laundry_plan_type: req.user.laundry_plan_type,
+        laundry_subscription_start_date: req.user.laundry_subscription_start_date,
+        laundry_subscription_end_date: req.user.laundry_subscription_end_date
       }
     });
   } catch (error) {

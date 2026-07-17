@@ -29,7 +29,7 @@ async function authMiddleware(req, res, next) {
 
     // التحقق من وجود المستخدم وأنه نشط - مع laundry_id
     const result = await query(
-      'SELECT u.id, u.name, u.email, u.role, u.is_active, u.laundry_id, l.name as laundry_name, l.phone as laundry_phone, l.address as laundry_address, l.currency as laundry_currency, l.language as laundry_language, l.is_active as laundry_active, l.latitude as laundry_lat, l.longitude as laundry_lng, l.tax_number as laundry_tax_number, l.vat_percent as laundry_vat_percent, l.country_code as laundry_country_code FROM users u LEFT JOIN laundries l ON u.laundry_id = l.id WHERE u.id = $1',
+      'SELECT u.id, u.name, u.email, u.role, u.is_active, u.laundry_id, l.name as laundry_name, l.phone as laundry_phone, l.address as laundry_address, l.currency as laundry_currency, l.language as laundry_language, l.is_active as laundry_active, l.latitude as laundry_lat, l.longitude as laundry_lng, l.tax_number as laundry_tax_number, l.vat_percent as laundry_vat_percent, l.country_code as laundry_country_code, l.plan_type as laundry_plan_type, l.subscription_start_date as laundry_subscription_start_date, l.subscription_end_date as laundry_subscription_end_date FROM users u LEFT JOIN laundries l ON u.laundry_id = l.id WHERE u.id = $1',
       [decoded.userId]
     );
 

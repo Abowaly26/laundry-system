@@ -12,6 +12,62 @@ export default function Header({ title, onMenuClick }) {
     return name.split(' ').map((n) => n[0]).join('').slice(0, 2);
   };
 
+  const renderSubscriptionBadge = () => {
+    if (isSuperOwner) return null;
+    
+    const plan = user?.laundry_plan_type;
+    const endDateStr = user?.laundry_subscription_end_date;
+    
+    if (plan === 'lifetime') {
+      return (
+        <span className="header-sub-badge lifetime" title="اشتراك دائم مدى الحياة">
+          ♾️ مدى الحياة
+        </span>
+      );
+    }
+    
+    if (!endDateStr) return null;
+    
+    const now = new Date();
+    const endDate = new Date(endDateStr);
+    const diffTime = endDate - now;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays <= 0) {
+      return (
+        <span className="header-sub-badge expired" title="الاشتراك منتهي! يرجى التجديد">
+          ⚠️ اشتراك منتهي!
+        </span>
+      );
+    }
+    
+    // Calculate months and days remaining
+    let months = 0;
+    let days = diffDays;
+    
+    if (diffDays >= 30) {
+      months = Math.floor(diffDays / 30);
+      days = diffDays % 30;
+    }
+    
+    let text = 'باقي: ';
+    if (months > 0) {
+      text += `${months} شهر `;
+    }
+    if (days > 0 || months === 0) {
+      text += `${days} يوم`;
+    }
+    
+    // Determine class based on urgency (<= 7 days critical, <= 30 warning)
+    const urgencyClass = diffDays <= 7 ? 'critical' : diffDays <= 30 ? 'warning' : 'healthy';
+    
+    return (
+      <span className={`header-sub-badge ${urgencyClass}`} title={`ينتهي في ${new Date(endDateStr).toLocaleDateString('ar-EG')}`}>
+        ⏳ {text}
+      </span>
+    );
+  };
+
   return (
     <header className="header">
       <div className="header-right">
@@ -21,9 +77,12 @@ export default function Header({ title, onMenuClick }) {
         <div>
           <h1 className="header-title">{title}</h1>
           {!isSuperOwner && laundryName && (
-            <div className="header-laundry-badge">
-              <Building2 size={11} />
-              {laundryName}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <div className="header-laundry-badge">
+                <Building2 size={11} />
+                {laundryName}
+              </div>
+              {renderSubscriptionBadge()}
             </div>
           )}
         </div>
