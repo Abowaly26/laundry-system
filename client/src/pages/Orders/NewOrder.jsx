@@ -565,7 +565,21 @@ export default function NewOrder() {
       return;
     }
 
-    // الخدمة أصبحت اختيارية — لا حاجة للتحقق الإلزامي
+    // التحقق من اكتمال بيانات كل قطعة (نوع القطعة إلزامي فقط)
+    const emptyItems = items
+      .map((item, i) => ({ index: i + 1, item }))
+      .filter(({ item }) => !item.item_type?.trim());
+
+    if (emptyItems.length > 0) {
+      const labels = emptyItems.map(({ index }) => `القطعة ${index}`).join(' و ');
+      showToast(
+        emptyItems.length === 1
+          ? `${labels}: يرجى إدخال نوع القطعة قبل حفظ الطلب`
+          : `${labels}: يرجى إدخال نوع كل قطعة قبل حفظ الطلب`,
+        'warning'
+      );
+      return;
+    }
 
     if (!deliveryDate || !deliveryTime) {
       showToast('يرجى تحديد تاريخ ووقت التسليم', 'error');
