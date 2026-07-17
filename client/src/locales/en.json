@@ -662,5 +662,22 @@
     "deliverSuccess": "Order delivered and closed successfully! ✓",
     "deliverFail": "Failed to update order status",
     "deliverError": "Error during order update"
+  },
+  "profile": {
+    "title": "Profile",
+    "subtitle": "Edit account settings and password",
+    "personalInfo": "Personal Information",
+    "name": "Full Name",
+    "email": "Email Address",
+    "security": "Security & Password",
+    "currentPassword": "Current Password (required for changes)",
+    "newPassword": "New Password",
+    "confirmPassword": "Confirm New Password",
+    "saveBtn": "Save Changes",
+    "otpTitle": "Two-Step Verification",
+    "otpDesc": "An OTP code has been sent to your email address.",
+    "currentPasswordRequired": "Current password is required",
+    "passwordMismatch": "New passwords do not match",
+    "passwordTooShort": "New password must be at least 6 characters"
   }
 }
