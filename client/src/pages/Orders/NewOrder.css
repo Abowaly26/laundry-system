@@ -311,7 +311,7 @@
 /* Desktop Headers Row */
 .order-items-header-row {
   display: grid;
-  grid-template-columns: 2.7fr 1.6fr 3fr 1.7fr 1fr;
+  grid-template-columns: 3.2fr 2fr 2.6fr 1.6fr 0.8fr;
   gap: 12px;
   padding: 8px 16px;
   color: var(--text-secondary);
@@ -356,9 +356,9 @@
 
 .order-item-grid {
   display: grid;
-  grid-template-columns: 2.7fr 1.6fr 3fr 1.7fr 1fr;
+  grid-template-columns: 3.2fr 2fr 2.6fr 1.6fr 0.8fr;
   gap: 12px;
-  align-items: center;
+  align-items: start;
   width: 100%;
 }
 
@@ -395,6 +395,198 @@
   white-space: nowrap;
 }
 
+/* Free-text Item Type Input */
+.item-type-input-wrapper {
+  width: 100%;
+  position: relative;
+}
+
+.item-type-free-input {
+  width: 100% !important;
+  font-size: 0.95rem !important;
+  font-weight: 600 !important;
+  height: 42px !important;
+  border-radius: 10px;
+  border: 1.5px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  padding: 0 12px !important;
+}
+
+.item-type-free-input:focus {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
+  outline: none !important;
+}
+
+/* Size field with rug calculator */
+.size-field-wrapper {
+  width: 100%;
+  position: relative;
+}
+
+.size-input-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  width: 100%;
+}
+
+.size-free-input {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.85rem !important;
+  height: 38px !important;
+  border-radius: 8px;
+  border: 1.5px solid var(--border);
+  background: var(--bg-card);
+  transition: border-color 0.2s;
+}
+
+.size-free-input:focus {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 2px rgba(99,102,241,0.08) !important;
+  outline: none !important;
+}
+
+.rug-calc-toggle-btn {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: 1.5px solid var(--border);
+  background: var(--bg-hover);
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  color: var(--primary);
+}
+
+.rug-calc-toggle-btn:hover {
+  background: rgba(99,102,241,0.1);
+  border-color: rgba(99,102,241,0.3);
+  transform: scale(1.05);
+}
+
+/* Rug Calculator Popover */
+.rug-calculator-popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 200;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 12px 30px -6px rgba(0,0,0,0.12), 0 4px 10px -2px rgba(0,0,0,0.06);
+  min-width: 240px;
+  animation: popoverIn 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes popoverIn {
+  from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.rug-calc-title {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: var(--primary);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  text-align: center;
+}
+
+.rug-calc-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.rug-calc-field {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.rug-calc-field label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.rug-calc-input {
+  height: 36px !important;
+  padding: 0 10px !important;
+  font-size: 0.88rem !important;
+  font-weight: 600 !important;
+  text-align: center !important;
+  border-radius: 8px;
+}
+
+.rug-calc-x {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--text-secondary);
+  padding-bottom: 6px;
+  flex-shrink: 0;
+}
+
+.rug-calc-result {
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--primary);
+  background: rgba(99,102,241,0.06);
+  border-radius: 8px;
+  padding: 6px 10px;
+  margin-bottom: 10px;
+}
+
+.rug-calc-apply-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 9px 0;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.rug-calc-apply-btn:hover {
+  background: var(--primary-dark, #3730a3);
+  box-shadow: 0 4px 12px rgba(99,102,241,0.25);
+  transform: translateY(-1px);
+}
+
+/* Service Optional Trigger */
+.service-trigger.service-empty {
+  border-style: dashed;
+  color: var(--text-secondary);
+  opacity: 0.8;
+}
+
+.service-trigger.service-empty:hover {
+  opacity: 1;
+  border-color: rgba(99,102,241,0.4);
+  border-style: solid;
+}
+
+/* Item notes input */
 .item-notes-input {
   min-height: 38px;
   height: auto !important;
