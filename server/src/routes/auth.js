@@ -146,4 +146,144 @@ router.get('/me', authMiddleware, (req, res) => {
   }
 });
 
+/**
+ * POST /api/auth/request-profile-otp
+ * طلب تحديث البيانات (يرسل رمز OTP)
+ */
+router.post('/request-profile-otp', authMiddleware, async (req, res) => {
+  try {
+    const { currentPassword, newEmail, newPassword, newName } = req.body;
+
+    if (!currentPassword) {
+      return res.status(400).json({ success: false, message: 'كلمة المرور الحالية مطلوبة' });
+    }
+
+    // التحقق من المستخدم
+    const userResult = await query('SELECT * FROM users WHERE id = $1', [req.user.id]);
+    const user = userResult.rows[0];
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'المستخدم غير موجود' });
+    }
+
+    // التحقق من كلمة المرور
+    const isValidPassword = await bcrypt.compare(currentPassword, user.password_hash);
+    if (!isValidPassword) {
+      return res.status(401).json({ success: false, message: 'كلمة المرور الحالية غير صحيحة' });
+    }
+
+    // إنشاء كود OTP
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpiry = new Date(Date.now() + 10 * 60000); // 10 minutes from now
+
+    // تشفير كلمة المرور الجديدة إذا تم تقديمها
+    let hashedNewPassword = null;
+    if (newPassword) {
+      hashedNewPassword = await bcrypt.hash(newPassword, 10);
+    }
+
+    // حفظ بيانات الطلب والـ OTP في قاعدة البيانات
+    await query(
+      `UPDATE users SET 
+        otp_code = $1, 
+        otp_expiry = $2, 
+        pending_email = $3, 
+        pending_password = $4,
+        pending_name = $5
+       WHERE id = $6`,
+      [otpCode, otpExpiry, newEmail || null, hashedNewPassword, newName || null, req.user.id]
+    );
+
+    // إرسال البريد الإلكتروني (نرسله للبريد الجديد إذا وجد، أو للبريد الحالي)
+    const targetEmail = newEmail || user.email;
+    const { sendOTPEmail } = require('../config/email');
+    
+    // إذا لم تكن إعدادات البريد موجودة، نعيد الرمز في الاستجابة (لأغراض التطوير فقط)
+    // في الإنتاج يجب أن لا نعيد الرمز
+    const isDev = !process.env.SMTP_EMAIL;
+    
+    if (!isDev) {
+      await sendOTPEmail(targetEmail, otpCode, user.name);
+    }
+
+    res.json({
+      success: true,
+      message: 'تم إرسال رمز التحقق إلى بريدك الإلكتروني',
+      devOtp: isDev ? otpCode : undefined // للبيئة التطويرية فقط
+    });
+
+  } catch (error) {
+    console.error('Request OTP error:', error);
+    res.status(500).json({ success: false, message: 'حدث خطأ أثناء معالجة الطلب' });
+  }
+});
+
+/**
+ * PUT /api/auth/update-profile
+ * تأكيد الـ OTP وتحديث البيانات
+ */
+router.put('/update-profile', authMiddleware, async (req, res) => {
+  try {
+    const { otpCode } = req.body;
+
+    if (!otpCode) {
+      return res.status(400).json({ success: false, message: 'رمز التحقق مطلوب' });
+    }
+
+    const userResult = await query('SELECT * FROM users WHERE id = $1', [req.user.id]);
+    const user = userResult.rows[0];
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'المستخدم غير موجود' });
+    }
+
+    // التحقق من الـ OTP
+    if (!user.otp_code || user.otp_code !== otpCode) {
+      return res.status(400).json({ success: false, message: 'رمز التحقق غير صحيح' });
+    }
+
+    if (new Date() > new Date(user.otp_expiry)) {
+      return res.status(400).json({ success: false, message: 'رمز التحقق منتهي الصلاحية' });
+    }
+
+    // التحقق من البريد الجديد إذا تم تغييره
+    if (user.pending_email && user.pending_email !== user.email) {
+      const emailCheck = await query('SELECT id FROM users WHERE email = $1 AND id != $2', [user.pending_email, user.id]);
+      if (emailCheck.rows.length > 0) {
+        return res.status(400).json({ success: false, message: 'البريد الإلكتروني الجديد مستخدم بالفعل' });
+      }
+    }
+
+    // تطبيق التغييرات
+    const finalName = user.pending_name || user.name;
+    const finalEmail = user.pending_email || user.email;
+    const finalPassword = user.pending_password || user.password_hash;
+
+    const result = await query(
+      `UPDATE users SET 
+        name = $1,
+        email = $2,
+        password_hash = $3,
+        otp_code = NULL,
+        otp_expiry = NULL,
+        pending_email = NULL,
+        pending_password = NULL,
+        pending_name = NULL
+       WHERE id = $4 RETURNING id, name, email, role, laundry_id`,
+      [finalName, finalEmail, finalPassword, user.id]
+    );
+
+    res.json({
+      success: true,
+      message: 'تم تحديث البيانات بنجاح',
+      data: result.rows[0],
+      requireRelogin: !!user.pending_password // إذا تم تغيير الباسورد يحتاج تسجيل دخول
+    });
+
+  } catch (error) {
+    console.error('Update profile error:', error);
+    res.status(500).json({ success: false, message: 'حدث خطأ أثناء التحديث' });
+  }
+});
+
 module.exports = router;

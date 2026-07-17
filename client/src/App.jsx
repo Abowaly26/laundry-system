@@ -18,6 +18,7 @@ import Users from './pages/Users/Users';
 import Settings from './pages/Settings/Settings';
 import CustomerPortal from './pages/CustomerPortal/CustomerPortal';
 import Laundries from './pages/Laundries/Laundries';
+import Profile from './pages/Profile/Profile';
 
 function App() {
   return (
@@ -98,6 +99,9 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+
+              {/* الملف الشخصي (متاح لجميع المستخدمين المسجلين) */}
+              <Route path="profile" element={<Profile />} />
 
               {/* إدارة المغاسل (صاحب النظام فقط) */}
               <Route

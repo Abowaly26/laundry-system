@@ -14,6 +14,7 @@ import {
   Shirt,
   Store,
   Crown,
+  UserCircle
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../context/SettingsContext';
@@ -30,12 +31,14 @@ const navItems = [
   { path: '/finance', labelKey: 'sidebar.finances', icon: Wallet, hideForSuperOwner: true, adminOnly: true },
   { path: '/users', labelKey: 'sidebar.users', icon: UserCog, adminOnly: true },
   { path: '/settings', labelKey: 'sidebar.settings', icon: SettingsIcon, adminOnly: true },
+  { path: '/profile', labelKey: 'profile.title', icon: UserCircle },
 ];
 
 // عناصر خاصة بـ super_owner
 const superOwnerItems = [
   { path: '/laundries', labelKey: 'sidebar.laundries', icon: Store },
   { path: '/users', labelKey: 'sidebar.users', icon: UserCog },
+  { path: '/profile', labelKey: 'profile.title', icon: UserCircle },
 ];
 
 const roleLabels = {

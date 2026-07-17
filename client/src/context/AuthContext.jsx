@@ -83,12 +83,21 @@ export function AuthProvider({ children }) {
     setUser(null);
   }, []);
 
+  const updateLocalUser = useCallback((newUserData) => {
+    setUser((prev) => {
+      const updatedUser = { ...prev, ...newUserData };
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      return updatedUser;
+    });
+  }, []);
+
   const value = {
     user,
     token,
     loading,
     login,
     logout,
+    updateLocalUser,
     isAuthenticated: !!token && !!user,
     isAdmin: user?.role === 'admin' || user?.role === 'super_owner',
     isSuperOwner: user?.role === 'super_owner',
