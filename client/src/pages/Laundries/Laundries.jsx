@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import {
   Plus, Store, Users, ShoppingBag, TrendingUp,
   Edit2, Power, Eye, X, ChevronDown, ChevronUp,
-  Crown, MapPin, Phone, User, Lock, Mail, Coins, Compass
+  Crown, MapPin, Phone, User, Lock, Mail, Coins, Map
 } from 'lucide-react';
 import { laundriesAPI } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
@@ -506,8 +506,8 @@ export default function Laundries() {
                           display: 'inline-flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          width: '28px',
-                          height: '28px',
+                          width: '36px',
+                          height: '36px',
                           borderRadius: '50%',
                           transition: 'background var(--transition)',
                           marginInlineStart: '8px',
@@ -516,7 +516,7 @@ export default function Laundries() {
                         className="laundry-location-view-btn"
                         title="عرض الموقع على الخريطة"
                       >
-                        <Compass size={14} />
+                        <Map size={18} />
                       </button>
                     )}
                   </div>
