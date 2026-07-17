@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import Button from '../../components/UI/Button';
 import Card from '../../components/UI/Card';
-import { User, Mail, Lock, ShieldCheck } from 'lucide-react';
+import { User, Mail, Lock, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 import './Profile.css';
 
 export default function Profile() {
@@ -24,6 +24,10 @@ export default function Profile() {
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [otpCode, setOtpCode] = useState('');
   const [devOtp, setDevOtp] = useState('');
+
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -176,7 +180,7 @@ export default function Profile() {
               <div className="input-with-icon">
                 <Lock size={18} className="input-icon text-warning" />
                 <input
-                  type="password"
+                  type={showCurrentPassword ? "text" : "password"}
                   name="currentPassword"
                   className="form-input"
                   value={formData.currentPassword}
@@ -184,6 +188,14 @@ export default function Profile() {
                   required
                   placeholder="أدخل كلمة المرور الحالية"
                 />
+                <button
+                  type="button"
+                  className="password-toggle-btn"
+                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                  aria-label={showCurrentPassword ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور'}
+                >
+                  {showCurrentPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
             </div>
 
@@ -196,13 +208,21 @@ export default function Profile() {
                 <div className="input-with-icon">
                   <ShieldCheck size={18} className="input-icon" />
                   <input
-                    type="password"
+                    type={showNewPassword ? "text" : "password"}
                     name="newPassword"
                     className="form-input"
                     value={formData.newPassword}
                     onChange={handleChange}
                     placeholder="كلمة مرور قوية (6 أحرف على الأقل)"
                   />
+                  <button
+                    type="button"
+                    className="password-toggle-btn"
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                    aria-label={showNewPassword ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور'}
+                  >
+                    {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
                 </div>
               </div>
               <div className="form-group flex-1">
@@ -210,13 +230,21 @@ export default function Profile() {
                 <div className="input-with-icon">
                   <ShieldCheck size={18} className="input-icon" />
                   <input
-                    type="password"
+                    type={showConfirmPassword ? "text" : "password"}
                     name="confirmPassword"
                     className="form-input"
                     value={formData.confirmPassword}
                     onChange={handleChange}
                     placeholder="أعد إدخال كلمة المرور"
                   />
+                  <button
+                    type="button"
+                    className="password-toggle-btn"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    aria-label={showConfirmPassword ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور'}
+                  >
+                    {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
                 </div>
               </div>
             </div>
