@@ -1,7 +1,8 @@
-import { Fragment, useState, useEffect, useRef } from 'react';
+import { Fragment, useState, useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Plus, Trash2, Search, UserPlus, Printer, ArrowRight, Save, FileText, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Trash2, Search, UserPlus, Printer, ArrowRight, Save, FileText, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { customersAPI, servicesAPI, ordersAPI, itemTypesAPI } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import { useSettings } from '../../context/SettingsContext';
@@ -463,11 +464,32 @@ export default function NewOrder() {
     setItems(newItems);
   };
 
-  // rug calculator state per item
-  const [rugCalc, setRugCalc] = useState({}); // { [index]: { open, w, h } }
-  const toggleRugCalc = (index) => {
-    setRugCalc(prev => ({ ...prev, [index]: { open: !prev[index]?.open, w: prev[index]?.w || '', h: prev[index]?.h || '' } }));
-  };
+  // rug calculator state — portal-based so it escapes parent stacking context
+  const [rugCalc, setRugCalc] = useState({}); // { [index]: { open, w, h, x, y } }
+  const rugBtnRefs = useRef({});
+
+  const toggleRugCalc = useCallback((index) => {
+    setRugCalc(prev => {
+      const isOpen = prev[index]?.open;
+      if (isOpen) {
+        return { ...prev, [index]: { ...prev[index], open: false } };
+      }
+      // calculate position from button
+      const btn = rugBtnRefs.current[index];
+      const rect = btn ? btn.getBoundingClientRect() : { bottom: 0, left: 0, right: 0, width: 0 };
+      return {
+        ...prev,
+        [index]: {
+          open: true,
+          w: prev[index]?.w || '',
+          h: prev[index]?.h || '',
+          top: rect.bottom + window.scrollY + 6,
+          right: window.innerWidth - rect.right,
+        }
+      };
+    });
+  }, []);
+
   const setRugCalcVal = (index, field, val) => {
     setRugCalc(prev => ({ ...prev, [index]: { ...prev[index], [field]: val } }));
   };
@@ -480,6 +502,23 @@ export default function NewOrder() {
       setRugCalc(prev => ({ ...prev, [index]: { ...prev[index], open: false } }));
     }
   };
+
+  // close rug calc on outside click
+  useEffect(() => {
+    const handler = (e) => {
+      const anyOpen = Object.values(rugCalc).some(v => v?.open);
+      if (!anyOpen) return;
+      if (!e.target.closest('.rug-calculator-portal') && !e.target.closest('.rug-calc-toggle-btn')) {
+        setRugCalc(prev => {
+          const next = {};
+          Object.keys(prev).forEach(k => { next[k] = { ...prev[k], open: false }; });
+          return next;
+        });
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [rugCalc]);
 
   const handleServiceChange = (index, serviceId) => {
     const newItems = [...items];
@@ -1190,6 +1229,7 @@ export default function NewOrder() {
                                 />
                                 <button
                                   type="button"
+                                  ref={el => { rugBtnRefs.current[index] = el; }}
                                   className={`rug-calc-toggle-btn ${rugCalc[index]?.open ? 'active' : ''}`}
                                   title="حاسبة مساحة السجادة"
                                   onClick={() => toggleRugCalc(index)}
@@ -1198,11 +1238,30 @@ export default function NewOrder() {
                                 </button>
                               </div>
 
-                              {rugCalc[index]?.open && (
-                                <div className="rug-calculator-popover" onClick={e => e.stopPropagation()}>
+                              {/* Portal renders at body level — escapes all stacking contexts */}
+                              {rugCalc[index]?.open && createPortal(
+                                <div
+                                  className="rug-calculator-portal"
+                                  style={{
+                                    position: 'absolute',
+                                    top: `${rugCalc[index].top}px`,
+                                    right: `${rugCalc[index].right}px`,
+                                  }}
+                                  onMouseDown={e => e.stopPropagation()}
+                                >
                                   <div className="rug-calc-header">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M2 20h20"/><path d="M4 4v16"/><path d="M20 4v16"/><path d="M4 12h16"/><path d="M9 4v8"/><path d="M15 12v8"/></svg>
-                                    حاسبة مساحة السجادة
+                                    <div className="rug-calc-title">
+                                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M2 20h20"/><path d="M4 4v16"/><path d="M20 4v16"/><path d="M4 12h16"/><path d="M9 4v8"/><path d="M15 12v8"/></svg>
+                                      <span>حاسبة مساحة السجادة</span>
+                                    </div>
+                                    <button
+                                      type="button"
+                                      className="rug-calc-close-btn"
+                                      onClick={() => toggleRugCalc(index)}
+                                      title="إغلاق"
+                                    >
+                                      <X size={14} />
+                                    </button>
                                   </div>
                                   <div className="rug-calc-inputs">
                                     <div className="rug-calc-field">
@@ -1215,6 +1274,7 @@ export default function NewOrder() {
                                         placeholder="2"
                                         step="0.5"
                                         min="0"
+                                        autoFocus
                                       />
                                     </div>
                                     <div className="rug-calc-multiply">×</div>
@@ -1247,7 +1307,8 @@ export default function NewOrder() {
                                   >
                                     تطبيق على حقل الحجم
                                   </button>
-                                </div>
+                                </div>,
+                                document.body
                               )}
                             </div>
                           </div>
