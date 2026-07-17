@@ -103,6 +103,22 @@ app.get('/api/health', async (req, res) => {
   }
 });
 
+// Temporary debug endpoint to test SMTP settings
+app.get('/api/test-email', async (req, res) => {
+  try {
+    const { sendOTPEmail } = require('./src/config/email');
+    await sendOTPEmail('waly20691@gmail.com', '123456', 'مستخدم التجربة');
+    res.json({ success: true, message: 'Email sent successfully!' });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Email sending failed',
+      error: error.message,
+      stack: error.stack
+    });
+  }
+});
+
 
 
 // ============================================================
