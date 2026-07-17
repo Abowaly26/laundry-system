@@ -12,7 +12,7 @@ export default function Settings() {
   const { t, i18n } = useTranslation();
   const { settings, updateSettings, defaults } = useSettings();
   const { showToast } = useToast();
-  const { isAdmin } = useAuth();
+  const { isAdmin, user, isSuperOwner } = useAuth();
 
   const [formData, setFormData] = useState({
     laundryName: settings.laundryName || '',
@@ -209,6 +209,65 @@ export default function Settings() {
                 </ul>
               </div>
             </Card>
+
+            {/* باقة الاشتراك والوقت المتبقي */}
+            {!isSuperOwner && user && (
+              <Card title={t('settings.subscriptionTitle') || 'تفاصيل باقة الاشتراك'} className="mt-md">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '10px' }}>
+                    <span style={{ fontWeight: '600', color: 'var(--text-muted)' }}>نوع الباقة الحالية:</span>
+                    <strong style={{ 
+                      background: 'rgba(59, 130, 246, 0.1)', 
+                      color: 'var(--primary)', 
+                      padding: '4px 12px', 
+                      borderRadius: '20px', 
+                      fontSize: '0.88rem' 
+                    }}>
+                      {user.laundry_plan_type === 'lifetime' ? '♾️ مدى الحياة (دائم)' : 
+                       user.laundry_plan_type === 'monthly' ? 'شهرية' :
+                       user.laundry_plan_type === '6months' ? '6 أشهر' :
+                       user.laundry_plan_type === '1year' ? 'سنة واحدة' :
+                       user.laundry_plan_type === '3years' ? '3 سنوات' :
+                       user.laundry_plan_type === '5years' ? '5 سنوات' : user.laundry_plan_type}
+                    </strong>
+                  </div>
+
+                  {user.laundry_plan_type !== 'lifetime' && user.laundry_subscription_end_date && (
+                    <>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '10px' }}>
+                        <span style={{ fontWeight: '600', color: 'var(--text-muted)' }}>تاريخ انتهاء الاشتراك:</span>
+                        <strong>{new Date(user.laundry_subscription_end_date).toLocaleDateString('ar-EG')}</strong>
+                      </div>
+
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontWeight: '600', color: 'var(--text-muted)' }}>الوقت المتبقي:</span>
+                        <strong style={{ 
+                          color: (() => {
+                            const diffDays = Math.ceil((new Date(user.laundry_subscription_end_date) - new Date()) / (1000 * 60 * 60 * 24));
+                            return diffDays <= 7 ? '#ef4444' : diffDays <= 30 ? '#f59e0b' : '#10b981';
+                          })(),
+                          fontWeight: 'bold'
+                        }}>
+                          {(() => {
+                            const diffDays = Math.ceil((new Date(user.laundry_subscription_end_date) - new Date()) / (1000 * 60 * 60 * 24));
+                            if (diffDays <= 0) return 'منتهي!';
+                            const isEn = i18n.language === 'en';
+                            if (isEn) {
+                              return `${diffDays} ${diffDays === 1 ? 'day' : 'days'}`;
+                            } else {
+                              if (diffDays === 1) return 'يوم واحد';
+                              if (diffDays === 2) return 'يومين';
+                              if (diffDays >= 3 && diffDays <= 10) return `${diffDays} أيام`;
+                              return `${diffDays} يوم`;
+                            }
+                          })()}
+                        </strong>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </Card>
+            )}
           </div>
         </div>
 
