@@ -118,8 +118,8 @@ router.get('/revenue', async (req, res) => {
 
     // intervalQuery is a safe, hardcoded SQL expression — not user input
     let intervalQuery = "CURRENT_TIMESTAMP - INTERVAL '7 days'";
-    if (period === '30days') {
-      intervalQuery = "CURRENT_TIMESTAMP - INTERVAL '30 days'";
+    if (period === '14days') {
+      intervalQuery = "CURRENT_TIMESTAMP - INTERVAL '14 days'";
     } else if (period === 'this_month') {
       intervalQuery = "DATE_TRUNC('month', CURRENT_TIMESTAMP)";
     }

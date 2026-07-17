@@ -176,8 +176,8 @@ export default function Dashboard() {
         d.setDate(d.getDate() - i);
         datesToPad.push(d);
       }
-    } else if (period === '30days') {
-      for (let i = 29; i >= 0; i--) {
+    } else if (period === '14days') {
+      for (let i = 13; i >= 0; i--) {
         const d = new Date();
         d.setDate(d.getDate() - i);
         datesToPad.push(d);
@@ -337,14 +337,14 @@ export default function Dashboard() {
                 onClick={() => setShowRevenueDropdown(!showRevenueDropdown)}
               >
                 {revenuePeriod === '7days' ? (t('dashboard.last7days') || 'آخر 7 أيام') : 
-                 revenuePeriod === '30days' ? (t('dashboard.last30days') || 'آخر 30 يوم') : 
+                 revenuePeriod === '14days' ? (t('dashboard.last2weeks') || 'آخر أسبوعين') : 
                  (t('dashboard.thisMonth') || 'هذا الشهر')}
               </button>
               {showRevenueDropdown && (
                 <div className="table-select-dropdown">
                   {[
                     { value: '7days', label: t('dashboard.last7days') || 'آخر 7 أيام' },
-                    { value: '30days', label: t('dashboard.last30days') || 'آخر 30 يوم' },
+                    { value: '14days', label: t('dashboard.last2weeks') || 'آخر أسبوعين' },
                     { value: 'this_month', label: t('dashboard.thisMonth') || 'هذا الشهر' }
                   ].map((opt) => (
                     <button
