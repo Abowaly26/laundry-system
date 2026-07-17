@@ -1240,74 +1240,80 @@ export default function NewOrder() {
 
                               {/* Portal renders at body level — escapes all stacking contexts */}
                               {rugCalc[index]?.open && createPortal(
-                                <div
-                                  className="rug-calculator-portal"
-                                  style={{
-                                    position: 'absolute',
-                                    top: `${rugCalc[index].top}px`,
-                                    right: `${rugCalc[index].right}px`,
-                                  }}
-                                  onMouseDown={e => e.stopPropagation()}
-                                >
-                                  <div className="rug-calc-header">
-                                    <div className="rug-calc-title">
-                                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M2 20h20"/><path d="M4 4v16"/><path d="M20 4v16"/><path d="M4 12h16"/><path d="M9 4v8"/><path d="M15 12v8"/></svg>
-                                      <span>حاسبة مساحة السجادة</span>
+                                <Fragment>
+                                  <div
+                                    className="rug-calculator-backdrop"
+                                    onMouseDown={() => toggleRugCalc(index)}
+                                  />
+                                  <div
+                                    className="rug-calculator-portal"
+                                    style={{
+                                      position: 'absolute',
+                                      top: `${rugCalc[index].top}px`,
+                                      right: `${rugCalc[index].right}px`,
+                                    }}
+                                    onMouseDown={e => e.stopPropagation()}
+                                  >
+                                    <div className="rug-calc-header">
+                                      <div className="rug-calc-title">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M2 20h20"/><path d="M4 4v16"/><path d="M20 4v16"/><path d="M4 12h16"/><path d="M9 4v8"/><path d="M15 12v8"/></svg>
+                                        <span>حاسبة مساحة السجادة</span>
+                                      </div>
+                                      <button
+                                        type="button"
+                                        className="rug-calc-close-btn"
+                                        onClick={() => toggleRugCalc(index)}
+                                        title="إغلاق"
+                                      >
+                                        <X size={14} />
+                                      </button>
+                                    </div>
+                                    <div className="rug-calc-inputs">
+                                      <div className="rug-calc-field">
+                                        <label>العرض (م)</label>
+                                        <input
+                                          type="number"
+                                          className="form-input rug-calc-input"
+                                          value={rugCalc[index]?.w || ''}
+                                          onChange={(e) => setRugCalcVal(index, 'w', e.target.value)}
+                                          placeholder="2"
+                                          step="0.5"
+                                          min="0"
+                                          autoFocus
+                                        />
+                                      </div>
+                                      <div className="rug-calc-multiply">×</div>
+                                      <div className="rug-calc-field">
+                                        <label>الطول (م)</label>
+                                        <input
+                                          type="number"
+                                          className="form-input rug-calc-input"
+                                          value={rugCalc[index]?.h || ''}
+                                          onChange={(e) => setRugCalcVal(index, 'h', e.target.value)}
+                                          placeholder="3"
+                                          step="0.5"
+                                          min="0"
+                                        />
+                                      </div>
+                                      <div className="rug-calc-field rug-calc-equals-field">
+                                        <label>المساحة</label>
+                                        <div className="rug-calc-area-display">
+                                          {(rugCalc[index]?.w && rugCalc[index]?.h)
+                                            ? `${(parseFloat(rugCalc[index].w) * parseFloat(rugCalc[index].h)).toFixed(2)} م²`
+                                            : '— م²'}
+                                        </div>
+                                      </div>
                                     </div>
                                     <button
                                       type="button"
-                                      className="rug-calc-close-btn"
-                                      onClick={() => toggleRugCalc(index)}
-                                      title="إغلاق"
+                                      className="rug-calc-apply-btn"
+                                      onClick={() => applyRugCalc(index)}
+                                      disabled={!rugCalc[index]?.w || !rugCalc[index]?.h}
                                     >
-                                      <X size={14} />
+                                      تطبيق على حقل الحجم
                                     </button>
                                   </div>
-                                  <div className="rug-calc-inputs">
-                                    <div className="rug-calc-field">
-                                      <label>العرض (م)</label>
-                                      <input
-                                        type="number"
-                                        className="form-input rug-calc-input"
-                                        value={rugCalc[index]?.w || ''}
-                                        onChange={(e) => setRugCalcVal(index, 'w', e.target.value)}
-                                        placeholder="2"
-                                        step="0.5"
-                                        min="0"
-                                        autoFocus
-                                      />
-                                    </div>
-                                    <div className="rug-calc-multiply">×</div>
-                                    <div className="rug-calc-field">
-                                      <label>الطول (م)</label>
-                                      <input
-                                        type="number"
-                                        className="form-input rug-calc-input"
-                                        value={rugCalc[index]?.h || ''}
-                                        onChange={(e) => setRugCalcVal(index, 'h', e.target.value)}
-                                        placeholder="3"
-                                        step="0.5"
-                                        min="0"
-                                      />
-                                    </div>
-                                    <div className="rug-calc-field rug-calc-equals-field">
-                                      <label>المساحة</label>
-                                      <div className="rug-calc-area-display">
-                                        {(rugCalc[index]?.w && rugCalc[index]?.h)
-                                          ? `${(parseFloat(rugCalc[index].w) * parseFloat(rugCalc[index].h)).toFixed(2)} م²`
-                                          : '— م²'}
-                                      </div>
-                                    </div>
-                                  </div>
-                                  <button
-                                    type="button"
-                                    className="rug-calc-apply-btn"
-                                    onClick={() => applyRugCalc(index)}
-                                    disabled={!rugCalc[index]?.w || !rugCalc[index]?.h}
-                                  >
-                                    تطبيق على حقل الحجم
-                                  </button>
-                                </div>,
+                                </Fragment>,
                                 document.body
                               )}
                             </div>
