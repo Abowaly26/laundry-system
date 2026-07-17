@@ -294,42 +294,8 @@ export default function ItemTracking() {
                   )}
                 </div>
 
-                {/* سجل تتبع الحالات */}
-                {currentItem.status_log && currentItem.status_log.length > 0 && (
-                  <div className="status-log-timeline mt-md mb-md">
-                    <h4 className="timeline-title mb-sm">{t('tracking.statusLog') || 'سجل حركة العمليات:'}</h4>
-                    <div className="timeline-items">
-                      {currentItem.status_log.map((log, index) => (
-                        <div className="timeline-item" key={log.id || index}>
-                          <div className="timeline-dot"></div>
-                          <div className="timeline-content">
-                            <div className="timeline-header">
-                              <span className="timeline-status font-bold">
-                                {t(`status.${log.new_status}`) || STATUS_STEPS.find(s => s.key === log.new_status)?.label || log.new_status}
-                              </span>
-                              <span className="timeline-time text-secondary">
-                                {new Date(log.created_at).toLocaleString(i18n.language === 'en' ? 'en-US' : 'ar-EG', {
-                                  hour: '2-digit',
-                                  minute: '2-digit',
-                                  day: 'numeric',
-                                  month: 'short'
-                                })}
-                              </span>
-                            </div>
-                            {log.updated_by_name && (
-                              <span className="timeline-worker text-secondary">
-                                {t('tracking.by') || 'بواسطة:'} {log.updated_by_name === 'صاحب المغسلة (المدير)' ? (t('roles.admin') || 'Laundry Owner (Admin)') : log.updated_by_name}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
                 {/* تحديث الحالة عن طريق قائمة اختيار منسدلة */}
-                <div className="status-update-section mt-lg mb-md" ref={dropdownRef}>
+                <div className="status-update-section mt-md mb-md" ref={dropdownRef}>
                   <label className="form-label" style={{ fontWeight: 'bold', marginBottom: '8px', display: 'block', fontSize: '0.88rem', color: 'var(--text-muted)' }}>
                     تحديث حالة القطعة الحالية:
                   </label>
@@ -364,6 +330,40 @@ export default function ItemTracking() {
                     )}
                   </div>
                 </div>
+
+                {/* سجل تتبع الحالات */}
+                {currentItem.status_log && currentItem.status_log.length > 0 && (
+                  <div className="status-log-timeline mt-lg mb-md">
+                    <h4 className="timeline-title mb-sm">{t('tracking.statusLog') || 'سجل حركة العمليات:'}</h4>
+                    <div className="timeline-items">
+                      {currentItem.status_log.map((log, index) => (
+                        <div className="timeline-item" key={log.id || index}>
+                          <div className="timeline-dot"></div>
+                          <div className="timeline-content">
+                            <div className="timeline-header">
+                              <span className="timeline-status font-bold">
+                                {t(`status.${log.new_status}`) || STATUS_STEPS.find(s => s.key === log.new_status)?.label || log.new_status}
+                              </span>
+                              <span className="timeline-time text-secondary">
+                                {new Date(log.created_at).toLocaleString(i18n.language === 'en' ? 'en-US' : 'ar-EG', {
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                  day: 'numeric',
+                                  month: 'short'
+                                })}
+                              </span>
+                            </div>
+                            {log.updated_by_name && (
+                              <span className="timeline-worker text-secondary">
+                                {t('tracking.by') || 'بواسطة:'} {log.updated_by_name === 'صاحب المغسلة (المدير)' ? (t('roles.admin') || 'Laundry Owner (Admin)') : log.updated_by_name}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
 
               </Card>
