@@ -492,7 +492,10 @@ export default function Laundries() {
                     }}>
                       {laundry.plan_type === 'lifetime' ? 'دائم (مدى الحياة)' :
                        laundry.plan_type === 'monthly' ? 'شهري' :
-                       laundry.plan_type === 'yearly' ? 'سنوي' : 'نصف سنوي'}
+                       laundry.plan_type === 'semi_annual' ? '6 شهور' :
+                       laundry.plan_type === 'yearly' ? 'سنوي' :
+                       laundry.plan_type === '3_years' ? '3 سنوات' :
+                       laundry.plan_type === '5_years' ? '5 سنوات' : laundry.plan_type}
                     </span>
                   </div>
                   {laundry.subscription_start_date && (
@@ -830,6 +833,10 @@ export default function Laundries() {
                     endDateStr = addMonths(startDateStr, 6).toISOString().split('T')[0];
                   } else if (plan === 'yearly') {
                     endDateStr = addYears(startDateStr, 1).toISOString().split('T')[0];
+                  } else if (plan === '3_years') {
+                    endDateStr = addYears(startDateStr, 3).toISOString().split('T')[0];
+                  } else if (plan === '5_years') {
+                    endDateStr = addYears(startDateStr, 5).toISOString().split('T')[0];
                   }
                 }
                 
@@ -843,8 +850,10 @@ export default function Laundries() {
             >
               <option value="lifetime">دائم (مدى الحياة)</option>
               <option value="monthly">شهري</option>
-              <option value="semi_annual">نصف سنوي</option>
+              <option value="semi_annual">6 شهور</option>
               <option value="yearly">سنوي</option>
+              <option value="3_years">3 سنوات</option>
+              <option value="5_years">5 سنوات</option>
             </select>
           </div>
 
@@ -866,6 +875,10 @@ export default function Laundries() {
                     endDateStr = addMonths(startDateStr, 6).toISOString().split('T')[0];
                   } else if (plan === 'yearly') {
                     endDateStr = addYears(startDateStr, 1).toISOString().split('T')[0];
+                  } else if (plan === '3_years') {
+                    endDateStr = addYears(startDateStr, 3).toISOString().split('T')[0];
+                  } else if (plan === '5_years') {
+                    endDateStr = addYears(startDateStr, 5).toISOString().split('T')[0];
                   }
                 }
                 
@@ -947,26 +960,35 @@ export default function Laundries() {
                 <Crown size={16} />
                 {t('laundriesList.adminAccountEdit') || 'تعديل حساب مدير المغسلة'}
               </div>
-              <div className="modal-section-note">
-                {t('laundriesList.adminEditNote') || 'تعديل البريد الإلكتروني أو تعيين كلمة مرور جديدة للمدير'}
-              </div>
+              
+              {formData.plan_type !== 'lifetime' ? (
+                <>
+                  <div className="modal-section-note">
+                    {t('laundriesList.adminEditNote') || 'تعديل البريد الإلكتروني أو تعيين كلمة مرور جديدة للمدير'}
+                  </div>
 
-              <Input
-                id="admin-email-edit"
-                label={t('laundriesList.adminEmailLabel') || 'البريد الإلكتروني للمدير'}
-                type="email"
-                value={formData.admin_email}
-                onChange={(e) => setFormData({ ...formData, admin_email: e.target.value })}
-                placeholder="admin@example.com"
-              />
-              <Input
-                id="admin-password-edit"
-                label={t('laundriesList.adminPasswordEditLabel') || 'كلمة مرور جديدة (اتركها فارغة لعدم التغيير)'}
-                type="password"
-                value={formData.admin_password}
-                onChange={(e) => setFormData({ ...formData, admin_password: e.target.value })}
-                placeholder="••••••••"
-              />
+                  <Input
+                    id="admin-email-edit"
+                    label={t('laundriesList.adminEmailLabel') || 'البريد الإلكتروني للمدير'}
+                    type="email"
+                    value={formData.admin_email}
+                    onChange={(e) => setFormData({ ...formData, admin_email: e.target.value })}
+                    placeholder="admin@example.com"
+                  />
+                  <Input
+                    id="admin-password-edit"
+                    label={t('laundriesList.adminPasswordEditLabel') || 'كلمة مرور جديدة (اتركها فارغة لعدم التغيير)'}
+                    type="password"
+                    value={formData.admin_password}
+                    onChange={(e) => setFormData({ ...formData, admin_password: e.target.value })}
+                    placeholder="••••••••"
+                  />
+                </>
+              ) : (
+                <div className="modal-section-note" style={{ marginTop: '10px', padding: '12px', background: 'var(--bg-body)', borderRadius: '8px', color: 'var(--text-muted)', border: '1px solid var(--border)' }}>
+                  ℹ️ لا يمكن تعديل بيانات المدير من هنا لأن الباقة مفعلة <strong>مدى الحياة</strong>. يستطيع صاحب المغسلة تعديل إيميله وباسورده بنفسه من صفحة ملفه الشخصي.
+                </div>
+              )}
             </>
           )}
 
