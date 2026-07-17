@@ -1,11 +1,16 @@
 const nodemailer = require('nodemailer');
 
-// Configure the transporter
+// Configure the transporter explicitly with port 587 for better cloud hosting compatibility
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  host: 'smtp.gmail.com',
+  port: 587,
+  secure: false, // true for 465, false for other ports
   auth: {
     user: process.env.SMTP_EMAIL,
     pass: process.env.SMTP_PASSWORD
+  },
+  tls: {
+    rejectUnauthorized: false // Prevents certificate verification issues in containers
   }
 });
 
