@@ -24,11 +24,19 @@
   position: absolute;
   right: 12px;
   color: var(--text-muted);
+  z-index: 2;
+  pointer-events: none;
 }
 
 .input-with-icon .form-input {
   padding-right: 40px;
   padding-left: 40px;
+}
+
+/* Hide MS Edge/IE default eye reveal button */
+.input-with-icon input::-ms-reveal,
+.input-with-icon input::-ms-clear {
+  display: none !important;
 }
 
 .password-toggle-btn {

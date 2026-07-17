@@ -183,7 +183,6 @@ export default function Profile() {
             <div className="form-group">
               <label className="form-label required">{t('profile.currentPassword') || 'كلمة المرور الحالية (مطلوبة لتأكيد أي تعديل)'}</label>
               <div className="input-with-icon">
-                <Lock size={18} className="input-icon text-warning" />
                 <input
                   type={showCurrentPassword ? "text" : "password"}
                   name="currentPassword"
@@ -193,6 +192,7 @@ export default function Profile() {
                   required
                   placeholder="أدخل كلمة المرور الحالية"
                 />
+                <Lock size={18} className="input-icon text-warning" />
                 <button
                   type="button"
                   className="password-toggle-btn"
@@ -212,7 +212,6 @@ export default function Profile() {
               <div className="form-group flex-1">
                 <label className="form-label">{t('profile.newPassword') || 'كلمة المرور الجديدة'}</label>
                 <div className="input-with-icon">
-                  <ShieldCheck size={18} className="input-icon" />
                   <input
                     type={showNewPassword ? "text" : "password"}
                     name="newPassword"
@@ -221,6 +220,7 @@ export default function Profile() {
                     onChange={handleChange}
                     placeholder="كلمة مرور قوية (8 أحرف على الأقل)"
                   />
+                  <ShieldCheck size={18} className="input-icon" />
                   <button
                     type="button"
                     className="password-toggle-btn"
@@ -235,7 +235,6 @@ export default function Profile() {
               <div className="form-group flex-1">
                 <label className="form-label">{t('profile.confirmPassword') || 'تأكيد كلمة المرور الجديدة'}</label>
                 <div className="input-with-icon">
-                  <ShieldCheck size={18} className="input-icon" />
                   <input
                     type={showConfirmPassword ? "text" : "password"}
                     name="confirmPassword"
@@ -244,6 +243,7 @@ export default function Profile() {
                     onChange={handleChange}
                     placeholder="أعد إدخال كلمة المرور"
                   />
+                  <ShieldCheck size={18} className="input-icon" />
                   <button
                     type="button"
                     className="password-toggle-btn"
