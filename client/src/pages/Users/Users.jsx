@@ -386,7 +386,7 @@ export default function Users() {
 
           <Input
             id="u-password"
-            label={`${t('usersList.passwordLabel') || 'كلمة المرور'} ${modalMode === 'edit' ? (t('usersList.passwordEmptyEdit') || '(اتركها فارغة للإبقاء على الحالية)') : '*'}`}
+            label={`${t('usersList.passwordLabel') || 'كلمة المرور'} ${modalMode === 'edit' ? t('usersList.passwordEditDesc') : '*'}`}
             type="password" value={formData.password}
             onChange={e => setFormData({ ...formData, password: e.target.value })}
             placeholder="••••••••" required={modalMode === 'add'} />
