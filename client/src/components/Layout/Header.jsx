@@ -41,21 +41,20 @@ export default function Header({ title, onMenuClick }) {
       );
     }
     
-    // Calculate months and days remaining
-    let months = 0;
-    let days = diffDays;
-    
-    if (diffDays >= 30) {
-      months = Math.floor(diffDays / 30);
-      days = diffDays % 30;
-    }
-    
-    let text = 'باقي: ';
-    if (months > 0) {
-      text += `${months} شهر `;
-    }
-    if (days > 0 || months === 0) {
-      text += `${days} يوم`;
+    const isEn = i18n.language === 'en';
+    let text = isEn ? 'Remaining: ' : 'باقي: ';
+    if (isEn) {
+      text += `${diffDays} ${diffDays === 1 ? 'day' : 'days'}`;
+    } else {
+      if (diffDays === 1) {
+        text += 'يوم واحد';
+      } else if (diffDays === 2) {
+        text += 'يومين';
+      } else if (diffDays >= 3 && diffDays <= 10) {
+        text += `${diffDays} أيام`;
+      } else {
+        text += `${diffDays} يوم`;
+      }
     }
     
     // Determine class based on urgency (<= 7 days critical, <= 30 warning)
