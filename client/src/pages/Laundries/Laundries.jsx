@@ -326,7 +326,7 @@ export default function Laundries() {
               )}
             </div>
             
-            <div className="table-select-container" ref={filterDropdownRef} style={{ width: '220px' }}>
+            <div className="table-select-container" ref={filterDropdownRef} style={{ width: 'max-content', minWidth: '220px' }}>
               <button
                 type="button"
                 className="table-select-trigger"
@@ -344,7 +344,9 @@ export default function Laundries() {
                   justifyContent: 'space-between',
                   width: '100%',
                   padding: '0 16px',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                  gap: '12px'
                 }}
               >
                 <span>
@@ -398,7 +400,8 @@ export default function Laundries() {
                         fontSize: '0.88rem',
                         textAlign: 'right',
                         cursor: 'pointer',
-                        transition: 'background 0.2s, color 0.2s'
+                        transition: 'background 0.2s, color 0.2s',
+                        whiteSpace: 'nowrap'
                       }}
                     >
                       {opt.label}
