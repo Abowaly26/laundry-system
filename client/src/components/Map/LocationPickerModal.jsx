@@ -613,9 +613,9 @@ const LocationPickerModal = ({
         </div>
 
         {/* ── Footer ──────────────────────────────────────────────── */}
-        <div className="location-picker-footer" style={readOnly ? { justifyContent: 'center', padding: '16px' } : {}}>
-          {/* Address display & edit */}
-          {!readOnly && (
+        {!readOnly && (
+          <div className="location-picker-footer">
+            {/* Address display & edit */}
             <div className="selected-address-summary">
               <MapIcon size={24} className="addr-icon" />
               <div className="addr-text">
@@ -636,32 +636,24 @@ const LocationPickerModal = ({
                 )}
               </div>
             </div>
-          )}
 
-          {/* Confirm / Cancel */}
-          <div className="location-picker-actions" style={readOnly ? { width: '100%', display: 'flex', justifyContent: 'center' } : {}}>
-            {readOnly ? (
-              <button type="button" className="btn-cancel-location" onClick={onClose} style={{ background: 'var(--primary)', color: '#fff', border: 'none', padding: '0 32px', fontWeight: 'bold', height: '44px', borderRadius: '10px', fontSize: '0.95rem' }}>
-                إغلاق الخريطة
+            {/* Confirm / Cancel */}
+            <div className="location-picker-actions">
+              <button type="button" className="btn-cancel-location" onClick={onClose}>
+                إلغاء
               </button>
-            ) : (
-              <>
-                <button type="button" className="btn-cancel-location" onClick={onClose}>
-                  إلغاء
-                </button>
-                <button
-                  type="button"
-                  className="btn-confirm-location"
-                  onClick={handleConfirm}
-                  disabled={!customerCoords}
-                >
-                  <Check size={18} />
-                  <span>تأكيد العنوان</span>
-                </button>
-              </>
-            )}
+              <button
+                type="button"
+                className="btn-confirm-location"
+                onClick={handleConfirm}
+                disabled={!customerCoords}
+              >
+                <Check size={18} />
+                <span>تأكيد العنوان</span>
+              </button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
