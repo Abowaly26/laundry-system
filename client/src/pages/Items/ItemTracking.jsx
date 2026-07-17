@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Scan, Keyboard, Search, CheckCircle2, ArrowRight } from 'lucide-react';
 import { itemsAPI, ordersAPI } from '../../services/api';
@@ -26,6 +26,20 @@ export default function ItemTracking() {
   const [scannedOrder, setScannedOrder] = useState(null);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+  
+  const [openStatusDropdownId, setOpenStatusDropdownId] = useState(null);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      // Close dropdowns if clicked outside
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setOpenStatusDropdownId(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // معالجة البحث عن الكود (سواء من الكاميرا أو كتابة يدوية)
   const handleItemScan = async (code) => {
@@ -85,15 +99,26 @@ export default function ItemTracking() {
     handleItemScan(manualCode.trim());
   };
 
-  // ترقية حالة قطعة فردية داخل الطلب الممسوح
-  const handleAdvanceItemInOrder = async (itemId) => {
+  // تحديث حالة قطعة فردية إلى حالة معينة
+  const handleUpdateItemStatus = async (itemId, newStatus) => {
     setLoading(true);
     setErrorMsg('');
     try {
-      const res = await itemsAPI.advanceStatus(itemId);
+      const res = await itemsAPI.updateStatus(itemId, newStatus);
       if (res.success) {
         showToast(t('tracking.statusUpdateSuccess') || 'تم تحديث حالة القطعة بنجاح', 'success');
-        // تحديث بيانات الطلب لإظهار الحالة الجديدة في القائمة
+        
+        // تحديث القطعة المعروضة محلياً إذا كانت هي المفتوحة
+        if (currentItem && currentItem.id === itemId) {
+          const itemRes = await itemsAPI.scanQR(currentItem.qr_code);
+          if (itemRes.success) {
+            setCurrentItem(itemRes.data);
+          } else {
+            setCurrentItem(res.data);
+          }
+        }
+        
+        // تحديث الطلب المعروض لإظهار الحالة الجديدة في القائمة
         if (scannedOrder) {
           const orderRes = await ordersAPI.getById(scannedOrder.id);
           if (orderRes.success) {
@@ -107,34 +132,11 @@ export default function ItemTracking() {
       showToast(err.message || t('tracking.updateError') || 'خطأ أثناء تحديث حالة القطعة', 'error');
     } finally {
       setLoading(false);
+      setOpenStatusDropdownId(null);
     }
   };
 
-  // ترقية حالة القطعة المفردة الممسوحة
-  const handleAdvanceStatus = async () => {
-    if (!currentItem) return;
-    setLoading(true);
-    setErrorMsg('');
-    setSuccessMsg('');
-    try {
-      const res = await itemsAPI.advanceStatus(currentItem.id);
-      if (res.success) {
-        // العثور على اسم الحالة الجديدة لعرضها
-        const currentIdx = STATUS_STEPS.findIndex(s => s.key === currentItem.status);
-        const nextStatus = STATUS_STEPS[currentIdx + 1];
-        setSuccessMsg(t('tracking.statusAdvancedTo', { status: nextStatus ? t(`status.${nextStatus.key}`) || nextStatus.label : t('tracking.completed') || 'مكتمل' }) || `تم ترقية الحالة بنجاح إلى: ${nextStatus ? nextStatus.label : 'مكتمل'}`);
-        
-        // تحديث البيانات المحلية للمكون
-        setCurrentItem(res.data);
-      } else {
-        setErrorMsg(res.message || t('tracking.advanceFail') || 'فشل في ترقية الحالة');
-      }
-    } catch (err) {
-      setErrorMsg(err.message || t('tracking.advanceError') || 'خطأ أثناء ترقية الحالة');
-    } finally {
-      setLoading(false);
-    }
-  };
+
 
   const getItemTypeAr = (type) => {
     const mapping = {
@@ -326,47 +328,44 @@ export default function ItemTracking() {
                   </div>
                 )}
 
-                {/* متتبع المراحل المرئي */}
-                <div className="stepper-workflow mt-lg mb-lg">
-                  {STATUS_STEPS.map((step, idx) => {
-                    const currentIdx = STATUS_STEPS.findIndex(s => s.key === currentItem.status);
-                    const isCompleted = idx <= currentIdx;
-                    const isActive = idx === currentIdx;
-
-                    return (
-                      <div 
-                        key={step.key} 
-                        className={`step-item ${isCompleted ? 'completed' : ''} ${isActive ? 'active' : ''}`}
-                      >
-                        <div className="step-circle">
-                          {isCompleted ? '✓' : idx + 1}
-                        </div>
-                        <span className="step-label">{t(`status.${step.key}`) || step.label}</span>
+                {/* تحديث الحالة عن طريق قائمة اختيار منسدلة */}
+                <div className="status-update-section mt-lg mb-md" ref={dropdownRef}>
+                  <label className="form-label" style={{ fontWeight: 'bold', marginBottom: '8px', display: 'block', fontSize: '0.88rem', color: 'var(--text-muted)' }}>
+                    تحديث حالة القطعة الحالية:
+                  </label>
+                  <div className="table-select-container" style={{ width: '100%', position: 'relative' }}>
+                    <button
+                      type="button"
+                      className="table-select-trigger"
+                      style={{ height: '42px', fontSize: '0.9rem', width: '100%', padding: '0 16px', background: 'var(--bg-body)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                      onClick={() => setOpenStatusDropdownId(openStatusDropdownId === currentItem.id ? null : currentItem.id)}
+                    >
+                      <span>{STATUS_STEPS.find(opt => opt.key === currentItem.status)?.label || 'تحديث الحالة...'}</span>
+                    </button>
+                    {openStatusDropdownId === currentItem.id && (
+                      <div className="table-select-dropdown" style={{ right: 0, left: 0, minWidth: '100%', zIndex: 900 }}>
+                        {STATUS_STEPS.map((opt) => {
+                          const isDisabled = opt.key === 'delivered' && scannedOrder && parseFloat(scannedOrder.remaining_amount) > 0;
+                          return (
+                            <button
+                              key={opt.key}
+                              type="button"
+                              className={`table-select-item ${currentItem.status === opt.key ? 'selected' : ''} ${isDisabled ? 'disabled' : ''}`}
+                              onClick={() => !isDisabled && handleUpdateItemStatus(currentItem.id, opt.key)}
+                              disabled={isDisabled}
+                              style={isDisabled ? { opacity: 0.5, cursor: 'not-allowed', color: 'var(--text-muted)' } : {}}
+                              title={isDisabled ? 'لا يمكن تسليم القطعة قبل سداد المبلغ المتبقي' : ''}
+                            >
+                              {opt.label}
+                            </button>
+                          );
+                        })}
                       </div>
-                    );
-                  })}
+                    )}
+                  </div>
                 </div>
 
-                {/* أزرار التحديث */}
-                {getNextStatusLabel(currentItem.status) ? (
-                  <div className="action-buttons-wrapper">
-                    <Button 
-                      variant="primary" 
-                      size="large" 
-                      className="w-full btn-advance-status"
-                      onClick={handleAdvanceStatus}
-                      disabled={loading}
-                    >
-                      <ArrowRight size={18} style={{ marginLeft: '8px' }} />
-                      {t('tracking.updateStatusTo', { status: getNextStatusLabel(currentItem.status) }) || `تحديث الحالة إلى: ${getNextStatusLabel(currentItem.status)}`}
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="completion-message text-success text-center">
-                    <CheckCircle2 size={32} style={{ marginBottom: '8px', color: '#0ca678' }} />
-                    <h3>{t('tracking.completed') || 'القطعة مكتملة ومسلمة بالكامل ✓'}</h3>
-                  </div>
-                )}
+
               </Card>
             ) : (
               <Card title={t('tracking.orderDetails', { id: String(scannedOrder.id).padStart(4, '0') }) || `تفاصيل الطلب: ORD-${String(scannedOrder.id).padStart(4, '0')}`}>
@@ -393,50 +392,71 @@ export default function ItemTracking() {
 
                 <div className="scanned-order-items-list" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {scannedOrder.items?.map((item) => {
-                    const nextStatus = getNextStatusLabel(item.status);
-                    const isDeliveredBlock = nextStatus === 'تم التسليم' && parseFloat(scannedOrder.remaining_amount) > 0;
+                    const isDeliveredBlock = parseFloat(scannedOrder.remaining_amount) > 0;
                     
                     return (
-                    <div 
-                      key={item.id} 
-                      className="order-item-row" 
-                      onClick={() => handleItemScan(item.qr_code)}
-                      style={{ 
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
-                        alignItems: 'center', 
-                        padding: '12px 14px', 
-                        background: '#f8fafc',
-                        borderRadius: '10px',
-                        border: '1px solid #e2e8f0',
-                        transition: 'all 0.2s ease',
-                        cursor: 'pointer'
-                      }}
-                      title={t('tracking.statusLog') || "انقر لعرض سجل حركة القطعة ومراحل العمل"}
-                    >
+                      <div 
+                        key={item.id} 
+                        className="order-item-row" 
+                        onClick={() => handleItemScan(item.qr_code)}
+                        style={{ 
+                          display: 'flex', 
+                          justifyContent: 'space-between', 
+                          alignItems: 'center', 
+                          padding: '12px 14px', 
+                          background: '#f8fafc',
+                          borderRadius: '10px',
+                          border: '1px solid #e2e8f0',
+                          transition: 'all 0.2s ease',
+                          cursor: 'pointer'
+                        }}
+                        title={t('tracking.statusLog') || "انقر لعرض سجل حركة القطعة ومراحل العمل"}
+                      >
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                           <strong style={{ fontSize: '0.85rem', color: '#0f172a' }}>{item.qr_code}</strong>
                           <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
                             {getItemTypeAr(item.item_type)} - {item.service_name_ar || item.service?.name_ar}
                           </span>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }} onClick={(e) => e.stopPropagation()}>
                           <StatusBadge status={item.status} type="item" />
                           
-                          {nextStatus ? (
-                            <Button 
-                              variant="secondary" 
-                              size="small" 
-                              onClick={(e) => { e.stopPropagation(); handleAdvanceItemInOrder(item.id); }}
-                              disabled={loading || isDeliveredBlock}
-                              style={{ fontSize: '0.72rem', padding: '6px 10px', minWidth: '78px', fontWeight: '700' }}
-                              title={isDeliveredBlock ? t('tracking.unpaidBlock') || 'لا يمكن التسليم لوجود مبلغ متبقي' : t('tracking.updateTo', { status: nextStatus }) || `تحديث إلى: ${nextStatus}`}
+                          <div className="table-select-container" style={{ position: 'relative' }}>
+                            <button
+                              type="button"
+                              className="table-select-trigger"
+                              style={{ height: '32px', fontSize: '0.8rem', padding: '4px 12px', minWidth: '110px', fontWeight: '600', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setOpenStatusDropdownId(openStatusDropdownId === item.id ? null : item.id);
+                              }}
                             >
-                              {nextStatus}
-                            </Button>
-                          ) : (
-                            <span style={{ fontSize: '0.75rem', color: '#0ca678', fontWeight: 'bold', padding: '4px 6px' }}>{t('tracking.completedLabel') || 'مكتمل ✓'}</span>
-                          )}
+                              <span>{STATUS_STEPS.find(opt => opt.key === item.status)?.label || 'تحديث...'}</span>
+                            </button>
+                            {openStatusDropdownId === item.id && (
+                              <div className="table-select-dropdown" style={{ right: 0, left: 'auto', minWidth: '130px', zIndex: 900 }}>
+                                {STATUS_STEPS.map((opt) => {
+                                  const isDisabled = opt.key === 'delivered' && isDeliveredBlock;
+                                  return (
+                                    <button
+                                      key={opt.key}
+                                      type="button"
+                                      className={`table-select-item ${item.status === opt.key ? 'selected' : ''} ${isDisabled ? 'disabled' : ''}`}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (!isDisabled) handleUpdateItemStatus(item.id, opt.key);
+                                      }}
+                                      disabled={isDisabled}
+                                      style={isDisabled ? { opacity: 0.5, cursor: 'not-allowed', color: 'var(--text-muted)' } : {}}
+                                      title={isDisabled ? 'لا يمكن تسليم القطعة قبل سداد المبلغ المتبقي' : ''}
+                                    >
+                                      {opt.label}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
                     );
