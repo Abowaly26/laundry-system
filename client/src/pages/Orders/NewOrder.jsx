@@ -1115,195 +1115,222 @@ export default function NewOrder() {
                 <div className="order-items-cards-list">
                   {items.map((item, index) => (
                     <div className="order-item-card" key={index}>
-                      <div className="order-item-grid">
-                        {/* Item Type - Free Text + Datalist suggestions */}
-                        <div className="order-item-col item-type-col" data-label={t('orders.itemType') || 'نوع القطعة'}>
-                          <div className="item-type-input-wrapper">
-                            <input
-                              type="text"
-                              list={`item-type-list-${index}`}
-                              className="form-input item-type-free-input"
-                              value={item.item_type}
-                              onChange={(e) => handleItemTypeChange(index, e.target.value)}
-                              placeholder={t('orders.itemTypePlaceholder') || 'مثال: بطانية، سجادة، قميص...'}
-                              autoComplete="off"
-                            />
-                            <datalist id={`item-type-list-${index}`}>
-                              {itemTypes.map((it) => (
-                                <option key={it.id} value={it.name_ar} />
-                              ))}
-                            </datalist>
-                          </div>
-                        </div>
 
-                        {/* Size - Free Text + Rug Calculator */}
-                        <div className="order-item-col size-col" data-label={t('orders.size') || 'الحجم'}>
-                          <div className="size-field-wrapper">
-                            <div className="size-input-row">
+                      {/* Card Header: number + delete */}
+                      <div className="item-card-header">
+                        <span className="item-card-number">
+                          قطعة #{index + 1}
+                        </span>
+                        <button
+                          type="button"
+                          className="btn-remove-row text-error"
+                          onClick={() => removeItemRow(index)}
+                          disabled={items.length === 1}
+                          title="حذف هذه القطعة"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+
+                      {/* Main Fields Row */}
+                      <div className="order-item-grid">
+
+                        {/* Item Type */}
+                        <div className="order-item-col item-type-col" data-label={t('orders.itemType') || 'نوع القطعة'}>
+                          <div className="item-field-group">
+                            <label className="item-field-label">{t('orders.itemType') || 'نوع القطعة'} <span className="field-required">*</span></label>
+                            <div className="item-type-input-wrapper">
                               <input
                                 type="text"
-                                className="form-input form-input-compact size-free-input"
-                                value={item.size_name}
-                                onChange={(e) => handleSizeTextChange(index, e.target.value)}
-                                placeholder={t('orders.sizePlaceholder') || 'اختياري...'}
+                                list={`item-type-list-${index}`}
+                                className="form-input item-type-free-input"
+                                value={item.item_type}
+                                onChange={(e) => handleItemTypeChange(index, e.target.value)}
+                                placeholder="بطانية، سجادة، قميص..."
+                                autoComplete="off"
                               />
-                              <button
-                                type="button"
-                                className="rug-calc-toggle-btn"
-                                title="حاسبة متر السجادة"
-                                onClick={() => toggleRugCalc(index)}
-                              >
-                                📐
-                              </button>
+                              <datalist id={`item-type-list-${index}`}>
+                                {itemTypes.map((it) => (
+                                  <option key={it.id} value={it.name_ar} />
+                                ))}
+                              </datalist>
                             </div>
-                            {rugCalc[index]?.open && (
-                              <div className="rug-calculator-popover">
-                                <div className="rug-calc-title">حاسبة مساحة السجادة</div>
-                                <div className="rug-calc-row">
-                                  <div className="rug-calc-field">
-                                    <label>العرض (م)</label>
-                                    <input
-                                      type="number"
-                                      className="form-input rug-calc-input"
-                                      value={rugCalc[index]?.w || ''}
-                                      onChange={(e) => setRugCalcVal(index, 'w', e.target.value)}
-                                      placeholder="مثال: 2"
-                                      step="0.5"
-                                      min="0"
-                                    />
-                                  </div>
-                                  <span className="rug-calc-x">×</span>
-                                  <div className="rug-calc-field">
-                                    <label>الطول (م)</label>
-                                    <input
-                                      type="number"
-                                      className="form-input rug-calc-input"
-                                      value={rugCalc[index]?.h || ''}
-                                      onChange={(e) => setRugCalcVal(index, 'h', e.target.value)}
-                                      placeholder="مثال: 3"
-                                      step="0.5"
-                                      min="0"
-                                    />
-                                  </div>
-                                </div>
-                                {rugCalc[index]?.w && rugCalc[index]?.h && (
-                                  <div className="rug-calc-result">
-                                    = {(parseFloat(rugCalc[index].w) * parseFloat(rugCalc[index].h)).toFixed(2)} م²
-                                  </div>
-                                )}
-                                <button
-                                  type="button"
-                                  className="rug-calc-apply-btn"
-                                  onClick={() => applyRugCalc(index)}
-                                >
-                                  ✓ تطبيق على الحجم
-                                </button>
-                              </div>
-                            )}
                           </div>
                         </div>
 
-                        {/* Required Service - Optional dropdown */}
-                        <div className="order-item-col service-col" data-label={t('orders.requiredService') || 'الخدمة المطلوبة'}>
-                          <div className="table-select-container service-optional-container" style={{ zIndex: openServiceIndex === index ? 100 : 1 }}>
-                            <button
-                              type="button"
-                              className={`table-select-trigger service-trigger ${!item.service_id ? 'service-empty' : ''}`}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setOpenItemTypeIndex(null);
-                                setOpenSizeIndex(null);
-                                setOpenServiceIndex(openServiceIndex === index ? null : index);
-                              }}
-                            >
-                              {item.service_id
-                                ? services.find(s => s.id === parseInt(item.service_id))?.name_ar || t('orders.chooseService') || 'اختر الخدمة...'
-                                : <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>اختياري — اختر خدمة</span>
-                              }
-                            </button>
-                            {openServiceIndex === index && (() => {
-                              const foundType = itemTypes.find(t => t.name_ar === item.item_type);
-                              const foundSize = foundType ? ((foundType.sizes || []).find(sz => sz.size_name === item.size_name) 
-                                || (foundType.sizes && foundType.sizes.length > 0 ? foundType.sizes[0] : null)) : null;
-                              const hasConfiguredPrices = foundSize && (foundSize.prices || []).length > 0;
-                              const dropdownServices = services.filter(s => 
-                                s.is_active && 
-                                (!hasConfiguredPrices || (foundSize.prices || []).some(pr => pr.service_id === s.id))
-                              );
+                        {/* Size + Rug Calculator */}
+                        <div className="order-item-col size-col" data-label={t('orders.size') || 'الحجم'}>
+                          <div className="item-field-group">
+                            <label className="item-field-label">
+                              {t('orders.size') || 'الحجم'}
+                              <span className="field-optional">اختياري</span>
+                            </label>
+                            <div className="size-field-wrapper">
+                              <div className="size-input-row">
+                                <input
+                                  type="text"
+                                  className="form-input size-free-input"
+                                  value={item.size_name}
+                                  onChange={(e) => handleSizeTextChange(index, e.target.value)}
+                                  placeholder="مثال: كبير، L"
+                                />
+                                <button
+                                  type="button"
+                                  className={`rug-calc-toggle-btn ${rugCalc[index]?.open ? 'active' : ''}`}
+                                  title="حاسبة مساحة السجادة"
+                                  onClick={() => toggleRugCalc(index)}
+                                >
+                                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 20h20"/><path d="M4 4v16"/><path d="M20 4v16"/><path d="M4 12h16"/><path d="M9 4v8"/><path d="M15 12v8"/></svg>
+                                </button>
+                              </div>
 
-                              return (
-                                <div className="table-select-dropdown">
+                              {rugCalc[index]?.open && (
+                                <div className="rug-calculator-popover" onClick={e => e.stopPropagation()}>
+                                  <div className="rug-calc-header">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M2 20h20"/><path d="M4 4v16"/><path d="M20 4v16"/><path d="M4 12h16"/><path d="M9 4v8"/><path d="M15 12v8"/></svg>
+                                    حاسبة مساحة السجادة
+                                  </div>
+                                  <div className="rug-calc-inputs">
+                                    <div className="rug-calc-field">
+                                      <label>العرض (م)</label>
+                                      <input
+                                        type="number"
+                                        className="form-input rug-calc-input"
+                                        value={rugCalc[index]?.w || ''}
+                                        onChange={(e) => setRugCalcVal(index, 'w', e.target.value)}
+                                        placeholder="2"
+                                        step="0.5"
+                                        min="0"
+                                      />
+                                    </div>
+                                    <div className="rug-calc-multiply">×</div>
+                                    <div className="rug-calc-field">
+                                      <label>الطول (م)</label>
+                                      <input
+                                        type="number"
+                                        className="form-input rug-calc-input"
+                                        value={rugCalc[index]?.h || ''}
+                                        onChange={(e) => setRugCalcVal(index, 'h', e.target.value)}
+                                        placeholder="3"
+                                        step="0.5"
+                                        min="0"
+                                      />
+                                    </div>
+                                    <div className="rug-calc-field rug-calc-equals-field">
+                                      <label>المساحة</label>
+                                      <div className="rug-calc-area-display">
+                                        {(rugCalc[index]?.w && rugCalc[index]?.h)
+                                          ? `${(parseFloat(rugCalc[index].w) * parseFloat(rugCalc[index].h)).toFixed(2)} م²`
+                                          : '— م²'}
+                                      </div>
+                                    </div>
+                                  </div>
                                   <button
                                     type="button"
-                                    className={`table-select-item ${!item.service_id ? 'selected' : ''}`}
-                                    onClick={() => {
-                                      handleServiceChange(index, '');
-                                      setOpenServiceIndex(null);
-                                    }}
+                                    className="rug-calc-apply-btn"
+                                    onClick={() => applyRugCalc(index)}
+                                    disabled={!rugCalc[index]?.w || !rugCalc[index]?.h}
                                   >
-                                    — بدون خدمة محددة —
+                                    تطبيق على حقل الحجم
                                   </button>
-                                  {dropdownServices.map((s) => (
-                                    <button
-                                      key={s.id}
-                                      type="button"
-                                      className={`table-select-item ${item.service_id === String(s.id) ? 'selected' : ''}`}
-                                      onClick={() => {
-                                        handleServiceChange(index, String(s.id));
-                                        setOpenServiceIndex(null);
-                                      }}
-                                    >
-                                      {s.name_ar}
-                                    </button>
-                                  ))}
                                 </div>
-                              );
-                            })()}
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Service */}
+                        <div className="order-item-col service-col" data-label={t('orders.requiredService') || 'الخدمة المطلوبة'}>
+                          <div className="item-field-group">
+                            <label className="item-field-label">
+                              {t('orders.requiredService') || 'الخدمة المطلوبة'}
+                              <span className="field-optional">اختياري</span>
+                            </label>
+                            <div className="table-select-container" style={{ zIndex: openServiceIndex === index ? 100 : 1 }}>
+                              <button
+                                type="button"
+                                className={`table-select-trigger service-trigger ${!item.service_id ? 'service-empty' : 'service-selected'}`}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setOpenItemTypeIndex(null);
+                                  setOpenSizeIndex(null);
+                                  setOpenServiceIndex(openServiceIndex === index ? null : index);
+                                }}
+                              >
+                                {item.service_id
+                                  ? services.find(s => s.id === parseInt(item.service_id))?.name_ar || 'اختر الخدمة...'
+                                  : 'اختر خدمة...'
+                                }
+                              </button>
+                              {openServiceIndex === index && (() => {
+                                const foundType = itemTypes.find(t => t.name_ar === item.item_type);
+                                const foundSize = foundType ? ((foundType.sizes || []).find(sz => sz.size_name === item.size_name)
+                                  || (foundType.sizes && foundType.sizes.length > 0 ? foundType.sizes[0] : null)) : null;
+                                const hasConfiguredPrices = foundSize && (foundSize.prices || []).length > 0;
+                                const dropdownServices = services.filter(s =>
+                                  s.is_active &&
+                                  (!hasConfiguredPrices || (foundSize.prices || []).some(pr => pr.service_id === s.id))
+                                );
+                                return (
+                                  <div className="table-select-dropdown">
+                                    <button
+                                      type="button"
+                                      className={`table-select-item ${!item.service_id ? 'selected' : ''}`}
+                                      onClick={() => { handleServiceChange(index, ''); setOpenServiceIndex(null); }}
+                                    >
+                                      بدون خدمة محددة
+                                    </button>
+                                    {dropdownServices.map((s) => (
+                                      <button
+                                        key={s.id}
+                                        type="button"
+                                        className={`table-select-item ${item.service_id === String(s.id) ? 'selected' : ''}`}
+                                        onClick={() => { handleServiceChange(index, String(s.id)); setOpenServiceIndex(null); }}
+                                      >
+                                        {s.name_ar}
+                                      </button>
+                                    ))}
+                                  </div>
+                                );
+                              })()}
+                            </div>
                           </div>
                         </div>
 
                         {/* Price */}
                         <div className="order-item-col price-col" data-label={t('orders.price') || 'السعر'}>
-                          <div className="price-input-wrapper">
-                            <input
-                              type="number"
-                              className="form-input form-input-compact price-input"
-                              value={item.price === 0 ? '' : item.price}
-                              onChange={(e) => handlePriceChange(index, e.target.value)}
-                              onFocus={(e) => {
-                                if (parseFloat(e.target.value) === 0 || item.price === 0) {
-                                  handlePriceChange(index, '');
-                                } else {
-                                  e.target.select();
-                                }
-                              }}
-                              min="0"
-                              step="any"
-                              placeholder="0"
-                            />
-                            <span className="price-suffix">{t('dashboard.currency', 'ر.س')}</span>
+                          <div className="item-field-group">
+                            <label className="item-field-label">{t('orders.price') || 'السعر'}</label>
+                            <div className="price-input-wrapper">
+                              <input
+                                type="number"
+                                className="form-input price-input"
+                                value={item.price === 0 ? '' : item.price}
+                                onChange={(e) => handlePriceChange(index, e.target.value)}
+                                onFocus={(e) => {
+                                  if (parseFloat(e.target.value) === 0 || item.price === 0) {
+                                    handlePriceChange(index, '');
+                                  } else {
+                                    e.target.select();
+                                  }
+                                }}
+                                min="0"
+                                step="any"
+                                placeholder="0"
+                              />
+                              <span className="price-suffix">{settings?.currency || 'ر.س'}</span>
+                            </div>
                           </div>
                         </div>
 
-                        {/* Remove Button */}
-                        <div className="order-item-col action-col" data-label={t('orders.action') || 'إجراء'}>
-                          <button
-                            type="button"
-                            className="btn-remove-row text-error"
-                            onClick={() => removeItemRow(index)}
-                            disabled={items.length === 1}
-                          >
-                            <Trash2 size={18} />
-                          </button>
-                        </div>
                       </div>
 
-                      {/* Notes row inside the same card */}
+                      {/* Notes row */}
                       <div className="order-item-notes-wrapper">
                         <div className="item-notes-field">
-                          <span className="item-notes-label">{t('orders.itemNotes') || 'ملاحظات على القطعة'}</span>
+                          <span className="item-notes-label">{t('orders.itemNotes') || 'ملاحظات'}</span>
                           <textarea
-                            className="form-input form-input-compact item-notes-input"
+                            className="form-input item-notes-input"
                             value={item.notes}
                             onChange={(e) => {
                               handleNotesChange(index, e.target.value);
@@ -1316,6 +1343,7 @@ export default function NewOrder() {
                           />
                         </div>
                       </div>
+
                     </div>
                   ))}
                 </div>
