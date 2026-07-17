@@ -70,7 +70,7 @@ export default function QRScanner({ onScanSuccess, onScanFailure }) {
           aspectRatio: 1.0,
         },
         (decodedText) => {
-          if (onScanSuccess) onScanSuccess(decodedText);
+          if (onScanSuccess) onScanSuccess(decodedText, 'camera');
         },
         (errorMessage) => {}
       );
@@ -124,7 +124,7 @@ export default function QRScanner({ onScanSuccess, onScanFailure }) {
       }
       
       const decodedText = await scannerRef.current.scanFile(file, true);
-      if (onScanSuccess) onScanSuccess(decodedText);
+      if (onScanSuccess) onScanSuccess(decodedText, 'file');
     } catch (err) {
       console.error("File scan error", err);
       setErrorMsg(t('qr.fileScanError') || 'لم يتم التعرف على رمز QR في هذه الصورة. يرجى التأكد من وضوح الصورة والرمز.');

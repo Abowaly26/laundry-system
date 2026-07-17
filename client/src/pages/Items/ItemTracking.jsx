@@ -201,11 +201,18 @@ export default function ItemTracking() {
             {scanMode === 'camera' ? (
               <div className="camera-scanner-wrapper">
                 <QRScanner 
-                  onScanSuccess={(decodedText) => {
-                    // الكاميرا قد ترسل قراءات سريعة، نتأكد من عدم تكرار القراءة إذا كانت نفس القطعة
+                  onScanSuccess={(decodedText, source) => {
                     if (!loading && (!currentItem || currentItem.qr_code !== decodedText)) {
+                      if (source === 'file') {
+                        showToast('تم قراءة الرمز من الصورة بنجاح! جاري تحميل البيانات...', 'success');
+                      } else {
+                        showToast('تم قراءة الرمز بنجاح! جاري تحميل البيانات...', 'success');
+                      }
                       handleItemScan(decodedText);
                     }
+                  }}
+                  onScanFailure={() => {
+                    showToast('لم يتم العثور على رمز QR في الصورة المحددة. يرجى المحاولة بصورة أوضح.', 'error');
                   }}
                 />
                 <p className="scanner-instruction text-secondary mt-sm">
