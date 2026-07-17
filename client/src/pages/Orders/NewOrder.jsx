@@ -2,7 +2,7 @@ import { Fragment, useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Plus, Trash2, Search, UserPlus, Printer, ArrowRight, Save, FileText, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { Plus, Trash2, Search, UserPlus, Printer, ArrowRight, Save, FileText, ChevronLeft, ChevronRight, X, Ruler } from 'lucide-react';
 import { customersAPI, servicesAPI, ordersAPI, itemTypesAPI } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import { useSettings } from '../../context/SettingsContext';
@@ -1234,7 +1234,7 @@ export default function NewOrder() {
                                   title="حاسبة مساحة السجادة"
                                   onClick={() => toggleRugCalc(index)}
                                 >
-                                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 20h20"/><path d="M4 4v16"/><path d="M20 4v16"/><path d="M4 12h16"/><path d="M9 4v8"/><path d="M15 12v8"/></svg>
+                                  <Ruler size={16} />
                                 </button>
                               </div>
 
@@ -1256,7 +1256,7 @@ export default function NewOrder() {
                                   >
                                     <div className="rug-calc-header">
                                       <div className="rug-calc-title">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M2 20h20"/><path d="M4 4v16"/><path d="M20 4v16"/><path d="M4 12h16"/><path d="M9 4v8"/><path d="M15 12v8"/></svg>
+                                        <Ruler size={14} />
                                         <span>حاسبة مساحة السجادة</span>
                                       </div>
                                       <button
