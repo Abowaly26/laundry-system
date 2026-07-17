@@ -1276,7 +1276,7 @@ export default function NewOrder() {
                                           className="form-input rug-calc-input"
                                           value={rugCalc[index]?.w || ''}
                                           onChange={(e) => setRugCalcVal(index, 'w', e.target.value)}
-                                          placeholder="2"
+                                          placeholder="0"
                                           step="0.5"
                                           min="0"
                                           autoFocus
@@ -1290,7 +1290,7 @@ export default function NewOrder() {
                                           className="form-input rug-calc-input"
                                           value={rugCalc[index]?.h || ''}
                                           onChange={(e) => setRugCalcVal(index, 'h', e.target.value)}
-                                          placeholder="3"
+                                          placeholder="0"
                                           step="0.5"
                                           min="0"
                                         />
@@ -1300,7 +1300,7 @@ export default function NewOrder() {
                                         <div className="rug-calc-area-display">
                                           {(rugCalc[index]?.w && rugCalc[index]?.h)
                                             ? `${(parseFloat(rugCalc[index].w) * parseFloat(rugCalc[index].h)).toFixed(2)} م²`
-                                            : '— م²'}
+                                            : '0 م²'}
                                         </div>
                                       </div>
                                     </div>
