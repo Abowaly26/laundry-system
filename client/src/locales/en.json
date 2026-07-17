@@ -39,6 +39,7 @@
     "revenueOverTime": "Revenue Over Time",
     "revenueTitle": "Revenue",
     "last7days": "Last 7 Days",
+    "last2weeks": "Last 2 Weeks",
     "last30days": "Last 30 Days",
     "thisMonth": "This Month",
     "popularServices": "Popular Services",
@@ -329,7 +330,8 @@
     "phDeliveryDate": "Expected Delivery Date",
     "phTrackingLink": "Laundry Tracking Link",
     "saveBtn": "Save System Settings",
-    "restoreBtn": "Restore Defaults"
+    "restoreBtn": "Restore Defaults",
+    "subscriptionTitle": "Subscription Details"
   },
   "finance": {
     "methodCash": "Cash",
