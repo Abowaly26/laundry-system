@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import {
   Plus, Store, Users, ShoppingBag, TrendingUp,
   Edit2, Power, Eye, X, ChevronDown, ChevronUp,
-  Crown, MapPin, Phone, User, Lock, Mail, Coins
+  Crown, MapPin, Phone, User, Lock, Mail, Coins, Compass
 } from 'lucide-react';
 import { laundriesAPI } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
@@ -89,6 +89,10 @@ export default function Laundries() {
   // Modal لعرض الموظفين
   const [showStaffModal, setShowStaffModal] = useState(false);
   const [staffModalLaundry, setStaffModalLaundry] = useState(null);
+
+  // Modal لعرض موقع الخريطة للمغسلة
+  const [showViewMapModal, setShowViewMapModal] = useState(false);
+  const [viewLocationLaundry, setViewLocationLaundry] = useState(null);
 
   // Custom Dropdown لفلتر الحالة
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
@@ -479,9 +483,39 @@ export default function Laundries() {
               {/* تفاصيل المغسلة */}
               <div className="laundry-card-body">
                 {laundry.address && (
-                  <div className="laundry-info-row">
-                    <MapPin size={14} />
-                    <span>{laundry.address}</span>
+                  <div className="laundry-info-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <MapPin size={14} style={{ flexShrink: 0 }} />
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{laundry.address}</span>
+                    </div>
+                    {laundry.latitude && laundry.longitude && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setViewLocationLaundry(laundry);
+                          setShowViewMapModal(true);
+                        }}
+                        style={{
+                          background: 'var(--primary-light)',
+                          border: 'none',
+                          color: 'var(--primary)',
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          width: '28px',
+                          height: '28px',
+                          borderRadius: '50%',
+                          transition: 'background var(--transition)',
+                          marginInlineStart: '8px',
+                          flexShrink: 0
+                        }}
+                        className="laundry-location-view-btn"
+                        title="عرض الموقع على الخريطة"
+                      >
+                        <Compass size={14} />
+                      </button>
+                    )}
                   </div>
                 )}
                 {laundry.phone && (
@@ -1051,6 +1085,24 @@ export default function Laundries() {
             longitude: locationData.longitude
           }));
         }}
+      />
+
+      {/* مودال استعراض موقع المغسلة الفعلي على الخريطة */}
+      <LocationPickerModal
+        isOpen={showViewMapModal}
+        onClose={() => {
+          setShowViewMapModal(false);
+          setViewLocationLaundry(null);
+        }}
+        mode="laundry"
+        readOnly={true}
+        initialLocation={
+          viewLocationLaundry?.latitude && viewLocationLaundry?.longitude
+            ? { lat: parseFloat(viewLocationLaundry.latitude), lng: parseFloat(viewLocationLaundry.longitude) }
+            : null
+        }
+        initialAddress={viewLocationLaundry?.address || ''}
+        onSelectLocation={() => {}}
       />
     </div>
   );

@@ -85,6 +85,7 @@ const LocationPickerModal = ({
   initialAddress  = '',
   laundryLocation = DEFAULT_CENTER,
   mode = 'customer',
+  readOnly = false,
 }) => {
   const targetLabel = mode === 'laundry' ? 'موقع المغسلة' : 'موقع العميل';
 
@@ -631,18 +632,26 @@ const LocationPickerModal = ({
 
           {/* Confirm / Cancel */}
           <div className="location-picker-actions">
-            <button type="button" className="btn-cancel-location" onClick={onClose}>
-              إلغاء
-            </button>
-            <button
-              type="button"
-              className="btn-confirm-location"
-              onClick={handleConfirm}
-              disabled={!customerCoords}
-            >
-              <Check size={18} />
-              <span>تأكيد العنوان</span>
-            </button>
+            {readOnly ? (
+              <button type="button" className="btn-cancel-location" onClick={onClose} style={{ background: 'var(--primary)', color: '#fff', border: 'none', padding: '0 24px', fontWeight: 'bold' }}>
+                إغلاق الخريطة
+              </button>
+            ) : (
+              <>
+                <button type="button" className="btn-cancel-location" onClick={onClose}>
+                  إلغاء
+                </button>
+                <button
+                  type="button"
+                  className="btn-confirm-location"
+                  onClick={handleConfirm}
+                  disabled={!customerCoords}
+                >
+                  <Check size={18} />
+                  <span>تأكيد العنوان</span>
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>
