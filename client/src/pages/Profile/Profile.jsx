@@ -21,9 +21,7 @@ export default function Profile() {
   });
 
   const [isLoading, setIsLoading] = useState(false);
-  const [showOtpModal, setShowOtpModal] = useState(false);
-  const [otpCode, setOtpCode] = useState('');
-  const [devOtp, setDevOtp] = useState('');
+  const [errors, setErrors] = useState({});
 
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -32,70 +30,69 @@ export default function Profile() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    // Clear error for this field as the user types
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: null }));
+    }
+  };
+
+  const validateNewPassword = (pwd) => {
+    if (!pwd) return null;
+    if (pwd.length < 8) {
+      return 'كلمة المرور الجديدة يجب أن تكون 8 أحرف على الأقل';
+    }
+    if (!/[A-Z]/.test(pwd)) {
+      return 'يجب أن تحتوي كلمة المرور على حرف كبير واحد على الأقل (A-Z)';
+    }
+    if (!/[a-z]/.test(pwd)) {
+      return 'يجب أن تحتوي كلمة المرور على حرف صغير واحد على الأقل (a-z)';
+    }
+    if (!/[0-9]/.test(pwd)) {
+      return 'يجب أن تحتوي كلمة المرور على رقم واحد على الأقل (0-9)';
+    }
+    if (!/[@$!%*?&#]/.test(pwd)) {
+      return 'يجب أن تحتوي على رمز خاص واحد على الأقل (مثل @, $, !, %, *, ?)';
+    }
+    return null;
   };
 
   const validateForm = () => {
+    const newErrors = {};
+
+    if (!formData.name.trim()) {
+      newErrors.name = 'الاسم الكامل مطلوب';
+    }
+
+    if (!formData.email.trim()) {
+      newErrors.email = 'البريد الإلكتروني مطلوب';
+    }
+
     if (!formData.currentPassword) {
-      showToast(t('profile.currentPasswordRequired') || 'كلمة المرور الحالية مطلوبة', 'error');
-      return false;
+      newErrors.currentPassword = 'كلمة المرور الحالية مطلوبة لتأكيد التغييرات';
     }
-    if (formData.newPassword && formData.newPassword !== formData.confirmPassword) {
-      showToast(t('profile.passwordMismatch') || 'كلمة المرور الجديدة غير متطابقة', 'error');
-      return false;
+
+    if (formData.newPassword) {
+      const pwdError = validateNewPassword(formData.newPassword);
+      if (pwdError) {
+        newErrors.newPassword = pwdError;
+      }
+
+      if (formData.newPassword !== formData.confirmPassword) {
+        newErrors.confirmPassword = 'تأكيد كلمة المرور غير متطابق مع كلمة المرور الجديدة';
+      }
     }
-    if (formData.newPassword && formData.newPassword.length < 6) {
-      showToast(t('profile.passwordTooShort') || 'كلمة المرور الجديدة يجب أن تكون 6 أحرف على الأقل', 'error');
-      return false;
-    }
-    return true;
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
-  const handleRequestUpdate = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
 
     setIsLoading(true);
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/auth/request-profile-otp`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          currentPassword: formData.currentPassword,
-          newName: formData.name !== user.name ? formData.name : undefined,
-          newEmail: formData.email !== user.email ? formData.email : undefined,
-          newPassword: formData.newPassword || undefined
-        })
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        showToast(data.message, 'success');
-        if (data.devOtp) {
-          setDevOtp(data.devOtp); // فقط للتطوير إذا لم يتم إعداد البريد
-        }
-        setShowOtpModal(true);
-      } else {
-        showToast(data.message || 'حدث خطأ', 'error');
-      }
-    } catch (error) {
-      console.error(error);
-      showToast('حدث خطأ في الاتصال بالخادم', 'error');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleConfirmUpdate = async (e) => {
-    e.preventDefault();
-    if (!otpCode) {
-      showToast('الرجاء إدخال رمز التحقق', 'error');
-      return;
-    }
-
-    setIsLoading(true);
+    setErrors({});
+    
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/auth/update-profile`, {
         method: 'PUT',
@@ -103,25 +100,32 @@ export default function Profile() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
-        body: JSON.stringify({ otpCode })
+        body: JSON.stringify({
+          currentPassword: formData.currentPassword,
+          name: formData.name,
+          email: formData.email,
+          newPassword: formData.newPassword || undefined
+        })
       });
 
       const data = await response.json();
       if (data.success) {
         showToast(data.message, 'success');
-        setShowOtpModal(false);
-        setOtpCode('');
         
         if (data.requireRelogin) {
           showToast('يرجى تسجيل الدخول مجدداً باستخدام كلمة المرور الجديدة', 'info');
           setTimeout(() => logout(), 2000);
         } else {
-          // تحديث بيانات المستخدم في الـ Context
           updateLocalUser(data.data);
           setFormData(prev => ({ ...prev, currentPassword: '', newPassword: '', confirmPassword: '' }));
         }
       } else {
-        showToast(data.message || 'حدث خطأ', 'error');
+        // Map backend validation errors to fields
+        if (data.errorField) {
+          setErrors({ [data.errorField]: data.message });
+        } else {
+          showToast(data.message || 'حدث خطأ أثناء تحديث البيانات', 'error');
+        }
       }
     } catch (error) {
       console.error(error);
@@ -141,7 +145,7 @@ export default function Profile() {
       </div>
 
       <div className="profile-container">
-        <form onSubmit={handleRequestUpdate} className="profile-form">
+        <form onSubmit={handleSubmit} className="profile-form">
           <Card title={t('profile.personalInfo') || 'البيانات الأساسية'}>
             <div className="form-group">
               <label className="form-label">{t('profile.name') || 'الاسم الكامل'}</label>
@@ -150,12 +154,13 @@ export default function Profile() {
                 <input
                   type="text"
                   name="name"
-                  className="form-input"
+                  className={`form-input ${errors.name ? 'error' : ''}`}
                   value={formData.name}
                   onChange={handleChange}
                   required
                 />
               </div>
+              {errors.name && <p className="form-error">{errors.name}</p>}
             </div>
 
             <div className="form-group">
@@ -165,12 +170,13 @@ export default function Profile() {
                 <input
                   type="email"
                   name="email"
-                  className="form-input"
+                  className={`form-input ${errors.email ? 'error' : ''}`}
                   value={formData.email}
                   onChange={handleChange}
                   required
                 />
               </div>
+              {errors.email && <p className="form-error">{errors.email}</p>}
             </div>
           </Card>
 
@@ -182,7 +188,7 @@ export default function Profile() {
                 <input
                   type={showCurrentPassword ? "text" : "password"}
                   name="currentPassword"
-                  className="form-input"
+                  className={`form-input ${errors.currentPassword ? 'error' : ''}`}
                   value={formData.currentPassword}
                   onChange={handleChange}
                   required
@@ -197,6 +203,7 @@ export default function Profile() {
                   {showCurrentPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
+              {errors.currentPassword && <p className="form-error">{errors.currentPassword}</p>}
             </div>
 
             <hr className="divider" />
@@ -210,10 +217,10 @@ export default function Profile() {
                   <input
                     type={showNewPassword ? "text" : "password"}
                     name="newPassword"
-                    className="form-input"
+                    className={`form-input ${errors.newPassword ? 'error' : ''}`}
                     value={formData.newPassword}
                     onChange={handleChange}
-                    placeholder="كلمة مرور قوية (6 أحرف على الأقل)"
+                    placeholder="كلمة مرور قوية (8 أحرف على الأقل)"
                   />
                   <button
                     type="button"
@@ -224,6 +231,7 @@ export default function Profile() {
                     {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
+                {errors.newPassword && <p className="form-error">{errors.newPassword}</p>}
               </div>
               <div className="form-group flex-1">
                 <label className="form-label">{t('profile.confirmPassword') || 'تأكيد كلمة المرور الجديدة'}</label>
@@ -232,7 +240,7 @@ export default function Profile() {
                   <input
                     type={showConfirmPassword ? "text" : "password"}
                     name="confirmPassword"
-                    className="form-input"
+                    className={`form-input ${errors.confirmPassword ? 'error' : ''}`}
                     value={formData.confirmPassword}
                     onChange={handleChange}
                     placeholder="أعد إدخال كلمة المرور"
@@ -246,6 +254,7 @@ export default function Profile() {
                     {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
+                {errors.confirmPassword && <p className="form-error">{errors.confirmPassword}</p>}
               </div>
             </div>
           </Card>
@@ -257,51 +266,6 @@ export default function Profile() {
           </div>
         </form>
       </div>
-
-      {/* OTP Modal */}
-      {showOtpModal && (
-        <div className="modal-overlay">
-          <div className="modal-content otp-modal">
-            <h2 className="modal-title">{t('profile.otpTitle') || 'التحقق بخطوتين'}</h2>
-            <p className="modal-description">
-              {t('profile.otpDesc') || 'تم إرسال رمز تحقق (OTP) إلى بريدك الإلكتروني.'}
-              <br />
-              يرجى إدخال الرمز المكون من 6 أرقام لتأكيد التغييرات.
-            </p>
-
-            {devOtp && (
-              <div className="dev-otp-alert">
-                <small>ملاحظة تطويرية (سيتم إخفاؤها في الإنتاج):</small><br/>
-                <strong>رمز التحقق الخاص بك هو: {devOtp}</strong>
-              </div>
-            )}
-
-            <form onSubmit={handleConfirmUpdate}>
-              <div className="form-group">
-                <input
-                  type="text"
-                  className="form-input otp-input"
-                  value={otpCode}
-                  onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                  placeholder="------"
-                  maxLength={6}
-                  required
-                  autoFocus
-                />
-              </div>
-
-              <div className="modal-actions">
-                <Button type="button" variant="secondary" onClick={() => setShowOtpModal(false)}>
-                  إلغاء
-                </Button>
-                <Button type="submit" variant="primary" isLoading={isLoading}>
-                  تأكيد
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
