@@ -179,6 +179,8 @@ const LocationPickerModal = ({
     setCustomerCoords(startCoords);
     setCashierCoords(null);
 
+    if (readOnly) return; // Skip GPS and initial geocode for read-only view
+
     // Attempt GPS
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -205,7 +207,7 @@ const LocationPickerModal = ({
       reverseGeocode(startCoords.lat, startCoords.lng);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen]);
+  }, [isOpen, readOnly]);
 
   // ─────────────────────────────────────────────────────────────────────────
   // Initialise Leaflet map (once per open, destroyed on close)
@@ -237,25 +239,27 @@ const LocationPickerModal = ({
       crossOrigin: true,
     }).addTo(map);
 
-    // Customer marker (draggable)
+    // Customer marker (draggable conditionally)
     customerMarkerRef.current = L.marker([center.lat, center.lng], {
       icon:     makeCustomerIcon(targetLabel),
-      draggable: true,
+      draggable: !readOnly,
       zIndexOffset: 200,
     }).addTo(map);
 
-    customerMarkerRef.current.on('dragend', ({ target }) => {
-      const { lat, lng } = target.getLatLng();
-      setCustomerCoords({ lat, lng });
-      reverseGeocode(lat, lng);
-    });
+    if (!readOnly) {
+      customerMarkerRef.current.on('dragend', ({ target }) => {
+        const { lat, lng } = target.getLatLng();
+        setCustomerCoords({ lat, lng });
+        reverseGeocode(lat, lng);
+      });
 
-    // Click on map → move customer marker
-    map.on('click', ({ latlng: { lat, lng } }) => {
-      setCustomerCoords({ lat, lng });
-      customerMarkerRef.current?.setLatLng([lat, lng]);
-      reverseGeocode(lat, lng);
-    });
+      // Click on map → move customer marker
+      map.on('click', ({ latlng: { lat, lng } }) => {
+        setCustomerCoords({ lat, lng });
+        customerMarkerRef.current?.setLatLng([lat, lng]);
+        reverseGeocode(lat, lng);
+      });
+    }
 
     mapRef.current = map;
 
@@ -276,7 +280,7 @@ const LocationPickerModal = ({
     };
   // run once when isOpen flips to true
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen]);
+  }, [isOpen, readOnly]);
 
   // ─────────────────────────────────────────────────────────────────────────
   // Keep customer marker in sync with state (when changed via search etc.)
@@ -436,7 +440,7 @@ const LocationPickerModal = ({
           <div>
             <h3>
               <MapPin size={20} />
-              تحديد العنوان على الخريطة
+              {readOnly ? 'موقع المغسلة على الخريطة' : 'تحديد العنوان على الخريطة'}
             </h3>
           </div>
           <button className="close-modal-btn" onClick={onClose}>
@@ -444,42 +448,44 @@ const LocationPickerModal = ({
           </button>
         </div>
 
-        {/* ── Search Bar ──────────────────────────────────────────── */}
-        <div className="location-picker-search-bar" style={{ position: 'relative' }}>
-          <div className="search-input-wrapper">
-            <Search size={18} className="search-input-icon" />
-            <input
-              type="text"
-              placeholder="ابحث بالحي أو الشارع أو المدينة..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              autoComplete="off"
-            />
-            {isSearching && (
-              <div className="geocoding-spinner" style={{ position: 'absolute', insetInlineEnd: '2.8rem' }} />
-            )}
-            {searchQuery && (
-              <button className="clear-search-btn" onClick={() => { setSearchQuery(''); setSearchResults([]); }}>
-                <X size={16} />
-              </button>
+        {/* ── Search Bar (only if not readOnly) ────────────────────── */}
+        {!readOnly && (
+          <div className="location-picker-search-bar" style={{ position: 'relative' }}>
+            <div className="search-input-wrapper">
+              <Search size={18} className="search-input-icon" />
+              <input
+                type="text"
+                placeholder="ابحث بالحي أو الشارع أو المدينة..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                autoComplete="off"
+              />
+              {isSearching && (
+                <div className="geocoding-spinner" style={{ position: 'absolute', insetInlineEnd: '2.8rem' }} />
+              )}
+              {searchQuery && (
+                <button className="clear-search-btn" onClick={() => { setSearchQuery(''); setSearchResults([]); }}>
+                  <X size={16} />
+                </button>
+              )}
+            </div>
+
+            {/* Suggestions dropdown */}
+            {searchResults.length > 0 && (
+              <ul className="map-search-suggestions">
+                {searchResults.map((item, idx) => (
+                  <li key={idx} onClick={() => handleSelectSuggestion(item)}>
+                    <MapPin size={16} className="sug-icon" />
+                    <div>
+                      <strong>{item.display_name.split(',')[0]}</strong>
+                      <span>{item.display_name.split(',').slice(1, 3).join(',')}</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
             )}
           </div>
-
-          {/* Suggestions dropdown */}
-          {searchResults.length > 0 && (
-            <ul className="map-search-suggestions">
-              {searchResults.map((item, idx) => (
-                <li key={idx} onClick={() => handleSelectSuggestion(item)}>
-                  <MapPin size={16} className="sug-icon" />
-                  <div>
-                    <strong>{item.display_name.split(',')[0]}</strong>
-                    <span>{item.display_name.split(',').slice(1, 3).join(',')}</span>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+        )}
 
         {/* ── Map ─────────────────────────────────────────────────── */}
         <div className="location-picker-body">
@@ -519,51 +525,25 @@ const LocationPickerModal = ({
             </button>
           </div>
 
-          {/* Floating Location Action Buttons (Top Right, Horizontal Layout) */}
-          <div 
-            style={{
-              position: 'absolute',
-              top: '1rem',
-              insetInlineEnd: '1rem',
-              zIndex: 800,
-              display: 'flex',
-              gap: '0.5rem',
-              direction: 'rtl'
-            }}
-          >
-            {/* Locate Me / Cashier */}
-            <button
-              type="button"
-              className="map-control-btn cashier-locate"
-              onClick={handleJumpToCashier}
-              title="الانتقال إلى موقعي الحالي"
-              style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '8px', 
-                width: 'auto', 
-                padding: '0 12px', 
-                height: '40px', 
-                background: 'rgba(255, 255, 255, 0.96)',
-                backdropFilter: 'blur(12px)',
-                border: '1px solid rgba(226, 232, 240, 0.95)',
-                borderRadius: '10px',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)',
-                color: '#059669',
-                cursor: 'pointer'
+          {/* Floating Location Action Buttons (only if not readOnly) */}
+          {!readOnly && (
+            <div 
+              style={{
+                position: 'absolute',
+                top: '1rem',
+                insetInlineEnd: '1rem',
+                zIndex: 800,
+                display: 'flex',
+                gap: '0.5rem',
+                direction: 'rtl'
               }}
             >
-              <Navigation size={15} style={{ flexShrink: 0 }} />
-              <span style={{ fontSize: '0.78rem', fontWeight: 'bold', whiteSpace: 'nowrap', color: '#334155' }}>موقعي الحالي</span>
-            </button>
-
-            {/* Focus on Customer Pin */}
-            {customerCoords && (
+              {/* Locate Me / Cashier */}
               <button
                 type="button"
-                className="map-control-btn customer-locate"
-                onClick={handleJumpToCustomer}
-                title={`الانتقال إلى ${targetLabel}`}
+                className="map-control-btn cashier-locate"
+                onClick={handleJumpToCashier}
+                title="الانتقال إلى موقعي الحالي"
                 style={{ 
                   display: 'flex', 
                   alignItems: 'center', 
@@ -576,15 +556,43 @@ const LocationPickerModal = ({
                   border: '1px solid rgba(226, 232, 240, 0.95)',
                   borderRadius: '10px',
                   boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)',
-                  color: '#e11d48',
+                  color: '#059669',
                   cursor: 'pointer'
                 }}
               >
-                <Compass size={15} style={{ flexShrink: 0 }} />
-                <span style={{ fontSize: '0.78rem', fontWeight: 'bold', whiteSpace: 'nowrap', color: '#334155' }}>{targetLabel}</span>
+                <Navigation size={15} style={{ flexShrink: 0 }} />
+                <span style={{ fontSize: '0.78rem', fontWeight: 'bold', whiteSpace: 'nowrap', color: '#334155' }}>موقعي الحالي</span>
               </button>
-            )}
-          </div>
+
+              {/* Focus on Customer Pin */}
+              {customerCoords && (
+                <button
+                  type="button"
+                  className="map-control-btn customer-locate"
+                  onClick={handleJumpToCustomer}
+                  title={`الانتقال إلى ${targetLabel}`}
+                  style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '8px', 
+                    width: 'auto', 
+                    padding: '0 12px', 
+                    height: '40px', 
+                    background: 'rgba(255, 255, 255, 0.96)',
+                    backdropFilter: 'blur(12px)',
+                    border: '1px solid rgba(226, 232, 240, 0.95)',
+                    borderRadius: '10px',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)',
+                    color: '#e11d48',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <Compass size={15} style={{ flexShrink: 0 }} />
+                  <span style={{ fontSize: '0.78rem', fontWeight: 'bold', whiteSpace: 'nowrap', color: '#334155' }}>{targetLabel}</span>
+                </button>
+              )}
+            </div>
+          )}
 
           {/* Layer switcher pills */}
           <div className="map-layers-switch">
@@ -605,35 +613,35 @@ const LocationPickerModal = ({
         </div>
 
         {/* ── Footer ──────────────────────────────────────────────── */}
-        <div className="location-picker-footer">
+        <div className="location-picker-footer" style={readOnly ? { justifyContent: 'center', padding: '16px' } : {}}>
           {/* Address display & edit */}
-          <div className="selected-address-summary">
-            <MapIcon size={24} className="addr-icon" />
-            <div className="addr-text">
-              <h4>العنوان المحدد (تلقائي أو يدوي)</h4>
-              {isGeocoding ? (
-                <p style={{ color: '#3b82f6', fontSize: '0.9rem', marginTop: '0.3rem' }}>
-                  ⏳ جارٍ جلب اسم الموقع...
-                </p>
-              ) : (
-                <input
-                  type="text"
-                  className="form-input"
-                  style={{ width: '100%', marginTop: '0.4rem', fontWeight: 600 }}
-                  value={addressText}
-                  onChange={(e) => setAddressText(e.target.value)}
-                  placeholder="انقر على الخريطة أو اسحب الدبوس لتحديد العنوان..."
-                />
-              )}
+          {!readOnly && (
+            <div className="selected-address-summary">
+              <MapIcon size={24} className="addr-icon" />
+              <div className="addr-text">
+                <h4>العنوان المحدد (تلقائي أو يدوي)</h4>
+                {isGeocoding ? (
+                  <p style={{ color: '#3b82f6', fontSize: '0.9rem', marginTop: '0.3rem' }}>
+                    ⏳ جارٍ جلب اسم الموقع...
+                  </p>
+                ) : (
+                  <input
+                    type="text"
+                    className="form-input"
+                    style={{ width: '100%', marginTop: '0.4rem', fontWeight: 600 }}
+                    value={addressText}
+                    onChange={(e) => setAddressText(e.target.value)}
+                    placeholder="انقر على الخريطة أو اسحب الدبوس لتحديد العنوان..."
+                  />
+                )}
+              </div>
             </div>
-          </div>
-
-          {/* Extra details removed */}
+          )}
 
           {/* Confirm / Cancel */}
-          <div className="location-picker-actions">
+          <div className="location-picker-actions" style={readOnly ? { width: '100%', display: 'flex', justifyContent: 'center' } : {}}>
             {readOnly ? (
-              <button type="button" className="btn-cancel-location" onClick={onClose} style={{ background: 'var(--primary)', color: '#fff', border: 'none', padding: '0 24px', fontWeight: 'bold' }}>
+              <button type="button" className="btn-cancel-location" onClick={onClose} style={{ background: 'var(--primary)', color: '#fff', border: 'none', padding: '0 32px', fontWeight: 'bold', height: '44px', borderRadius: '10px', fontSize: '0.95rem' }}>
                 إغلاق الخريطة
               </button>
             ) : (
