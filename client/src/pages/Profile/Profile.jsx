@@ -110,12 +110,11 @@ export default function Profile() {
 
       const data = await response.json();
       if (data.success) {
-        showToast(data.message, 'success');
-        
         if (data.requireRelogin) {
-          showToast('يرجى تسجيل الدخول مجدداً باستخدام كلمة المرور الجديدة', 'info');
+          showToast('تم تغيير كلمة المرور بنجاح. يرجى تسجيل الدخول مجدداً.', 'success');
           setTimeout(() => logout(), 2000);
         } else {
+          showToast(data.message, 'success');
           updateLocalUser(data.data);
           setFormData(prev => ({ ...prev, currentPassword: '', newPassword: '', confirmPassword: '' }));
         }
