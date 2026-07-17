@@ -77,15 +77,22 @@ app.get('/api/health', async (req, res) => {
   console.log('🔍 Health check request received from:', req.ip, req.headers.origin);
   
   try {
-    // التحقق من وجود بيانات في قاعدة البيانات
     const usersCount = await query('SELECT COUNT(*) as count FROM users');
+    
+    // Fetch columns of users table to verify schema
+    const columnsResult = await query(`
+      SELECT column_name, data_type 
+      FROM information_schema.columns 
+      WHERE table_name = 'users'
+    `);
     
     res.json({ 
       success: true, 
       message: 'الخادم يعمل بنجاح وقاعدة البيانات متصلة',
       database: 'PostgreSQL',
       usersCount: parseInt(usersCount.rows[0].count),
-      seeded: parseInt(usersCount.rows[0].count) > 0
+      seeded: parseInt(usersCount.rows[0].count) > 0,
+      columns: columnsResult.rows.map(r => `${r.column_name} (${r.data_type})`)
     });
   } catch (error) {
     res.status(500).json({
