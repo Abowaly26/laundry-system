@@ -77,44 +77,21 @@ app.get('/api/health', async (req, res) => {
   console.log('🔍 Health check request received from:', req.ip, req.headers.origin);
   
   try {
+    // التحقق من وجود بيانات في قاعدة البيانات
     const usersCount = await query('SELECT COUNT(*) as count FROM users');
-    
-    // Fetch columns of users table to verify schema
-    const columnsResult = await query(`
-      SELECT column_name, data_type 
-      FROM information_schema.columns 
-      WHERE table_name = 'users'
-    `);
     
     res.json({ 
       success: true, 
       message: 'الخادم يعمل بنجاح وقاعدة البيانات متصلة',
       database: 'PostgreSQL',
       usersCount: parseInt(usersCount.rows[0].count),
-      seeded: parseInt(usersCount.rows[0].count) > 0,
-      columns: columnsResult.rows.map(r => `${r.column_name} (${r.data_type})`)
+      seeded: parseInt(usersCount.rows[0].count) > 0
     });
   } catch (error) {
     res.status(500).json({
       success: false,
       message: 'الخادم يعمل لكن قاعدة البيانات غير متصلة',
       error: error.message
-    });
-  }
-});
-
-// Temporary debug endpoint to test SMTP settings
-app.get('/api/test-email', async (req, res) => {
-  try {
-    const { sendOTPEmail } = require('./src/config/email');
-    await sendOTPEmail('waly20691@gmail.com', '123456', 'مستخدم التجربة');
-    res.json({ success: true, message: 'Email sent successfully!' });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Email sending failed',
-      error: error.message,
-      stack: error.stack
     });
   }
 });

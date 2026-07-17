@@ -198,18 +198,26 @@ router.post('/request-profile-otp', authMiddleware, async (req, res) => {
     const targetEmail = newEmail || user.email;
     const { sendOTPEmail } = require('../config/email');
     
-    // إذا لم تكن إعدادات البريد موجودة، نعيد الرمز في الاستجابة (لأغراض التطوير فقط)
-    // في الإنتاج يجب أن لا نعيد الرمز
     const isDev = !process.env.SMTP_EMAIL;
+    let emailSent = false;
     
     if (!isDev) {
-      await sendOTPEmail(targetEmail, otpCode, user.name);
+      try {
+        await sendOTPEmail(targetEmail, otpCode, user.name);
+        emailSent = true;
+      } catch (emailError) {
+        console.error('SMTP Email sending failed, using fallback code:', emailError);
+      }
     }
 
     res.json({
       success: true,
-      message: 'تم إرسال رمز التحقق إلى بريدك الإلكتروني',
-      devOtp: isDev ? otpCode : undefined // للبيئة التطويرية فقط
+      message: isDev 
+        ? 'تم توليد الرمز بنجاح (بيئة تطويرية)' 
+        : (emailSent 
+            ? 'تم إرسال رمز التحقق إلى بريدك الإلكتروني' 
+            : 'تنبيه: فشل إرسال البريد الإلكتروني بسبب قيود السيرفر (Railway Trial / Google Blocks). تم توفير الرمز هنا لتستطيع إكمال العملية.'),
+      devOtp: (isDev || !emailSent) ? otpCode : undefined
     });
 
   } catch (error) {

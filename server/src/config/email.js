@@ -11,7 +11,10 @@ const transporter = nodemailer.createTransport({
   },
   tls: {
     rejectUnauthorized: false // Prevents certificate verification issues in containers
-  }
+  },
+  connectionTimeout: 5000, // 5 seconds connection timeout
+  greetingTimeout: 5000,   // 5 seconds greeting timeout
+  socketTimeout: 10000     // 10 seconds socket timeout
 });
 
 /**
