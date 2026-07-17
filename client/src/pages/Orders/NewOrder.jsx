@@ -898,6 +898,23 @@ export default function NewOrder() {
                           </button>
                           {showQuickTimeDropdown && (
                             <div className="time-select-dropdown">
+                              <div style={{ gridColumn: 'span 3', padding: '6px 0 10px 0', borderBottom: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '6px' }} onClick={e => e.stopPropagation()}>
+                                <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-muted)' }}>
+                                  أو اختر وقت مخصص:
+                                </span>
+                                <input
+                                  type="time"
+                                  className="form-input"
+                                  style={{ height: '36px', padding: '0 8px', fontSize: '0.85rem', direction: 'ltr', textAlign: 'center', margin: 0 }}
+                                  value={deliveryTime || ''}
+                                  onChange={(e) => {
+                                    if (e.target.value) {
+                                      setDeliveryTime(e.target.value);
+                                      setActiveTimePreset('custom');
+                                    }
+                                  }}
+                                />
+                              </div>
                               {getTimeOptions(t).map((opt) => (
                                 <button
                                   key={opt.value}
@@ -995,6 +1012,22 @@ export default function NewOrder() {
                             </button>
                             {showCustomTimeDropdown && (
                               <div className="time-select-dropdown">
+                                <div style={{ gridColumn: 'span 3', padding: '6px 0 10px 0', borderBottom: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '6px' }} onClick={e => e.stopPropagation()}>
+                                  <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-muted)' }}>
+                                    أو اختر وقت مخصص:
+                                  </span>
+                                  <input
+                                    type="time"
+                                    className="form-input"
+                                    style={{ height: '36px', padding: '0 8px', fontSize: '0.85rem', direction: 'ltr', textAlign: 'center', margin: 0 }}
+                                    value={deliveryTime || ''}
+                                    onChange={(e) => {
+                                      if (e.target.value) {
+                                        setDeliveryTime(e.target.value);
+                                      }
+                                    }}
+                                  />
+                                </div>
                                 {getTimeOptions(t).map((opt) => (
                                   <button
                                     key={opt.value}
